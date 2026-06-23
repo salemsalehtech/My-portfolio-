@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07111E; --surface: #0C1A28; --card: #0F2035;
+      --card-border: rgba(232,160,32,0.14); --text-primary: #E6EEF8;
+      --text-secondary: #7A8EA4; --text-muted: #3A4E65;
+      --gold: #E8A020; --gold-light: #F5C040; --gold-dim: rgba(232,160,32,0.10);
+      --font-heading: 'Outfit', sans-serif; --font-body: 'DM Sans', sans-serif;
+      --font-ar: 'Tajawal', sans-serif; --nav-bg: rgba(7,17,30,0.92);
+      --shadow: 0 8px 40px rgba(0,0,0,0.5); --shadow-gold: 0 0 40px rgba(232,160,32,0.2);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    [dir="rtl"] { font-family: var(--font-ar) !important; }
+    [dir="rtl"] input, [dir="rtl"] textarea { text-align: right; }
+    input, textarea, button { font-family: inherit; outline: none; }
+    input::placeholder, textarea::placeholder { color: var(--text-muted); }
+    a { text-decoration: none; color: inherit; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+    @keyframes spin-slow { to { transform: rotate(360deg); } }
+    @keyframes pulse-ring { 0% { transform: scale(1); opacity: 0.5; } 100% { transform: scale(1.65); opacity: 0; } }
+    @keyframes bounce-down { 0%,100% { transform: translateX(-50%) translateY(0); } 55% { transform: translateX(-50%) translateY(9px); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    [data-ao]:not([data-visible]) { opacity: 0; transform: translateY(30px); transition: opacity 0.7s cubic-bezier(.4,0,.2,1), transform 0.7s cubic-bezier(.4,0,.2,1); }
+    [data-ao="left"]:not([data-visible]) { transform: translateX(-30px); }
+    [data-ao="right"]:not([data-visible]) { transform: translateX(30px); }
+    [data-ao="scale"]:not([data-visible]) { transform: scale(0.88); opacity: 0; }
+    @media (max-width: 900px) {
+      [data-hide-m] { display: none !important; }
+      [data-show-m] { display: flex !important; }
+      [data-grid="hero"] { grid-template-columns: 1fr !important; gap: 36px !important; }
+      [data-grid="hero"] [data-hero-img] { order: -1 !important; }
+      [data-grid="hero"] [data-hero-txt] { text-align: center !important; }
+      [data-grid="hero"] [data-hero-txt] [data-flex-row] { justify-content: center !important; }
+      [data-grid="about"] { grid-template-columns: 1fr !important; }
+      [data-grid="yt"] { grid-template-columns: 1fr !important; }
+      [data-grid="contact"] { grid-template-columns: 1fr !important; }
+      [data-grid="projects"] { grid-template-columns: repeat(auto-fill, minmax(260px,1fr)) !important; }
+    }
+    @media (max-width: 560px) {
+      [data-grid="projects"] { grid-template-columns: 1fr !important; }
+    }
+  </style>
+</helmet>
+
+<div dir="{{ dir }}" style="background: var(--bg); color: var(--text-primary); font-family: {{ fontFamily }}; min-height: 100vh; transition: background 0.4s, color 0.4s; position: relative;">
+
+  <!-- ===== NAV ===== -->
+  <nav style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 68px; padding: 0 clamp(16px,4vw,72px); display: flex; align-items: center; justify-content: space-between; background: {{ navBg }}; border-bottom: {{ navBorder }}; backdrop-filter: {{ navBlur }}; -webkit-backdrop-filter: {{ navBlur }}; transition: background 0.35s, border-color 0.35s;">
+    <div onClick="{{ scrollHome }}" style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex-shrink: 0;">
+      <div style="width: 36px; height: 36px; border-radius: 9px; background: linear-gradient(135deg,var(--gold),var(--gold-light)); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 13px; color: #07111E; flex-shrink: 0;">SS</div>
+      <span data-hide-m style="font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.3px; white-space: nowrap;">Salem Saleh</span>
+    </div>
+    <div data-hide-m style="display: flex; align-items: center; gap: 2px;">
+      <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="6">
+        <a onClick="{{ item.onClick }}" style="color: {{ item.color }}; font-size: 12px; font-weight: {{ item.fw }}; padding: 7px 12px; border-radius: 8px; cursor: pointer; letter-spacing: 0.8px; text-transform: uppercase; transition: all 0.2s;" style-hover="background: var(--gold-dim); color: var(--gold);">{{ item.label }}</a>
+      </sc-for>
+    </div>
+    <div data-hide-m style="display: flex; align-items: center; gap: 8px;">
+      <button onClick="{{ toggleLang }}" style="background: var(--card); border: 1px solid var(--card-border); color: var(--gold); padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; transition: all 0.2s;" style-hover="border-color: var(--gold); background: var(--gold-dim);">{{ langBtn }}</button>
+      <button onClick="{{ toggleTheme }}" style="background: var(--card); border: 1px solid var(--card-border); color: var(--text-secondary); width: 38px; height: 38px; border-radius: 50%; cursor: pointer; font-size: 17px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" style-hover="border-color: var(--gold); color: var(--gold); background: var(--gold-dim);">{{ themeIcon }}</button>
+    </div>
+    <button data-show-m onClick="{{ toggleMenu }}" style="display: none; background: var(--card); border: 1px solid var(--card-border); color: var(--text-primary); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; font-size: 18px; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;" style-hover="border-color: var(--gold);">{{ menuIcon }}</button>
+  </nav>
+
+  <!-- Mobile overlay -->
+  <div onClick="{{ closeMenu }}" style="position: fixed; inset: 0; z-index: 997; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); opacity: {{ overlayOp }}; pointer-events: {{ overlayPE }}; transition: opacity 0.3s;"></div>
+  <!-- Mobile panel -->
+  <div style="position: fixed; top: 0; right: 0; bottom: 0; width: min(290px,85vw); z-index: 998; background: var(--surface); padding: 76px 22px 32px; display: flex; flex-direction: column; gap: 5px; transform: {{ menuX }}; transition: transform 0.35s cubic-bezier(.4,0,.2,1); box-shadow: -6px 0 40px rgba(0,0,0,0.5);">
+    <button onClick="{{ closeMenu }}" style="position: absolute; top: 16px; right: 16px; width: 34px; height: 34px; background: var(--card); border: 1px solid var(--card-border); border-radius: 50%; color: var(--text-secondary); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" style-hover="border-color: var(--gold); color: var(--gold);">✕</button>
+    <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="6">
+      <a onClick="{{ item.onClick }}" style="display: block; padding: 12px 14px; border-radius: 10px; font-size: 15px; font-weight: 500; color: {{ item.color }}; background: {{ item.mobBg }}; cursor: pointer; transition: all 0.2s;" style-hover="background: var(--gold-dim); color: var(--gold);">{{ item.label }}</a>
+    </sc-for>
+    <div style="margin-top: auto; display: flex; gap: 10px; padding-top: 18px; border-top: 1px solid var(--card-border);">
+      <button onClick="{{ toggleLang }}" style="flex: 1; background: var(--card); border: 1px solid var(--card-border); color: var(--gold); padding: 10px; border-radius: 10px; cursor: pointer; font-size: 13px; font-weight: 700; letter-spacing: 1px; transition: all 0.2s;" style-hover="border-color: var(--gold); background: var(--gold-dim);">{{ langBtn }}</button>
+      <button onClick="{{ toggleTheme }}" style="flex: 1; background: var(--card); border: 1px solid var(--card-border); color: var(--text-secondary); padding: 10px; border-radius: 10px; cursor: pointer; font-size: 17px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" style-hover="border-color: var(--gold); color: var(--gold);">{{ themeIcon }}</button>
+    </div>
+  </div>
+
+  <!-- ===== HERO ===== -->
+  <section id="home" style="min-height: 100vh; position: relative; overflow: hidden; display: flex; align-items: center;">
+    <canvas id="hero-particles" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+    <div style="position: absolute; inset: 0; background: radial-gradient(ellipse 70% 80% at 15% 60%, rgba(30,58,95,0.18) 0%,transparent 70%), radial-gradient(ellipse 50% 60% at 82% 18%, rgba(232,160,32,0.08) 0%,transparent 60%); pointer-events: none;"></div>
+
+    <div data-grid="hero" style="position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 100px clamp(20px,4vw,60px) 80px; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; width: 100%;">
+      <div data-hero-txt style="display: flex; flex-direction: column; gap: 22px;" data-ao>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 36px; height: 2px; background: var(--gold); border-radius: 1px; flex-shrink: 0;"></div>
+          <span style="color: var(--gold); font-size: 13px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase;">{{ t.greeting }}</span>
+        </div>
+        <h1 style="font-family: var(--font-heading); font-size: clamp(44px,6vw,78px); font-weight: 800; line-height: 1.0; letter-spacing: -2.5px; color: var(--text-primary); text-wrap: balance;">{{ t.name }}</h1>
+        <div style="font-size: clamp(18px,2.2vw,26px); font-weight: 600; color: var(--gold); opacity: {{ heroOp }}; transition: opacity 0.35s; min-height: 34px; display: flex; align-items: center; gap: 10px;">
+          <span style="opacity: 0.4; font-weight: 300;">⎯</span><span>{{ heroSub }}</span>
+        </div>
+        <p style="font-size: 16px; line-height: 1.8; color: var(--text-secondary); max-width: 480px; text-wrap: pretty;">{{ t.tagline }}</p>
+        <div data-flex-row style="display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px;">
+          <button onClick="{{ goProjects }}" style="background: var(--gold); color: #07111E; border: none; padding: 13px 30px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.25s; letter-spacing: 0.2px;" style-hover="background: var(--gold-light); transform: translateY(-2px); box-shadow: var(--shadow-gold);">{{ t.ctaProjects }}</button>
+          <a href="https://www.youtube.com/@SalemSaleh1" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--text-primary); border: 1px solid var(--card-border); padding: 13px 28px; border-radius: 10px; font-size: 15px; font-weight: 600; transition: all 0.25s;" style-hover="border-color: var(--gold); color: var(--gold); transform: translateY(-2px);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+            {{ t.ctaYoutube }}
+          </a>
+        </div>
+        <div data-flex-row style="display: flex; gap: 12px; margin-top: 4px;">
+          <a href="https://github.com/solx4" target="_blank" rel="noopener" style="width: 42px; height: 42px; border-radius: 12px; background: var(--card); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all 0.25s;" style-hover="border-color: var(--gold); color: var(--gold); background: var(--gold-dim);">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.23c-3.34.73-4.03-1.42-4.03-1.42-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.7.8.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/in/solx4" target="_blank" rel="noopener" style="width: 42px; height: 42px; border-radius: 12px; background: var(--card); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all 0.25s;" style-hover="border-color: #0A66C2; color: #0A66C2; background: rgba(10,102,194,0.1);">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.2 24 24 23.23 24 22.27V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+          </a>
+          <a href="https://www.youtube.com/@SalemSaleh1" target="_blank" rel="noopener" style="width: 42px; height: 42px; border-radius: 12px; background: var(--card); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all 0.25s;" style-hover="border-color: #FF0000; color: #FF0000; background: rgba(255,0,0,0.1);">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Avatar -->
+      <div data-hero-img style="display: flex; justify-content: center; align-items: center;" data-ao="scale">
+        <div style="position: relative; width: 300px; height: 300px; animation: float 5.5s ease-in-out infinite;">
+          <div style="position: absolute; inset: -32px; border-radius: 50%; border: 1px solid rgba(232,160,32,0.18); animation: pulse-ring 3.5s ease-out infinite;"></div>
+          <div style="position: absolute; inset: -16px; border-radius: 50%; border: 1px solid rgba(232,160,32,0.28); animation: pulse-ring 3.5s ease-out 1.75s infinite;"></div>
+          <div style="position: absolute; inset: -6px; border-radius: 50%; border: 2px dashed rgba(232,160,32,0.45); animation: spin-slow 20s linear infinite;"></div>
+          <div style="width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(145deg,#0C1A28,#0F2035); border: 2px solid var(--gold); overflow: hidden; box-shadow: 0 0 70px rgba(232,160,32,0.18);">
+            <img src="./uploads/pasted-1782207809124-0.png" alt="Salem Saleh" style="width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block;" />
+          </div>
+          <div style="position: absolute; top: 8px; right: -12px; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 8px rgba(232,160,32,0.8);"></div>
+          <div style="position: absolute; bottom: 24px; left: -16px; width: 6px; height: 6px; border-radius: 50%; background: var(--gold-light); opacity: 0.6;"></div>
+          <div style="position: absolute; top: 45%; right: -24px; width: 4px; height: 4px; border-radius: 50%; background: var(--gold); opacity: 0.5;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div onClick="{{ goAbout }}" style="position: absolute; bottom: 36px; left: 50%; animation: bounce-down 2.2s ease-in-out infinite; cursor: pointer; color: var(--text-muted);" style-hover="color: var(--gold);">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT ===== -->
+  <section id="about" style="padding: clamp(60px,8vw,100px) 0; background: var(--surface); position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -80px; right: -80px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgba(232,160,32,0.04) 0%, transparent 70%); pointer-events: none;"></div>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px,4vw,60px);">
+      <div style="text-align: center; margin-bottom: 56px;" data-ao>
+        <div style="display: inline-flex; align-items: center; gap: 8px; color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; padding: 6px 18px; border: 1px solid var(--gold-dim); border-radius: 20px; background: var(--gold-dim); margin-bottom: 14px;">{{ t.about.subtitle }}</div>
+        <h2 style="font-family: var(--font-heading); font-size: clamp(28px,4vw,46px); font-weight: 800; color: var(--text-primary); display: block; margin-top: 6px; letter-spacing: -1px;">{{ t.about.title }}</h2>
+        <div style="width: 56px; height: 3px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 14px auto 0; border-radius: 2px;"></div>
+      </div>
+      <!-- Stats -->
+      <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; max-width: 560px; margin: 0 auto 56px;" data-ao>
+        <sc-for list="{{ stats }}" as="stat" hint-placeholder-count="3">
+          <div style="text-align: center; padding: 28px 12px; background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; transition: transform 0.3s, border-color 0.3s;" style-hover="transform: translateY(-5px); border-color: var(--gold);">
+            <div style="font-family: var(--font-heading); font-size: 38px; font-weight: 800; background: linear-gradient(135deg,var(--gold),var(--gold-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1;">{{ stat.n }}</div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; letter-spacing: 0.5px; font-weight: 500; text-transform: uppercase;">{{ stat.label }}</div>
+          </div>
+        </sc-for>
+      </div>
+      <!-- Two col -->
+      <div data-grid="about" style="display: grid; grid-template-columns: 3fr 2fr; gap: 48px; align-items: start;">
+        <div data-ao>
+          <p style="font-size: 16.5px; line-height: 1.85; color: var(--text-secondary); margin-bottom: 20px; text-wrap: pretty;">{{ t.about.p1 }}</p>
+          <p style="font-size: 16.5px; line-height: 1.85; color: var(--text-secondary); text-wrap: pretty;">{{ t.about.p2 }}</p>
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 32px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 34px; height: 34px; border-radius: 8px; background: var(--card); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              </div>
+              <span style="color: var(--text-secondary); font-size: 14px;">{{ t.about.edu }}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 34px; height: 34px; border-radius: 8px; background: var(--card); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <span style="color: var(--text-secondary); font-size: 14px;">{{ t.about.location }}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 34px; height: 34px; border-radius: 8px; background: var(--card); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+              </div>
+              <span style="color: var(--text-secondary); font-size: 14px;">English (Fluent)</span>
+            </div>
+          </div>
+        </div>
+        <div data-ao="right" style="padding: 28px; background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; position: sticky; top: 88px;">
+          <p style="color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: 3.5px; text-transform: uppercase; margin-bottom: 18px;">{{ t.about.interestsTitle }}</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <sc-for list="{{ interests }}" as="interest" hint-placeholder-count="5">
+              <span style="display: inline-block; background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(232,160,32,0.2); padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 500;">{{ interest }}</span>
+            </sc-for>
+          </div>
+          <a href="#" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 26px; background: linear-gradient(135deg,var(--gold),var(--gold-light)); color: #07111E; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.25s;" style-hover="opacity: 0.9; transform: translateY(-2px);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+            {{ t.about.downloadCV }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SKILLS ===== -->
+  <section id="skills" style="padding: clamp(60px,8vw,100px) 0; position: relative; overflow: hidden;">
+    <div style="position: absolute; bottom: -60px; left: -60px; width: 320px; height: 320px; border-radius: 50%; background: radial-gradient(circle, rgba(232,160,32,0.04) 0%, transparent 70%); pointer-events: none;"></div>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px,4vw,60px);">
+      <div style="text-align: center; margin-bottom: 44px;" data-ao>
+        <div style="display: inline-flex; align-items: center; gap: 8px; color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; padding: 6px 18px; border: 1px solid var(--gold-dim); border-radius: 20px; background: var(--gold-dim); margin-bottom: 14px;">{{ t.skills.subtitle }}</div>
+        <h2 style="font-family: var(--font-heading); font-size: clamp(28px,4vw,46px); font-weight: 800; color: var(--text-primary); display: block; margin-top: 6px; letter-spacing: -1px;">{{ t.skills.title }}</h2>
+        <div style="width: 56px; height: 3px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 14px auto 0; border-radius: 2px;"></div>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 48px; flex-wrap: wrap;" data-ao>
+        <sc-for list="{{ skillTabs }}" as="tab" hint-placeholder-count="3">
+          <button onClick="{{ tab.onClick }}" style="background: {{ tab.bg }}; color: {{ tab.color }}; border: 1px solid {{ tab.border }}; padding: 10px 26px; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s; letter-spacing: 0.3px;">{{ tab.label }}</button>
+        </sc-for>
+      </div>
+      <div style="max-width: 740px; margin: 0 auto;" data-ao>
+        <sc-for list="{{ skillList }}" as="skill" hint-placeholder-count="5">
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 32px; height: 32px; border-radius: 8px; background: {{ skill.color }}; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; color: {{ skill.tc }}; flex-shrink: 0; font-family: var(--font-heading); letter-spacing: -0.3px;">{{ skill.abbr }}</div>
+                <span style="font-weight: 500; color: var(--text-primary); font-size: 15px;">{{ skill.name }}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 11px; color: var(--gold); font-weight: 700; background: var(--gold-dim); padding: 3px 10px; border-radius: 20px; letter-spacing: 0.3px;">{{ skill.lvl }}</span>
+                <span style="font-size: 13px; font-weight: 700; color: var(--text-secondary); min-width: 36px; text-align: right;">{{ skill.pct }}%</span>
+              </div>
+            </div>
+            <div style="height: 5px; background: var(--card-border); border-radius: 3px; overflow: hidden;">
+              <div style="height: 100%; border-radius: 3px; background: linear-gradient(90deg, {{ skill.color }}, var(--gold-light)); width: {{ skill.aw }}; transition: width 1.4s cubic-bezier(.4,0,.2,1); transition-delay: {{ skill.dl }};"></div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== PROJECTS ===== -->
+  <section id="projects" style="padding: clamp(60px,8vw,100px) 0; background: var(--surface); position: relative; overflow: hidden;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px,4vw,60px);">
+      <div style="text-align: center; margin-bottom: 44px;" data-ao>
+        <div style="display: inline-flex; align-items: center; gap: 8px; color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; padding: 6px 18px; border: 1px solid var(--gold-dim); border-radius: 20px; background: var(--gold-dim); margin-bottom: 14px;">{{ t.projects.subtitle }}</div>
+        <h2 style="font-family: var(--font-heading); font-size: clamp(28px,4vw,46px); font-weight: 800; color: var(--text-primary); display: block; margin-top: 6px; letter-spacing: -1px;">{{ t.projects.title }}</h2>
+        <div style="width: 56px; height: 3px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 14px auto 0; border-radius: 2px;"></div>
+      </div>
+      <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 44px; flex-wrap: wrap;" data-ao>
+        <sc-for list="{{ filterBtns }}" as="fb" hint-placeholder-count="4">
+          <button onClick="{{ fb.onClick }}" style="background: {{ fb.bg }}; color: {{ fb.color }}; border: 1px solid {{ fb.border }}; padding: 9px 22px; border-radius: 30px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.25s;">{{ fb.label }}</button>
+        </sc-for>
+      </div>
+      <div data-grid="projects" style="display: grid; grid-template-columns: repeat(3,1fr); gap: 22px;" data-ao>
+        <sc-for list="{{ filteredProjects }}" as="project" hint-placeholder-count="6">
+          <div onClick="{{ project.onClick }}" style="background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;" style-hover="transform: translateY(-6px); box-shadow: var(--shadow); border-color: rgba(232,160,32,0.3);">
+            <div style="height: 108px; background: {{ project.gradient }}; display: flex; align-items: flex-end; padding: 14px; position: relative; overflow: hidden;">
+              <div style="position: absolute; inset: 0; background: linear-gradient(135deg, transparent 40%, rgba(0,0,0,0.3)); pointer-events: none;"></div>
+              <div style="display: flex; flex-wrap: wrap; gap: 5px; position: relative; z-index: 1;">
+                <sc-for list="{{ project.tags }}" as="tag" hint-placeholder-count="3">
+                  <span style="background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.92); padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; backdrop-filter: blur(4px);">{{ tag }}</span>
+                </sc-for>
+              </div>
+            </div>
+            <div style="padding: 18px 20px 20px;">
+              <h3 style="font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 7px; letter-spacing: -0.3px;">{{ project.lt }}</h3>
+              <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.65; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ project.ld }}</p>
+              <div style="margin-top: 14px; display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 11px; color: var(--gold); font-weight: 600; background: var(--gold-dim); padding: 3px 10px; border-radius: 12px;">{{ project.cat }}</span>
+                <span style="font-size: 12px; color: var(--text-muted); font-weight: 500; transition: color 0.2s;">Details →</span>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== YOUTUBE ===== -->
+  <section id="youtube" style="padding: clamp(60px,8vw,100px) 0; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 700px; height: 700px; border-radius: 50%; background: radial-gradient(circle, rgba(255,0,0,0.025) 0%, transparent 70%); pointer-events: none;"></div>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px,4vw,60px);">
+      <div style="text-align: center; margin-bottom: 56px;" data-ao>
+        <div style="display: inline-flex; align-items: center; gap: 8px; color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; padding: 6px 18px; border: 1px solid var(--gold-dim); border-radius: 20px; background: var(--gold-dim); margin-bottom: 14px;">{{ t.youtube.subtitle }}</div>
+        <h2 style="font-family: var(--font-heading); font-size: clamp(28px,4vw,46px); font-weight: 800; color: var(--text-primary); display: block; margin-top: 6px; letter-spacing: -1px;">{{ t.youtube.title }}</h2>
+        <div style="width: 56px; height: 3px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 14px auto 0; border-radius: 2px;"></div>
+      </div>
+      <div data-grid="yt" style="display: grid; grid-template-columns: 1fr 2fr; gap: 32px; align-items: start;">
+        <div style="background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; padding: 32px 24px; text-align: center; position: sticky; top: 88px;" data-ao>
+          <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg,#FF0000,#CC0000); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; box-shadow: 0 4px 24px rgba(255,0,0,0.3);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+          </div>
+          <h3 style="font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Salem Saleh</h3>
+          <p style="font-size: 13px; color: var(--gold); font-weight: 600; margin-bottom: 14px; letter-spacing: 0.5px;">@SalemSaleh1</p>
+          <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.65; margin-bottom: 24px;">{{ t.youtube.channelDesc }}</p>
+          <a href="https://www.youtube.com/@SalemSaleh1" target="_blank" rel="noopener" style="display: flex; align-items: center; justify-content: center; gap: 8px; background: #FF0000; color: white; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.25s; width: 100%;" style-hover="background: #CC0000; transform: translateY(-2px); box-shadow: 0 4px 20px rgba(255,0,0,0.35);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+            {{ t.youtube.subscribe }}
+          </a>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px;" data-ao="right">
+          <sc-for list="{{ ytVideos }}" as="video" hint-placeholder-count="3">
+            <a href="https://www.youtube.com/@SalemSaleh1" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 16px; background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 16px; text-decoration: none; transition: all 0.3s; overflow: hidden;" style-hover="border-color: rgba(255,0,0,0.3); transform: translateX(4px);">
+              <div style="width: 120px; height: 68px; border-radius: 8px; background: {{ video.thumbBg }}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; overflow: hidden;">
+                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.25);"></div>
+                <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.92); display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; transition: transform 0.2s;" style-hover="transform: scale(1.15);">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="#CC0000"><polygon points="3,1 11,6 3,11"/></svg>
+                </div>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <h4 style="font-family: var(--font-heading); font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ video.title }}</h4>
+                <p style="font-size: 12px; color: var(--text-secondary);">{{ video.sub }}</p>
+              </div>
+              <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(255,0,0,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="#FF0000"><polygon points="5,3 19,12 5,21"/></svg>
+              </div>
+            </a>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CONTACT ===== -->
+  <section id="contact" style="padding: clamp(60px,8vw,100px) 0; background: var(--surface); position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -80px; left: -80px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(232,160,32,0.04) 0%, transparent 70%); pointer-events: none;"></div>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 clamp(20px,4vw,60px);">
+      <div style="text-align: center; margin-bottom: 56px;" data-ao>
+        <div style="display: inline-flex; align-items: center; gap: 8px; color: var(--gold); font-size: 11px; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; padding: 6px 18px; border: 1px solid var(--gold-dim); border-radius: 20px; background: var(--gold-dim); margin-bottom: 14px;">{{ t.contact.subtitle }}</div>
+        <h2 style="font-family: var(--font-heading); font-size: clamp(28px,4vw,46px); font-weight: 800; color: var(--text-primary); display: block; margin-top: 6px; letter-spacing: -1px;">{{ t.contact.title }}</h2>
+        <div style="width: 56px; height: 3px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 14px auto 0; border-radius: 2px;"></div>
+      </div>
+      <div data-grid="contact" style="display: grid; grid-template-columns: 3fr 2fr; gap: 48px; align-items: start;">
+        <div data-ao style="background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; padding: 36px;">
+          <div style="display: {{ successDisplay }}; flex-direction: column; align-items: center; gap: 16px; padding: 40px 20px; text-align: center;">
+            <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--gold-dim); border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 26px; color: var(--gold);">✓</div>
+            <p style="font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--text-primary);">{{ t.contact.success }}</p>
+          </div>
+          <div style="display: {{ formDisplay }}; flex-direction: column; gap: 14px;">
+            <input type="text" placeholder="{{ t.contact.name }}" value="{{ formData.name }}" onChange="{{ onName }}" style="width: 100%; background: var(--surface); border: {{ nameBorder }}; border-radius: 10px; padding: 13px 16px; color: var(--text-primary); font-size: 15px; transition: border-color 0.2s;" style-focus="border-color: var(--gold);" />
+            <input type="email" placeholder="{{ t.contact.email }}" value="{{ formData.email }}" onChange="{{ onEmail }}" style="width: 100%; background: var(--surface); border: {{ emailBorder }}; border-radius: 10px; padding: 13px 16px; color: var(--text-primary); font-size: 15px; transition: border-color 0.2s;" style-focus="border-color: var(--gold);" />
+            <textarea placeholder="{{ t.contact.message }}" value="{{ formData.message }}" onChange="{{ onMsg }}" rows="5" style="width: 100%; background: var(--surface); border: {{ msgBorder }}; border-radius: 10px; padding: 13px 16px; color: var(--text-primary); font-size: 15px; resize: none; transition: border-color 0.2s;" style-focus="border-color: var(--gold);"></textarea>
+            <button onClick="{{ sendForm }}" disabled="{{ fDisabled }}" style="background: var(--gold); color: #07111E; border: none; padding: 14px 32px; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.25s; opacity: {{ fOpacity }}; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;" style-hover="background: var(--gold-light); transform: translateY(-2px); box-shadow: var(--shadow-gold);">
+              <sc-if value="{{ isSending }}" hint-placeholder-val="{{ false }}">
+                <div style="width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.25); border-top-color: #07111E; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;"></div>
+              </sc-if>
+              {{ fBtnLabel }}
+            </button>
+          </div>
+        </div>
+        <div data-ao="right" style="display: flex; flex-direction: column; gap: 18px;">
+          <div style="background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 28px;">
+            <h3 style="font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; letter-spacing: -0.3px;">{{ t.contact.connectTitle }}</h3>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <a href="mailto:contact@salemsaleh.dev" style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary); transition: color 0.2s;" style-hover="color: var(--gold);">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: var(--gold-dim); border: 1px solid rgba(232,160,32,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--gold);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <span style="font-size: 13.5px;">contact@salemsaleh.dev</span>
+              </a>
+              <a href="https://github.com/solx4" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary); transition: color 0.2s; text-decoration: none;" style-hover="color: var(--gold);">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: var(--gold-dim); border: 1px solid rgba(232,160,32,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--gold);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.23c-3.34.73-4.03-1.42-4.03-1.42-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.7.8.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                </div>
+                <span style="font-size: 13.5px;">github.com/solx4</span>
+              </a>
+              <a href="https://www.linkedin.com/in/solx4" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary); transition: color 0.2s; text-decoration: none;" style-hover="color: #0A66C2;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(10,102,194,0.08); border: 1px solid rgba(10,102,194,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #0A66C2;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.2 24 24 23.23 24 22.27V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+                </div>
+                <span style="font-size: 13.5px;">linkedin.com/in/solx4</span>
+              </a>
+              <a href="https://www.youtube.com/@SalemSaleh1" target="_blank" rel="noopener" style="display: flex; align-items: center; gap: 12px; color: var(--text-secondary); transition: color 0.2s; text-decoration: none;" style-hover="color: #FF0000;">
+                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(255,0,0,0.08); border: 1px solid rgba(255,0,0,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #FF0000;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+                </div>
+                <span style="font-size: 13.5px;">@SalemSaleh1</span>
+              </a>
+            </div>
+          </div>
+          <div style="background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; padding: 20px 24px; display: flex; align-items: center; gap: 14px;">
+            <div style="width: 46px; height: 46px; border-radius: 12px; background: var(--gold-dim); border: 1px solid rgba(232,160,32,0.2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--gold);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+              <div style="font-size: 11px; color: var(--text-muted); font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px;">Location</div>
+              <div style="font-size: 15px; color: var(--text-primary); font-weight: 500;">Alexandria, Egypt</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer style="background: var(--bg); border-top: 1px solid var(--card-border); padding: 44px clamp(20px,4vw,60px);">
+    <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg,var(--gold),var(--gold-light)); display: flex; align-items: center; justify-content: center; font-family: var(--font-heading); font-weight: 800; font-size: 12px; color: #07111E;">SS</div>
+        <div>
+          <div style="font-family: var(--font-heading); font-size: 14px; font-weight: 700; color: var(--text-primary);">Salem Saleh</div>
+          <div style="font-size: 11px; color: var(--text-muted);">Software Engineer</div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: var(--text-muted);">{{ t.footer.rights }}</div>
+      <div style="display: flex; gap: 10px;">
+        <a href="https://github.com/solx4" target="_blank" rel="noopener" style="width: 36px; height: 36px; border-radius: 8px; background: var(--card); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all 0.25s;" style-hover="border-color: var(--gold); color: var(--gold);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.23c-3.34.73-4.03-1.42-4.03-1.42-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.7.8.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/in/solx4" target="_blank" rel="noopener" style="width: 36px; height: 36px; border-radius: 8px; background: var(--card); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all 0.25s;" style-hover="border-color: #0A66C2; color: #0A66C2;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.2 24 24 23.23 24 22.27V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        </a>
+        <a href="https://www.youtube.com/@SalemSaleh1" target="_blank" rel="noopener" style="width: 36px; height: 36px; border-radius: 8px; background: var(--card); border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: all 0.25s;" style-hover="border-color: #FF0000; color: #FF0000;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll to top -->
+  <button onClick="{{ goTop }}" style="position: fixed; bottom: 28px; right: 28px; z-index: 900; width: 44px; height: 44px; border-radius: 50%; background: var(--gold); color: #07111E; border: none; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(232,160,32,0.4); transition: opacity 0.3s, transform 0.3s; opacity: {{ topOp }}; transform: {{ topTf }}; pointer-events: {{ topPE }};" style-hover="background: var(--gold-light); box-shadow: 0 6px 28px rgba(232,160,32,0.5);">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
+  <!-- Project Modal -->
+  <div onClick="{{ closeModal }}" style="position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); display: {{ modalDisplay }}; align-items: center; justify-content: center; padding: 20px;">
+    <div onClick="{{ stopProp }}" style="background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: var(--shadow);">
+      <div style="height: 130px; background: {{ modal.gradient }}; border-radius: 20px 20px 0 0; display: flex; align-items: flex-end; padding: 18px; position: relative; overflow: hidden; flex-shrink: 0;">
+        <div style="position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.4)); pointer-events: none;"></div>
+        <button onClick="{{ closeModal }}" style="position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); z-index: 1; transition: background 0.2s;" style-hover="background: rgba(255,255,255,0.3);">✕</button>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; position: relative; z-index: 1;">
+          <sc-for list="{{ modal.tags }}" as="tag" hint-placeholder-count="3">
+            <span style="background: rgba(255,255,255,0.18); color: rgba(255,255,255,0.95); padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; backdrop-filter: blur(4px);">{{ tag }}</span>
+          </sc-for>
+        </div>
+      </div>
+      <div style="padding: 28px 32px 32px;">
+        <h2 style="font-family: var(--font-heading); font-size: 24px; font-weight: 800; color: var(--text-primary); margin-bottom: 14px; letter-spacing: -0.5px;">{{ modal.lt }}</h2>
+        <p style="font-size: 15px; line-height: 1.8; color: var(--text-secondary); margin-bottom: 28px;">{{ modal.ld }}</p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="{{ modal.demo }}" target="_blank" rel="noopener" style="flex: 1; min-width: 140px; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--gold); color: #07111E; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 14px; text-decoration: none; transition: all 0.25s;" style-hover="background: var(--gold-light); transform: translateY(-2px);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            {{ t.projects.liveDemo }}
+          </a>
+          <a href="{{ modal.github }}" target="_blank" rel="noopener" style="flex: 1; min-width: 140px; display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; color: var(--text-primary); padding: 12px 24px; border-radius: 10px; border: 1px solid var(--card-border); font-weight: 600; font-size: 14px; text-decoration: none; transition: all 0.25s;" style-hover="border-color: var(--gold); color: var(--gold); transform: translateY(-2px);">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.23c-3.34.73-4.03-1.42-4.03-1.42-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.7.8.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            {{ t.projects.viewCode }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    theme: 'dark', lang: 'en', activeSection: 'home',
+    activeTab: 'frontend', filter: 'all', selectedProject: null,
+    menuOpen: false, formData: { name: '', email: '', message: '' },
+    formErrors: {}, formState: 'idle',
+    scrollTopVisible: false, navScrolled: false,
+    skillsAnimated: false, heroFading: false,
+  };
+
+  titleIndex = 0;
+  titleTm = null; fadeTm = null;
+  animId = null; canvas = null; ctx = null; pts = [];
+  obs = null; secObs = null; skillObs = null;
+
+  heroTitles = {
+    en: ['Software Engineer', 'Full-Stack Developer', 'Content Creator'],
+    ar: ['مهندس برمجيات', 'مطور متكامل', 'صانع محتوى'],
+  };
+
+  T = {
+    en: {
+      greeting: "Hello, I'm", name: 'Salem Saleh',
+      tagline: 'Building digital experiences & educating the next generation of developers.',
+      ctaProjects: 'View Projects', ctaYoutube: 'Watch on YouTube',
+      nav: { home: 'Home', about: 'About', skills: 'Skills', projects: 'Projects', youtube: 'YouTube', contact: 'Contact' },
+      about: {
+        title: 'About Me', subtitle: 'Passionate Developer & Educator',
+        p1: "I'm a software engineer graduated from Borg Al-Arab Technological University with expertise in full-stack web development. I build elegant, high-performance web applications using modern tools and frameworks.",
+        p2: "Beyond writing code, I create programming tutorials on YouTube in Arabic, helping developers learn web development from the ground up. I believe in continuous learning and sharing knowledge with the community.",
+        edu: 'Borg Al-Arab Technological University', location: 'Alexandria, Egypt',
+        interestsTitle: 'Also Into', downloadCV: 'Download CV',
+        statProjects: 'Projects', statSkills: 'Technologies', statVideos: 'Tutorials',
+      },
+      skills: { title: 'Technical Skills', subtitle: 'Technologies I work with', frontend: 'Frontend', backend: 'Backend', tools: 'Tools & Other' },
+      projects: {
+        title: 'Featured Projects', subtitle: 'Things I have built',
+        filterAll: 'All', filterWeb: 'Web Dev', filterYoutube: 'YouTube', filterAuto: 'Automation',
+        viewCode: 'Source Code', liveDemo: 'Live Demo',
+      },
+      youtube: { title: 'YouTube Channel', subtitle: 'Educational content', subscribe: 'Subscribe Now', channelDesc: 'Free programming courses in Arabic covering web development, Laravel, JavaScript, and more.' },
+      contact: { title: 'Get In Touch', subtitle: "Let's work together", name: 'Your Name', email: 'Your Email', message: 'Your Message', send: 'Send Message', sending: 'Sending…', success: "Message sent! I'll get back to you soon.", connectTitle: 'Connect With Me' },
+      footer: { rights: '© 2025 Salem Saleh · All rights reserved.' },
+    },
+    ar: {
+      greeting: 'مرحباً، أنا', name: 'سالم صالح',
+      tagline: 'أبني تجارب رقمية وأُعلّم الجيل القادم من المطورين.',
+      ctaProjects: 'عرض المشاريع', ctaYoutube: 'شاهد على يوتيوب',
+      nav: { home: 'الرئيسية', about: 'عني', skills: 'المهارات', projects: 'المشاريع', youtube: 'يوتيوب', contact: 'تواصل' },
+      about: {
+        title: 'عني', subtitle: 'مطور شغوف ومُعلّم',
+        p1: 'أنا مهندس برمجيات متخرج من جامعة برج العرب التكنولوجية، متخصص في تطوير الويب الشامل. أبني تطبيقات ويب أنيقة وعالية الأداء باستخدام أحدث الأدوات.',
+        p2: 'إلى جانب الكود، أُنشئ دروساً برمجية على يوتيوب باللغة العربية، مساعداً المطورين على تعلم تطوير الويب من الصفر. أؤمن بالتعلم المستمر ومشاركة المعرفة مع المجتمع.',
+        edu: 'جامعة برج العرب التكنولوجية', location: 'الإسكندرية، مصر',
+        interestsTitle: 'اهتمامات أخرى', downloadCV: 'تحميل السيرة الذاتية',
+        statProjects: 'مشروع', statSkills: 'تقنية', statVideos: 'درس',
+      },
+      skills: { title: 'المهارات التقنية', subtitle: 'التقنيات التي أعمل بها', frontend: 'الواجهة الأمامية', backend: 'الخلفية', tools: 'الأدوات وأخرى' },
+      projects: {
+        title: 'المشاريع المميزة', subtitle: 'ما قمت ببنائه',
+        filterAll: 'الكل', filterWeb: 'تطوير ويب', filterYoutube: 'يوتيوب', filterAuto: 'أتمتة',
+        viewCode: 'الكود المصدري', liveDemo: 'العرض المباشر',
+      },
+      youtube: { title: 'قناة يوتيوب', subtitle: 'محتوى تعليمي', subscribe: 'اشترك الآن', channelDesc: 'دورات برمجة مجانية باللغة العربية تغطي تطوير الويب و Laravel و JavaScript والمزيد.' },
+      contact: { title: 'تواصل معي', subtitle: 'لنعمل معاً', name: 'اسمك', email: 'بريدك الإلكتروني', message: 'رسالتك', send: 'إرسال الرسالة', sending: 'جارٍ الإرسال…', success: 'تم الإرسال! سأرد قريباً.', connectTitle: 'تواصل معي' },
+      footer: { rights: '© 2025 سالم صالح · جميع الحقوق محفوظة.' },
+    },
+  };
+
+  projects = [
+    { id: 1, title: { en: 'E-Commerce Platform', ar: 'منصة التجارة الإلكترونية' }, desc: { en: 'A full-stack e-commerce solution with product management, shopping cart, order tracking, and Stripe payment integration built with Laravel and Vue.js.', ar: 'منصة تجارة إلكترونية متكاملة مع إدارة المنتجات وعربة التسوق وتتبع الطلبات وتكامل Stripe، مبنية بـ Laravel و Vue.js.' }, tags: ['Laravel', 'Vue.js', 'MySQL', 'Stripe'], category: 'web', github: 'https://github.com/solx4', demo: '#', gradient: 'linear-gradient(135deg,#1E3A5F,#2E5B9A)', catLabel: { en: 'Web Dev', ar: 'تطوير ويب' } },
+    { id: 2, title: { en: 'Admin Dashboard', ar: 'لوحة التحكم' }, desc: { en: 'A responsive admin panel with real-time charts, user management, role-based access control, and analytics — built with React and Node.js.', ar: 'لوحة تحكم متجاوبة مع مخططات فورية وإدارة مستخدمين وتحكم بالوصول وتحليلات، مبنية بـ React و Node.js.' }, tags: ['React', 'Node.js', 'MongoDB', 'Chart.js'], category: 'web', github: 'https://github.com/solx4', demo: '#', gradient: 'linear-gradient(135deg,#142235,#2E5B9A)', catLabel: { en: 'Web Dev', ar: 'تطوير ويب' } },
+    { id: 3, title: { en: 'Programming Tutorials Series', ar: 'سلسلة دروس البرمجة' }, desc: { en: 'A comprehensive YouTube tutorial series in Arabic covering full-stack web development: HTML, CSS, JavaScript, PHP, Laravel, React, and Vue.js — all free.', ar: 'سلسلة يوتيوب شاملة باللغة العربية تغطي HTML و CSS و JavaScript و PHP و Laravel و React و Vue.js — كلها مجانية.' }, tags: ['JavaScript', 'PHP', 'Laravel', 'YouTube'], category: 'youtube', github: 'https://github.com/solx4', demo: 'https://www.youtube.com/@SalemSaleh1', gradient: 'linear-gradient(135deg,#7A0000,#CC0000)', catLabel: { en: 'YouTube', ar: 'يوتيوب' } },
+    { id: 4, title: { en: 'Task Automation Tool', ar: 'أداة أتمتة المهام' }, desc: { en: 'A Node.js tool for automating repetitive web tasks — data scraping, form submission, and scheduled workflows powered by Puppeteer.', ar: 'أداة Node.js لأتمتة مهام الويب المتكررة: جمع البيانات وإرسال النماذج وسير العمل المجدول باستخدام Puppeteer.' }, tags: ['JavaScript', 'Node.js', 'Puppeteer'], category: 'automation', github: 'https://github.com/solx4', demo: '#', gradient: 'linear-gradient(135deg,#0D3320,#1A5C3C)', catLabel: { en: 'Automation', ar: 'أتمتة' } },
+    { id: 5, title: { en: 'REST API Service', ar: 'خدمة REST API' }, desc: { en: 'A production-ready RESTful API with Laravel — JWT auth, rate limiting, API versioning, Swagger docs, and a comprehensive test suite.', ar: 'واجهة RESTful جاهزة للإنتاج بـ Laravel مع JWT وتحديد المعدل وتوثيق Swagger وأدوات اختبار شاملة.' }, tags: ['Laravel', 'PHP', 'JWT', 'Swagger'], category: 'web', github: 'https://github.com/solx4', demo: '#', gradient: 'linear-gradient(135deg,#2A0A4A,#4A1A7A)', catLabel: { en: 'Web Dev', ar: 'تطوير ويب' } },
+    { id: 6, title: { en: 'Portfolio Website', ar: 'موقع المحفظة' }, desc: { en: 'This very portfolio — dark/light mode, bilingual AR/EN support, canvas particle animations, scroll-triggered reveals, and full mobile responsiveness.', ar: 'هذه المحفظة ذاتها — وضع داكن/فاتح، دعم عربي/إنجليزي، رسوم متحركة بالجسيمات، وكاملة التجاوب.' }, tags: ['HTML', 'CSS', 'JavaScript'], category: 'web', github: 'https://github.com/solx4', demo: '#', gradient: 'linear-gradient(135deg,#4A3A0A,#7A5C1A)', catLabel: { en: 'Web Dev', ar: 'تطوير ويب' } },
+  ];
+
+  skills = {
+    frontend: [
+      { name: 'HTML5', abbr: 'HTML', color: '#E44D26', tc: '#fff', pct: 95, en: 'Expert', ar: 'خبير' },
+      { name: 'CSS3', abbr: 'CSS', color: '#1572B6', tc: '#fff', pct: 90, en: 'Expert', ar: 'خبير' },
+      { name: 'JavaScript', abbr: 'JS', color: '#F7DF1E', tc: '#1a1a1a', pct: 88, en: 'Advanced', ar: 'متقدم' },
+      { name: 'React', abbr: 'Re', color: '#61DAFB', tc: '#1a1a1a', pct: 82, en: 'Advanced', ar: 'متقدم' },
+      { name: 'Vue.js', abbr: 'Vue', color: '#42B883', tc: '#fff', pct: 78, en: 'Proficient', ar: 'متمكن' },
+    ],
+    backend: [
+      { name: 'PHP', abbr: 'PHP', color: '#777BB4', tc: '#fff', pct: 87, en: 'Advanced', ar: 'متقدم' },
+      { name: 'Laravel', abbr: 'Lv', color: '#FF2D20', tc: '#fff', pct: 90, en: 'Expert', ar: 'خبير' },
+      { name: 'Node.js', abbr: 'No', color: '#339933', tc: '#fff', pct: 75, en: 'Proficient', ar: 'متمكن' },
+      { name: 'MySQL', abbr: 'SQL', color: '#4479A1', tc: '#fff', pct: 80, en: 'Advanced', ar: 'متقدم' },
+    ],
+    tools: [
+      { name: 'Git / GitHub', abbr: 'Git', color: '#F05032', tc: '#fff', pct: 85, en: 'Advanced', ar: 'متقدم' },
+      { name: 'UI/UX Design', abbr: 'UX', color: '#E8A020', tc: '#1a1a1a', pct: 75, en: 'Proficient', ar: 'متمكن' },
+      { name: 'Automation', abbr: 'Auto', color: '#2E5B9A', tc: '#fff', pct: 72, en: 'Proficient', ar: 'متمكن' },
+      { name: 'Content Creation', abbr: 'YT', color: '#FF0000', tc: '#fff', pct: 82, en: 'Advanced', ar: 'متقدم' },
+    ],
+  };
+
+  applyTheme(theme) {
+    const r = document.documentElement;
+    if (theme === 'dark') {
+      r.style.setProperty('--bg', '#07111E');
+      r.style.setProperty('--surface', '#0C1A28');
+      r.style.setProperty('--card', '#0F2035');
+      r.style.setProperty('--card-border', 'rgba(232,160,32,0.14)');
+      r.style.setProperty('--text-primary', '#E6EEF8');
+      r.style.setProperty('--text-secondary', '#7A8EA4');
+      r.style.setProperty('--text-muted', '#3A4E65');
+      r.style.setProperty('--gold', '#E8A020');
+      r.style.setProperty('--gold-light', '#F5C040');
+      r.style.setProperty('--gold-dim', 'rgba(232,160,32,0.10)');
+      r.style.setProperty('--nav-bg', 'rgba(7,17,30,0.92)');
+      r.style.setProperty('--shadow', '0 8px 40px rgba(0,0,0,0.5)');
+      r.style.setProperty('--shadow-gold', '0 0 40px rgba(232,160,32,0.2)');
+    } else {
+      r.style.setProperty('--bg', '#F0F5FC');
+      r.style.setProperty('--surface', '#FFFFFF');
+      r.style.setProperty('--card', '#FFFFFF');
+      r.style.setProperty('--card-border', 'rgba(30,58,95,0.12)');
+      r.style.setProperty('--text-primary', '#0C1A28');
+      r.style.setProperty('--text-secondary', '#4A5C78');
+      r.style.setProperty('--text-muted', '#8A96A8');
+      r.style.setProperty('--gold', '#C8900A');
+      r.style.setProperty('--gold-light', '#E8A020');
+      r.style.setProperty('--gold-dim', 'rgba(200,144,10,0.09)');
+      r.style.setProperty('--nav-bg', 'rgba(240,245,252,0.92)');
+      r.style.setProperty('--shadow', '0 8px 40px rgba(0,0,0,0.08)');
+      r.style.setProperty('--shadow-gold', '0 0 40px rgba(184,133,31,0.15)');
+    }
+  }
+
+  initParticles() {
+    this.canvas = document.getElementById('hero-particles');
+    if (!this.canvas) return;
+    this.ctx = this.canvas.getContext('2d');
+    const resize = () => {
+      this.canvas.width = this.canvas.offsetWidth;
+      this.canvas.height = this.canvas.offsetHeight;
+      const n = Math.min(80, Math.floor((this.canvas.width * this.canvas.height) / 14000));
+      this.pts = Array.from({ length: n }, () => ({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        r: Math.random() * 1.8 + 0.4,
+        dx: (Math.random() - 0.5) * 0.35,
+        dy: (Math.random() - 0.5) * 0.35,
+        o: Math.random() * 0.45 + 0.08,
+      }));
+    };
+    resize();
+    window.addEventListener('resize', resize);
+    const draw = () => {
+      if (!this.canvas || !this.ctx) return;
+      const { width: W, height: H } = this.canvas;
+      this.ctx.clearRect(0, 0, W, H);
+      const light = this.state.theme === 'light';
+      this.pts.forEach(p => {
+        p.x = (p.x + p.dx + W) % W;
+        p.y = (p.y + p.dy + H) % H;
+        this.ctx.beginPath();
+        this.ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        this.ctx.fillStyle = light ? `rgba(30,58,95,${p.o * 0.4})` : `rgba(232,160,32,${p.o})`;
+        this.ctx.fill();
+      });
+      for (let i = 0; i < this.pts.length; i++) {
+        for (let j = i + 1; j < this.pts.length; j++) {
+          const a = this.pts[i], b = this.pts[j];
+          const d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (d < 110) {
+            const al = (1 - d / 110) * 0.12;
+            this.ctx.beginPath();
+            this.ctx.moveTo(a.x, a.y);
+            this.ctx.lineTo(b.x, b.y);
+            this.ctx.strokeStyle = light ? `rgba(30,58,95,${al * 0.5})` : `rgba(232,160,32,${al})`;
+            this.ctx.lineWidth = 0.6;
+            this.ctx.stroke();
+          }
+        }
+      }
+      this.animId = requestAnimationFrame(draw);
+    };
+    draw();
+  }
+
+  initObservers() {
+    const els = document.querySelectorAll('[data-ao]');
+    this.obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.setAttribute('data-visible', 'true');
+          this.obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    els.forEach(el => this.obs.observe(el));
+
+    const secs = document.querySelectorAll('section[id]');
+    this.secObs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) this.setState({ activeSection: e.target.id }); });
+    }, { threshold: 0.35 });
+    secs.forEach(s => this.secObs.observe(s));
+
+    const skillSec = document.getElementById('skills');
+    if (skillSec) {
+      this.skillObs = new IntersectionObserver(([e]) => {
+        if (e.isIntersecting) { this.setState({ skillsAnimated: true }); this.skillObs.disconnect(); }
+      }, { threshold: 0.2 });
+      this.skillObs.observe(skillSec);
+    }
+  }
+
+  handleScroll = () => {
+    const y = window.scrollY;
+    const vis = y > 400, sc = y > 60;
+    if (vis !== this.state.scrollTopVisible || sc !== this.state.navScrolled) {
+      this.setState({ scrollTopVisible: vis, navScrolled: sc });
+    }
+  };
+
+  toggleTheme = () => {
+    const t = this.state.theme === 'dark' ? 'light' : 'dark';
+    this.applyTheme(t);
+    this.setState({ theme: t });
+  };
+
+  toggleLang = () => { this.setState({ lang: this.state.lang === 'en' ? 'ar' : 'en' }); };
+  toggleMenu = () => { this.setState({ menuOpen: !this.state.menuOpen }); };
+  closeMenu = () => { this.setState({ menuOpen: false }); };
+
+  goto = (s) => {
+    const el = document.getElementById(s);
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: 'smooth' });
+    this.closeMenu();
+  };
+
+  openProject = (p) => { this.setState({ selectedProject: p }); document.body.style.overflow = 'hidden'; };
+  closeModal = () => { this.setState({ selectedProject: null }); document.body.style.overflow = ''; };
+  stopProp = (e) => { e.stopPropagation(); };
+  setFilter = (f) => { this.setState({ filter: f }); };
+
+  updateForm = (k, v) => { this.setState({ formData: { ...this.state.formData, [k]: v } }); };
+
+  sendForm = () => {
+    const { name, email, message } = this.state.formData;
+    const errs = {};
+    if (!name.trim()) errs.name = true;
+    if (!email.trim() || !/\S+@\S+\.\S+/.test(email)) errs.email = true;
+    if (!message.trim()) errs.message = true;
+    if (Object.keys(errs).length) { this.setState({ formErrors: errs }); return; }
+    this.setState({ formState: 'sending', formErrors: {} });
+    setTimeout(() => {
+      this.setState({ formState: 'success', formData: { name: '', email: '', message: '' } });
+      setTimeout(() => this.setState({ formState: 'idle' }), 5000);
+    }, 1600);
+  };
+
+  scheduleNextTitle() {
+    clearTimeout(this.titleTm);
+    this.titleTm = setTimeout(() => {
+      this.setState({ heroFading: true });
+      clearTimeout(this.fadeTm);
+      this.fadeTm = setTimeout(() => {
+        this.titleIndex = (this.titleIndex + 1) % 3;
+        this.setState({ heroFading: false });
+        this.scheduleNextTitle();
+      }, 380);
+    }, 3200);
+  }
+
+  componentDidMount() {
+    this.applyTheme('dark');
+    this.initParticles();
+    setTimeout(() => this.initObservers(), 150);
+    window.addEventListener('scroll', this.handleScroll, { passive: true });
+    this.scheduleNextTitle();
+  }
+
+  componentWillUnmount() {
+    if (this.animId) cancelAnimationFrame(this.animId);
+    if (this.obs) this.obs.disconnect();
+    if (this.secObs) this.secObs.disconnect();
+    if (this.skillObs) this.skillObs.disconnect();
+    window.removeEventListener('scroll', this.handleScroll);
+    clearTimeout(this.titleTm);
+    clearTimeout(this.fadeTm);
+    document.body.style.overflow = '';
+  }
+
+  renderVals() {
+    const { theme, lang, activeSection, activeTab, filter, selectedProject, menuOpen, formData, formErrors, formState, scrollTopVisible, navScrolled, skillsAnimated, heroFading } = this.state;
+    const t = this.T[lang];
+    const dir = lang === 'ar' ? 'rtl' : 'ltr';
+    const fontFamily = lang === 'ar' ? 'var(--font-ar)' : 'var(--font-body)';
+
+    const heroSub = this.heroTitles[lang][this.titleIndex];
+    const heroOp = heroFading ? '0' : '1';
+
+    const navBg = navScrolled ? 'var(--nav-bg)' : 'transparent';
+    const navBorder = navScrolled ? '1px solid var(--card-border)' : '1px solid transparent';
+    const navBlur = navScrolled ? 'blur(14px)' : 'none';
+
+    const navItems = ['home', 'about', 'skills', 'projects', 'youtube', 'contact'].map(s => ({
+      label: t.nav[s], onClick: () => this.goto(s),
+      color: activeSection === s ? 'var(--gold)' : 'var(--text-secondary)',
+      fw: activeSection === s ? '600' : '400',
+      mobBg: activeSection === s ? 'var(--gold-dim)' : 'transparent',
+    }));
+
+    const stats = [
+      { n: '10+', label: t.about.statProjects },
+      { n: '8+', label: t.about.statSkills },
+      { n: '20+', label: t.about.statVideos },
+    ];
+
+    const interests = lang === 'ar'
+      ? ['إنشاء المحتوى', 'تصميم UI/UX', 'إدارة المنتج', 'التعليم', 'المصدر المفتوح']
+      : ['Content Creation', 'UI/UX Design', 'Product Management', 'Teaching', 'Open Source'];
+
+    const skillTabs = ['frontend', 'backend', 'tools'].map(tab => ({
+      label: t.skills[tab], onClick: () => this.setState({ activeTab: tab }),
+      bg: activeTab === tab ? 'var(--gold)' : 'var(--card)',
+      color: activeTab === tab ? '#07111E' : 'var(--text-secondary)',
+      border: activeTab === tab ? 'var(--gold)' : 'var(--card-border)',
+    }));
+
+    const skillList = this.skills[activeTab].map((s, i) => ({
+      ...s, lvl: s[lang],
+      aw: skillsAnimated ? s.pct + '%' : '0%',
+      dl: (i * 0.12) + 's',
+    }));
+
+    const fp = filter === 'all' ? this.projects : this.projects.filter(p => p.category === filter);
+    const filteredProjects = fp.map(p => ({
+      ...p, lt: p.title[lang], ld: p.desc[lang], cat: p.catLabel[lang],
+      onClick: () => this.openProject(p),
+    }));
+
+    const filterBtns = [
+      { label: t.projects.filterAll, f: 'all' },
+      { label: t.projects.filterWeb, f: 'web' },
+      { label: t.projects.filterYoutube, f: 'youtube' },
+      { label: t.projects.filterAuto, f: 'automation' },
+    ].map(b => ({
+      label: b.label, onClick: () => this.setFilter(b.f),
+      bg: filter === b.f ? 'var(--gold)' : 'transparent',
+      color: filter === b.f ? '#07111E' : 'var(--text-secondary)',
+      border: filter === b.f ? 'var(--gold)' : 'var(--card-border)',
+    }));
+
+    const ytVids = [
+      { en: 'Complete Laravel Course', ar: 'دورة Laravel الكاملة', sub: { en: 'Web Dev · Tutorial Series', ar: 'تطوير الويب · سلسلة دروس' }, bg: 'linear-gradient(135deg,#7A0000,#CC0000)' },
+      { en: 'JavaScript From Scratch', ar: 'JavaScript من الصفر', sub: { en: 'Frontend · Beginner Course', ar: 'الواجهة الأمامية · للمبتدئين' }, bg: 'linear-gradient(135deg,#0D3320,#1A5C3C)' },
+      { en: 'Practical React Project', ar: 'مشروع React عملي', sub: { en: 'React.js · Project Tutorial', ar: 'React.js · مشروع تعليمي' }, bg: 'linear-gradient(135deg,#142235,#2E5B9A)' },
+    ];
+    const ytVideos = ytVids.map(v => ({ title: v[lang], sub: v.sub[lang], thumbBg: v.bg }));
+
+    const mp = selectedProject;
+    const modal = mp ? { lt: mp.title[lang], ld: mp.desc[lang], tags: mp.tags, gradient: mp.gradient, github: mp.github, demo: mp.demo }
+      : { lt: '', ld: '', tags: [], gradient: 'linear-gradient(135deg,#1E3A5F,#2E5B9A)', github: '#', demo: '#' };
+    const modalDisplay = mp ? 'flex' : 'none';
+
+    const eb = '1.5px solid #E53E3E', nb = '1.5px solid var(--card-border)';
+    const nameBorder = formErrors.name ? eb : nb;
+    const emailBorder = formErrors.email ? eb : nb;
+    const msgBorder = formErrors.message ? eb : nb;
+    const fDisabled = formState === 'sending' || formState === 'success';
+    const fBtnLabel = formState === 'sending' ? t.contact.sending : t.contact.send;
+    const isSending = formState === 'sending';
+    const successDisplay = formState === 'success' ? 'flex' : 'none';
+    const formDisplay = formState === 'success' ? 'none' : 'flex';
+
+    return {
+      dir, t, lang, fontFamily,
+      themeIcon: theme === 'dark' ? '☀' : '☾',
+      langBtn: lang === 'en' ? 'AR' : 'EN',
+      menuIcon: menuOpen ? '✕' : '☰',
+      heroSub, heroOp,
+      navBg, navBorder, navBlur, navItems,
+      overlayOp: menuOpen ? '1' : '0',
+      overlayPE: menuOpen ? 'all' : 'none',
+      menuX: menuOpen ? 'translateX(0)' : 'translateX(100%)',
+      stats, interests, skillTabs, skillList, filterBtns, filteredProjects, ytVideos,
+      modal, modalDisplay,
+      formData, nameBorder, emailBorder, msgBorder,
+      fDisabled, fOpacity: fDisabled ? '0.7' : '1',
+      fBtnLabel, isSending, successDisplay, formDisplay,
+      topOp: scrollTopVisible ? '1' : '0',
+      topTf: scrollTopVisible ? 'translateY(0)' : 'translateY(16px)',
+      topPE: scrollTopVisible ? 'all' : 'none',
+      toggleTheme: this.toggleTheme,
+      toggleLang: this.toggleLang,
+      toggleMenu: this.toggleMenu,
+      closeMenu: this.closeMenu,
+      scrollHome: () => this.goto('home'),
+      goAbout: () => this.goto('about'),
+      goProjects: () => this.goto('projects'),
+      goTop: () => window.scrollTo({ top: 0, behavior: 'smooth' }),
+      closeModal: this.closeModal,
+      stopProp: this.stopProp,
+      onName: (e) => this.updateForm('name', e.target.value),
+      onEmail: (e) => this.updateForm('email', e.target.value),
+      onMsg: (e) => this.updateForm('message', e.target.value),
+      sendForm: this.sendForm,
+    };
+  }
+}
+</script>
+</body>
+</html>
