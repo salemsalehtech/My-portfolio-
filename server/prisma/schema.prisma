@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id         Int      @id @default(autoincrement())
+  titleEn    String
+  titleAr    String
+  descEn     String
+  descAr     String
+  tags       String[]
+  category   String
+  githubUrl  String
+  demoUrl    String
+  gradient   String
+  catLabelEn String
+  catLabelAr String
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Skill {
+  id         Int      @id @default(autoincrement())
+  name       String
+  abbr       String
+  color      String
+  textColor  String
+  percentage Int
+  levelEn    String
+  levelAr    String
+  group      String
+  order      Int      @default(0)
+}
+
+model YoutubeVideo {
+  id       Int    @id @default(autoincrement())
+  titleEn  String
+  titleAr  String
+  subEn    String
+  subAr    String
+  gradient String
+  url      String
+  order    Int    @default(0)
+}
+
+model ContactMessage {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model AdminUser {
+  id           Int    @id @default(autoincrement())
+  email        String @unique
+  passwordHash String
+}

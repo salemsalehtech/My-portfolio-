@@ -1,0 +1,31 @@
+const express = require("express");
+const cors = require("cors");
+require("express-async-errors");
+
+const projectsRouter = require("./routes/projects");
+const skillsRouter = require("./routes/skills");
+const youtubeRouter = require("./routes/youtube");
+const contactRouter = require("./routes/contact");
+const authRouter = require("./routes/auth");
+const adminRouter = require("./routes/admin");
+
+const app = express();
+
+app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://localhost:5173" }));
+app.use(express.json());
+
+app.get("/api/health", (req, res) => res.json({ ok: true }));
+
+app.use("/api/projects", projectsRouter);
+app.use("/api/skills", skillsRouter);
+app.use("/api/youtube", youtubeRouter);
+app.use("/api/contact", contactRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/admin", adminRouter);
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(err.status || 500).json({ error: err.message || "Internal server error" });
+});
+
+module.exports = app;
