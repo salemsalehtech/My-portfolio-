@@ -1,6 +1,6 @@
 const express = require("express");
 const rateLimit = require("express-rate-limit");
-const prisma = require("../lib/prisma");
+const { ContactMessage } = require("../lib/mongo");
 const { sendContactNotification } = require("../lib/mailer");
 
 const router = express.Router();
@@ -22,9 +22,7 @@ router.post("/", contactLimiter, async (req, res) => {
   if (!email || !emailRegex.test(email)) return res.status(400).json({ error: "A valid email is required" });
   if (!message || !message.trim()) return res.status(400).json({ error: "Message is required" });
 
-  const saved = await prisma.contactMessage.create({
-    data: { name: name.trim(), email: email.trim(), message: message.trim() },
-  });
+  const saved = await ContactMessage.create({ name: name.trim(), email: email.trim(), message: message.trim() });
 
   try {
     await sendContactNotification({ name: saved.name, email: saved.email, message: saved.message });

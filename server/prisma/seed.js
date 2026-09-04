@@ -1,8 +1,6 @@
 require("dotenv").config();
-const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
-
-const prisma = new PrismaClient();
+const { connectMongo, Project, Skill, YoutubeVideo, AdminUser } = require("../src/lib/mongo");
 
 const projects = [
   { titleEn: "E-Commerce Platform", titleAr: "منصة التجارة الإلكترونية", descEn: "A full-stack e-commerce solution with product management, shopping cart, order tracking, and Stripe payment integration built with Laravel and Vue.js.", descAr: "منصة تجارة إلكترونية متكاملة مع إدارة المنتجات وعربة التسوق وتتبع الطلبات وتكامل Stripe، مبنية بـ Laravel و Vue.js.", tags: ["Laravel", "Vue.js", "MySQL", "Stripe"], category: "web", githubUrl: "https://github.com/solx4", demoUrl: "#", gradient: "linear-gradient(135deg,#1E3A5F,#2E5B9A)", catLabelEn: "Web Dev", catLabelAr: "تطوير ويب", order: 1 },
@@ -39,22 +37,23 @@ const ytVideos = [
 ];
 
 async function main() {
-  await prisma.project.deleteMany();
-  await prisma.skill.deleteMany();
-  await prisma.youtubeVideo.deleteMany();
-  await prisma.project.createMany({ data: projects });
-  await prisma.skill.createMany({ data: skills });
-  await prisma.youtubeVideo.createMany({ data: ytVideos });
+  await connectMongo();
+  await Project.deleteMany({});
+  await Skill.deleteMany({});
+  await YoutubeVideo.deleteMany({});
+  await Project.insertMany(projects);
+  await Skill.insertMany(skills);
+  await YoutubeVideo.insertMany(ytVideos);
 
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (adminEmail && adminPassword) {
     const passwordHash = await bcrypt.hash(adminPassword, 10);
-    await prisma.adminUser.upsert({
-      where: { email: adminEmail },
-      update: { passwordHash },
-      create: { email: adminEmail, passwordHash },
-    });
+    await AdminUser.findOneAndUpdate(
+      { email: adminEmail.toLowerCase() },
+      { email: adminEmail.toLowerCase(), passwordHash },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
   }
 
   console.log("Seed complete.");
@@ -66,5 +65,6 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    const mongoose = require("mongoose");
+    await mongoose.disconnect();
   });

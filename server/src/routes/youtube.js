@@ -1,10 +1,10 @@
 const express = require("express");
-const prisma = require("../lib/prisma");
+const { YoutubeVideo } = require("../lib/mongo");
 
 const router = express.Router();
 
 router.get("/", async (req, res) => {
-  const videos = await prisma.youtubeVideo.findMany({ orderBy: { order: "asc" } });
+  const videos = await YoutubeVideo.find().sort({ order: 1 });
   res.json(videos);
 });
 
