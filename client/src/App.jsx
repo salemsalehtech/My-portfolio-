@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes } from "react-router-dom";
 import { SiteProvider } from "./context/SiteContext";
 import { AdminProvider } from "./context/AdminContext";
 import Portfolio from "./pages/Portfolio";
@@ -14,7 +14,7 @@ export default function App() {
   return (
     <SiteProvider>
       <AdminProvider>
-        <BrowserRouter>
+        <HashRouter>
           <Routes>
             <Route path="/" element={<Portfolio />} />
             <Route path="/admin/login" element={<AdminLogin />} />
@@ -26,7 +26,7 @@ export default function App() {
               <Route path="messages" element={<AdminMessages />} />
             </Route>
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
       </AdminProvider>
     </SiteProvider>
   );
