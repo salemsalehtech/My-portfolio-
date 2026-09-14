@@ -1,3 +1,11 @@
+// AdminSkills.jsx — admin CRUD page for the skills list (shown at /admin/skills). Same
+// table + modal-form structure as AdminProjects.jsx and AdminYoutube.jsx — see the comment
+// at the top of AdminProjects.jsx for the general pattern (editing state, load-after-mutate).
+//
+// Fields map 1:1 to the Skill model in server/src/lib/mongo.js: `color`/`textColor` style
+// the little colored abbreviation badge on the public site (components/Skills.jsx),
+// `percentage` drives the progress bar width, and `group` (frontend/backend/tools) decides
+// which tab the skill shows up under.
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 
@@ -7,13 +15,16 @@ const EMPTY = {
 };
 
 export default function AdminSkills() {
+  // ---- STATE ----
   const [skills, setSkills] = useState([]);
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState(null); // null | "new" | <skill id>
   const [form, setForm] = useState(EMPTY);
 
+  // ---- DATA LOADING ----
   const load = () => api.get("/admin/skills").then(setSkills);
   useEffect(() => { load(); }, []);
 
+  // ---- FORM HANDLERS ----
   const openNew = () => { setForm(EMPTY); setEditing("new"); };
   const openEdit = (s) => { setForm(s); setEditing(s.id); };
 
@@ -32,6 +43,7 @@ export default function AdminSkills() {
     load();
   };
 
+  // ---- RENDER: table of existing skills ----
   return (
     <div>
       <h1>Skills</h1>
@@ -59,6 +71,7 @@ export default function AdminSkills() {
         </tbody>
       </table>
 
+      {/* ---- RENDER: create/edit modal form ---- */}
       {editing !== null && (
         <div className="admin-modal-overlay" onClick={() => setEditing(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>

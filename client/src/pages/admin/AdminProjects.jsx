@@ -1,6 +1,21 @@
+// AdminProjects.jsx — admin CRUD page for portfolio projects (shown at /admin/projects).
+//
+// Layout is: a table of existing projects, plus a modal with a create/edit form (opened by
+// "+ New Project" or a row's "Edit" button). `editing` tracks which mode the modal is in:
+//   - null    modal closed
+//   - "new"   modal open, creating a new project
+//   - <id>    modal open, editing the project with that id
+//
+// Every field here maps 1:1 to a field on the Project model in server/src/lib/mongo.js —
+// titleEn/titleAr and descEn/descAr are the bilingual copy shown on the public site (see
+// components/Projects.jsx), catLabelEn/catLabelAr is the filter chip label, and `tags` is
+// stored as an array on the server but edited here as one comma-separated text field for
+// simplicity (see the split/join in save()/openEdit() below).
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 
+// ---- Blank form shape, used both for a fresh "New Project" and as the shape `form` state
+//      always has ----
 const EMPTY = {
   titleEn: "", titleAr: "", descEn: "", descAr: "", tags: "", category: "web",
   githubUrl: "", demoUrl: "", gradient: "linear-gradient(135deg,#1E3A5F,#2E5B9A)",
@@ -8,18 +23,26 @@ const EMPTY = {
 };
 
 export default function AdminProjects() {
-  const [projects, setProjects] = useState([]);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState(EMPTY);
+  // ---- STATE ----
+  const [projects, setProjects] = useState([]); // the table's data
+  const [editing, setEditing] = useState(null); // null | "new" | <project id>
+  const [form, setForm] = useState(EMPTY);       // the modal form's current values
 
+  // ---- DATA LOADING ----
+  // Re-fetches the full list from the server; called on mount and again after every
+  // create/edit/delete below instead of patching local state by hand.
   const load = () => api.get("/admin/projects").then(setProjects);
   useEffect(() => { load(); }, []);
 
+  // ---- FORM HANDLERS ----
   const openNew = () => { setForm(EMPTY); setEditing("new"); };
+  // tags is an array on the server; join it into "a, b, c" for the text input here.
   const openEdit = (p) => { setForm({ ...p, tags: p.tags.join(", ") }); setEditing(p.id); };
 
   const save = async (e) => {
     e.preventDefault();
+    // Reverse of openEdit's join: split the comma-separated text back into a clean array
+    // before sending it to the server.
     const payload = { ...form, tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean), order: Number(form.order) };
     if (editing === "new") await api.post("/admin/projects", payload);
     else await api.put(`/admin/projects/${editing}`, payload);
@@ -33,6 +56,7 @@ export default function AdminProjects() {
     load();
   };
 
+  // ---- RENDER: table of existing projects ----
   return (
     <div>
       <h1>Projects</h1>
@@ -59,6 +83,7 @@ export default function AdminProjects() {
         </tbody>
       </table>
 
+      {/* ---- RENDER: create/edit modal form (only mounted while editing !== null) ---- */}
       {editing !== null && (
         <div className="admin-modal-overlay" onClick={() => setEditing(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>

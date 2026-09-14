@@ -1,3 +1,7 @@
+// AdminLogin.jsx — the /admin/login page: an email/password form. On submit it calls
+// login() from AdminContext (which hits POST /auth/login on the server and stores the
+// returned JWT), then navigates to /admin/projects. Shown instead of the admin dashboard
+// whenever AdminLayout finds the user isn't authenticated.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";

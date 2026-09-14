@@ -1,3 +1,8 @@
+// AdminYoutube.jsx — admin CRUD page for the YouTube video list (shown at /admin/youtube).
+// Same table + modal-form structure as AdminProjects.jsx and AdminSkills.jsx — see the
+// comment at the top of AdminProjects.jsx for the general pattern. Fields map 1:1 to the
+// YoutubeVideo model in server/src/lib/mongo.js and are what components/YouTube.jsx
+// displays on the public site.
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 
@@ -7,13 +12,16 @@ const EMPTY = {
 };
 
 export default function AdminYoutube() {
+  // ---- STATE ----
   const [videos, setVideos] = useState([]);
-  const [editing, setEditing] = useState(null);
+  const [editing, setEditing] = useState(null); // null | "new" | <video id>
   const [form, setForm] = useState(EMPTY);
 
+  // ---- DATA LOADING ----
   const load = () => api.get("/admin/youtube").then(setVideos);
   useEffect(() => { load(); }, []);
 
+  // ---- FORM HANDLERS ----
   const openNew = () => { setForm(EMPTY); setEditing("new"); };
   const openEdit = (v) => { setForm(v); setEditing(v.id); };
 
@@ -32,6 +40,7 @@ export default function AdminYoutube() {
     load();
   };
 
+  // ---- RENDER: table of existing videos ----
   return (
     <div>
       <h1>YouTube Videos</h1>
@@ -57,6 +66,7 @@ export default function AdminYoutube() {
         </tbody>
       </table>
 
+      {/* ---- RENDER: create/edit modal form ---- */}
       {editing !== null && (
         <div className="admin-modal-overlay" onClick={() => setEditing(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>

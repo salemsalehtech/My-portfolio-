@@ -1,3 +1,9 @@
+// AdminLayout.jsx — the shell every /admin/* page renders inside (see the nested routes in
+// App.jsx). Guards the whole admin section: if not logged in (useAdmin().isAuthed is
+// false), it redirects to /admin/login instead of rendering anything. Otherwise it renders
+// a sidebar (links to each admin page + logout) and <Outlet /> — react-router-dom's
+// placeholder for whichever child route is currently active (AdminProjects, AdminSkills,
+// etc.).
 import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";
 
