@@ -1,3 +1,19 @@
+// App.jsx — the app's root component: sets up global state providers and all routes.
+//
+// Route map:
+//   /                    -> Portfolio (the public single-page site)
+//   /admin/login         -> AdminLogin
+//   /admin               -> AdminLayout (redirects to /admin/projects if visited directly)
+//     /admin/projects    -> AdminProjects
+//     /admin/skills      -> AdminSkills
+//     /admin/youtube     -> AdminYoutube
+//     /admin/messages    -> AdminMessages
+//
+// SiteProvider (theme/language) and AdminProvider (admin login state) wrap EVERYTHING, so
+// every page/component below can call useSite()/useAdmin() without extra setup. HashRouter
+// (URLs like "/#/admin") is used instead of BrowserRouter because the client is deployed as
+// a static site to GitHub Pages, which can't be configured to redirect unknown paths back
+// to index.html the way a real server can.
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { SiteProvider } from "./context/SiteContext";
 import { AdminProvider } from "./context/AdminContext";

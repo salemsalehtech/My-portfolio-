@@ -1,3 +1,7 @@
+// Portfolio.jsx — the public single-page site (route "/"). Pure composition: it just lays
+// out every section component in order and wires up the scroll-tracking state
+// (useScrollTracking, see hooks/useScrollTracking.js) that Navbar and ScrollTop need.
+// No section-specific logic lives here — each section owns its own content/state.
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import About from "../components/About";
