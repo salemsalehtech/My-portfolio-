@@ -1,3 +1,14 @@
+// ProjectModal.jsx — popup dialog showing full details of one project. Rendered by
+// components/Projects.jsx when a project card is clicked.
+//
+// Props:
+//   - project  the selected project object (from the /projects API — see
+//              server/src/lib/mongo.js for its shape), or null/undefined to render nothing
+//   - onClose  called when the user closes the modal (backdrop click or the ✕ button)
+//
+// Each project stores both English and Arabic title/description on the same object
+// (titleEn/titleAr, descEn/descAr) — this component just picks whichever matches the
+// current language instead of looking anything up in i18n/translations.js.
 import { useSite } from "../context/SiteContext";
 
 export default function ProjectModal({ project, onClose }) {

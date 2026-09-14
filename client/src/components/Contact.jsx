@@ -1,3 +1,7 @@
+// Contact.jsx — the "Get In Touch" section (id="contact"): a contact form on the left,
+// static social/location info on the right. Submitting the form calls the public
+// POST /contact endpoint (see server/src/routes/contact.js) via lib/api.js — there is no
+// admin auth involved here, anyone can send a message.
 import { useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
@@ -9,11 +13,16 @@ export default function Contact() {
   const [infoRef, infoVisible] = useReveal();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState({});
+  // The form has 4 states: idle (nothing submitted yet), sending (request in flight),
+  // success (server accepted it), error (request failed) — the JSX below picks what to
+  // render based on this.
   const [status, setStatus] = useState("idle"); // idle | sending | success | error
 
   const update = (key) => (e) => setFormData((f) => ({ ...f, [key]: e.target.value }));
 
   const submit = async () => {
+    // Basic client-side validation before hitting the server — just checks required
+    // fields are filled in and the email looks roughly valid.
     const errs = {};
     if (!formData.name.trim()) errs.name = true;
     if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) errs.email = true;
@@ -26,6 +35,7 @@ export default function Contact() {
       await api.post("/contact", formData);
       setStatus("success");
       setFormData({ name: "", email: "", message: "" });
+      // Reset back to the empty form after showing the success message for 5 seconds.
       setTimeout(() => setStatus("idle"), 5000);
     } catch {
       setStatus("error");

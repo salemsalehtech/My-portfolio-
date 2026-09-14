@@ -1,3 +1,6 @@
+// YouTube.jsx — the "YouTube Channel" section (id="youtube"): a static channel-info card
+// plus a list of videos fetched live from the public GET /youtube API via useCollection().
+// Each video links out to YouTube directly (there's no in-page player).
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";

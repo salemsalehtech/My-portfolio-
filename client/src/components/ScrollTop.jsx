@@ -1,3 +1,7 @@
+// ScrollTop.jsx — small floating button that scrolls the page back to the top.
+// Prop: `visible` (boolean) controls whether it's shown — passed down from
+// pages/Portfolio.jsx, which gets it from useScrollTracking() (true once the page has been
+// scrolled down more than 400px).
 export default function ScrollTop({ visible }) {
   return (
     <button

@@ -1,3 +1,8 @@
+// Hero.jsx — the landing/intro section shown at the top of the public portfolio
+// (id="home"). Renders the greeting, name, a rotating job-title line, tagline, CTA
+// buttons, social links, the avatar image, and the canvas particle background (see
+// Particles.jsx). No props — reads theme/language from useSite() and rotates through the
+// localized titles in i18n/translations.js#heroTitles.
 import { useEffect, useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { heroTitles } from "../i18n/translations";
@@ -12,6 +17,9 @@ export default function Hero() {
   const [textRef, textVisible] = useReveal();
   const [avatarRef, avatarVisible] = useReveal();
 
+  // Cycles through the 3 job titles in heroTitles every 3.2s: fade out (380ms), swap to
+  // the next title, then fade back in (the fade-in itself is just the CSS transition on
+  // `opacity` reacting to `fading` flipping back to false below).
   useEffect(() => {
     const cycle = setInterval(() => {
       setFading(true);

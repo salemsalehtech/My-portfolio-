@@ -1,8 +1,15 @@
+// About.jsx — the "About Me" section of the public portfolio (id="about").
+// Renders a header, an animated stats grid (projects/skills/videos counts), two bio
+// paragraphs, a short info list (education/location/language), and an "interests" card
+// with a CV download link. No props — all text comes from useSite().t (see
+// i18n/translations.js). Each block fades in on scroll via useReveal().
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 
 export default function About() {
   const { t, lang } = useSite();
+  // One useReveal() per block below, so each fades in independently as the user scrolls
+  // to it rather than all at once.
   const [headerRef, headerVisible] = useReveal();
   const [statsRef, statsVisible] = useReveal();
   const [textRef, textVisible] = useReveal();

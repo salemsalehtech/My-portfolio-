@@ -1,3 +1,6 @@
+// Projects.jsx — the "Featured Projects" section (id="projects"): a category filter bar
+// plus a grid of project cards, fetched live from the public GET /projects API via
+// useCollection(). Clicking a card opens ProjectModal with that project's full details.
 import { useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";

@@ -1,3 +1,6 @@
+// Footer.jsx — static site footer shown at the bottom of the public portfolio: brand
+// badge/name, copyright text, and social links (GitHub/LinkedIn/YouTube). No props, no
+// state — only the copyright text is translated (t.footer.rights).
 import { useSite } from "../context/SiteContext";
 
 export default function Footer() {

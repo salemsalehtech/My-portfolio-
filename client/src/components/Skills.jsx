@@ -1,3 +1,7 @@
+// Skills.jsx — the "Technical Skills" section (id="skills"): a tab switcher
+// (frontend/backend/tools) above a list of animated progress bars, fetched live from the
+// public GET /skills API via useCollection(). Only skills matching the active tab's
+// `group` are shown.
 import { useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
@@ -49,6 +53,9 @@ export default function Skills() {
                 </div>
               </div>
               <div className="skill-bar">
+                {/* Bar starts at 0% and animates (via CSS transition) to the real
+                    percentage only once the section has scrolled into view; each bar is
+                    staggered slightly (0.12s * index) so they fill in one after another. */}
                 <div
                   className="skill-fill"
                   style={{
