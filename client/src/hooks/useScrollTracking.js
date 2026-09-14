@@ -1,3 +1,12 @@
+// useScrollTracking.js — one hook, used once by pages/Portfolio.jsx, that tracks
+// everything the page needs to know about scroll position:
+//   - scrolled        true once the user has scrolled past 60px (Navbar uses this to add
+//                      a background/shadow so it's visible over page content)
+//   - activeSection    which section id is currently in view (Navbar highlights this link)
+//   - showScrollTop    true once scrolled past 400px (shows the ScrollTop button)
+//
+// (The related scrollToSection() helper — for clicking a nav link to jump to a section —
+// lives in lib/scrollToSection.js since it's a plain DOM utility, not a stateful hook.)
 import { useEffect, useState } from "react";
 
 const SECTION_IDS = ["home", "about", "skills", "projects", "youtube", "contact"];
@@ -12,6 +21,8 @@ export function useScrollTracking() {
       const y = window.scrollY;
       setScrolled(y > 60);
       setShowScrollTop(y > 400);
+      // Walk the sections top-to-bottom and keep the last one we've scrolled past —
+      // that's the section currently "active" in the viewport.
       let current = "home";
       SECTION_IDS.forEach((id) => {
         const el = document.getElementById(id);
@@ -20,16 +31,9 @@ export function useScrollTracking() {
       setActiveSection(current);
     }
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    handleScroll(); // run once immediately so state is correct even before the first scroll
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   return { scrolled, activeSection, showScrollTop };
-}
-
-export function scrollToSection(id) {
-  const el = document.getElementById(id);
-  if (el) {
-    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 70, behavior: "smooth" });
-  }
 }

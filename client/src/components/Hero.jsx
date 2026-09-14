@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { heroTitles } from "../i18n/translations";
-import { scrollToSection } from "../hooks/useScrollTracking";
+import { scrollToSection } from "../lib/scrollToSection";
 import { useReveal } from "../hooks/useReveal";
 import Particles from "./Particles";
 

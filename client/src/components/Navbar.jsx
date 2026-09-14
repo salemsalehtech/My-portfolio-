@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSite } from "../context/SiteContext";
-import { scrollToSection } from "../hooks/useScrollTracking";
+import { scrollToSection } from "../lib/scrollToSection";
 
 const SECTIONS = ["home", "about", "skills", "projects", "youtube", "contact"];
 
