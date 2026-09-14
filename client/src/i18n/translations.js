@@ -1,3 +1,17 @@
+// translations.js — the only translation mechanism in this app (there's no i18n library).
+//
+// T is an object with one key per language ("en" and "ar"). Each language's value is a
+// nested object grouped by page section (nav, about, skills, projects, youtube, contact,
+// footer) plus a few top-level strings (greeting, name, tagline...) and an `interests`
+// array. context/SiteContext.jsx exposes the CURRENT language's object as `t` (via
+// useSite().t), so components read strings like t.about.title or t.nav.home — never T
+// directly.
+//
+// heroTitles below is separate from T because Hero.jsx cycles through it as a list
+// (see the rotating-title effect in Hero.jsx), not as a lookup by key.
+//
+// IMPORTANT: whenever you add a new displayable string, add it to BOTH the "en" and "ar"
+// objects with the same key path — there's no fallback if one language is missing a key.
 export const T = {
   en: {
     greeting: "Hello, I'm", name: 'Salem Saleh',
