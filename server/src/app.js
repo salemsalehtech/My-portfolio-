@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 require("express-async-errors");
 
 const projectsRouter = require("./routes/projects");
@@ -11,6 +12,7 @@ const adminRouter = require("./routes/admin");
 
 const app = express();
 
+app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://localhost:5173" }));
 app.use(express.json());
 

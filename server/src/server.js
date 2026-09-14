@@ -2,6 +2,22 @@ require("dotenv").config();
 const app = require("./app");
 const { connectMongo } = require("./lib/mongo");
 
+const REQUIRED_ENV_VARS = ["MONGODB_URI", "JWT_SECRET"];
+const missing = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
+if (missing.length) {
+  console.error(`Missing required environment variable(s): ${missing.join(", ")}`);
+  process.exit(1);
+}
+
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled promise rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught exception:", error);
+  process.exit(1);
+});
+
 const PORT = process.env.PORT || 4000;
 
 connectMongo()

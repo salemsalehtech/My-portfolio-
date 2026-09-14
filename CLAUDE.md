@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 A bilingual (English/Arabic) personal portfolio site for Salem Saleh, split into two apps:
 
 - `client/` — React 18 + Vite SPA (the public portfolio + an admin dashboard), served on port 5173 in dev.
-- `server/` — Express + Prisma REST API backed by PostgreSQL, served on port 4000 in dev.
+- `server/` — Express + Mongoose REST API backed by MongoDB, served on port 4000 in dev.
 
 The client's dev server proxies `/api/*` to the server (see `client/vite.config.js`), so in development both must be running.
 
@@ -21,29 +21,27 @@ Client (run from `client/`):
 Server (run from `server/`):
 - `npm run dev` — start API with nodemon (port 4000)
 - `npm start` — start API without nodemon
-- `npm run prisma:migrate` — run Prisma migrations in dev
-- `npm run prisma:generate` — regenerate the Prisma client after schema changes
-- `npm run seed` — run `prisma/seed.js` to seed the database
+- `npm run seed` — run `prisma/seed.js` to wipe and reseed `Project`/`Skill`/`YoutubeVideo`, and upsert the `AdminUser` from `ADMIN_EMAIL`/`ADMIN_PASSWORD` (the script lives under `server/prisma/` for historical reasons — the project no longer uses Prisma)
 
 There is no test suite or lint config in either app currently.
 
-Server requires a `.env` file (see `server/.env.example` for required vars: `DATABASE_URL`, `PORT`, `CLIENT_ORIGIN`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `NOTIFY_EMAIL`, `SMTP_*`).
+Server requires a `.env` file (see `server/.env.example` for required vars: `MONGODB_URI`, `PORT`, `CLIENT_ORIGIN`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `NOTIFY_EMAIL`, `SMTP_*`). `server.js` fails fast at boot if `MONGODB_URI` or `JWT_SECRET` is missing.
 
 ## Architecture
 
 ### Server (`server/src`)
 
-- `app.js` builds the Express app: CORS restricted to `CLIENT_ORIGIN`, JSON body parsing, and mounts one router per resource under `/api/*` (`projects`, `skills`, `youtube`, `contact`, `auth`, `admin`). A catch-all error handler returns `{ error }` JSON.
-- `server.js` loads `.env` and starts the HTTP listener — keep environment/bootstrap concerns here, not in `app.js`.
+- `app.js` builds the Express app: `helmet()` for security headers, CORS restricted to `CLIENT_ORIGIN`, JSON body parsing, and mounts one router per resource under `/api/*` (`projects`, `skills`, `youtube`, `contact`, `auth`, `admin`). A catch-all error handler returns `{ error }` JSON.
+- `server.js` loads `.env`, validates required env vars, installs `uncaughtException`/`unhandledRejection` handlers, and starts the HTTP listener — keep environment/bootstrap concerns here, not in `app.js`.
 - `routes/admin.js` is the single router for all authenticated CRUD (projects, skills, youtube, contact messages) — it applies `requireAuth` to the whole router via `router.use(requireAuth)`, not per-route. Public read-only versions of the same resources live in their own top-level routers (`routes/projects.js`, `routes/skills.js`, `routes/youtube.js`).
 - `middleware/auth.js` — `requireAuth` validates a `Bearer` JWT (signed with `JWT_SECRET`) and attaches `req.admin`.
-- `routes/auth.js` — single `POST /login` endpoint checking `AdminUser` via bcrypt and issuing a 7-day JWT.
-- `lib/prisma.js` — shared Prisma client instance; `lib/mailer.js` — nodemailer wrapper used by `routes/contact.js` to notify `NOTIFY_EMAIL` on new messages (failure to send is logged, not fatal — the message is still saved).
+- `routes/auth.js` — single `POST /login` endpoint (rate-limited) checking `AdminUser` via bcrypt and issuing a 7-day JWT.
+- `lib/mongo.js` — connects to MongoDB via Mongoose and exports all five Mongoose models (see Data model below); `lib/mailer.js` — nodemailer wrapper used by `routes/contact.js` to notify `NOTIFY_EMAIL` on new messages (failure to send is logged, not fatal — the message is still saved). User-supplied fields are HTML-escaped before being interpolated into the notification email body.
 - `express-async-errors` is required in `app.js`, so async route handlers can throw/reject without manual try/catch — errors flow to the error-handling middleware automatically.
 
-### Data model (`server/prisma/schema.prisma`)
+### Data model (`server/src/lib/mongo.js`)
 
-Five models: `Project`, `Skill`, `YoutubeVideo`, `ContactMessage`, `AdminUser`. Content models (`Project`, `Skill`, `YoutubeVideo`) each store **both** English and Arabic copy on the same row (e.g. `titleEn`/`titleAr`, `descEn`/`descAr`) plus an `order` int for manual display ordering — there's no separate translations table. When adding a new displayable field, add both language variants.
+Five Mongoose models, all defined in one file: `Project`, `Skill`, `YoutubeVideo`, `ContactMessage`, `AdminUser`. Content models (`Project`, `Skill`, `YoutubeVideo`) each store **both** English and Arabic copy on the same document (e.g. `titleEn`/`titleAr`, `descEn`/`descAr`) plus an `order` number for manual display ordering — there's no separate translations collection. When adding a new displayable field, add both language variants. Every model's `toJSON` transform renames Mongo's `_id` to `id` and strips `__v`, so API responses use `id` rather than `_id`.
 
 ### Client (`client/src`)
 
@@ -56,5 +54,10 @@ Five models: `Project`, `Skill`, `YoutubeVideo`, `ContactMessage`, `AdminUser`. 
 
 ### Cross-cutting
 
-- Bilingual content is doubled at the data layer (Prisma columns) and re-doubled at the UI layer (`translations.js`) — these are two independent systems; don't assume adding a language works by touching only one.
+- Bilingual content is doubled at the data layer (Mongoose schema fields) and re-doubled at the UI layer (`translations.js`) — these are two independent systems; don't assume adding a language works by touching only one.
 - The admin dashboard and public site are both served by the one `client` SPA and one `server` API — there's no separate admin build/deploy.
+
+## Deployment
+
+- Client deploys to GitHub Pages via `.github/workflows/deploy-pages.yml` on every push to `main`. Server is meant to deploy to Render via `render.yaml` (not yet deployed as of this writing).
+- `client/.env.production` sets `VITE_API_URL` — the absolute URL the production build calls for `/api/*` (the dev-only Vite proxy doesn't exist in the static GitHub Pages build). **This currently holds a placeholder value.** Once the server has a real Render URL, update this file to `https://<render-service>.onrender.com/api` before the next client deploy, or the live site's data fetching, contact form, and admin login will silently fail.
