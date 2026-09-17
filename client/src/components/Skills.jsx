@@ -53,9 +53,6 @@ export default function Skills() {
                 </div>
               </div>
               <div className="skill-bar">
-                {/* Bar starts at 0% and animates (via CSS transition) to the real
-                    percentage only once the section has scrolled into view; each bar is
-                    staggered slightly (0.12s * index) so they fill in one after another. */}
                 <div
                   className="skill-fill"
                   style={{
