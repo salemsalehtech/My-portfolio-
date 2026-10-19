@@ -73,7 +73,7 @@ export default function About() {
                 <span className="interest-tag" key={i}>{i}</span>
               ))}
             </div>
-            <a href="/uploads/Salem-Saleh-CV.pdf" download className="btn-download">
+            <a href={`${import.meta.env.BASE_URL}uploads/Salem-Saleh-CV.pdf`} download className="btn-download">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></svg>
               {t.about.downloadCV}
             </a>

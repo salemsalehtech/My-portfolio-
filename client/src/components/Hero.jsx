@@ -72,7 +72,7 @@ export default function Hero() {
             <div className="avatar-ring ring-2"></div>
             <div className="avatar-dashed"></div>
             <div className="avatar-img">
-              <img src="/uploads/imagr.png" alt="Salem Saleh" />
+              <img src={`${import.meta.env.BASE_URL}uploads/imagr.png`} alt="Salem Saleh" />
             </div>
             <div className="avatar-dot dot-1"></div>
             <div className="avatar-dot dot-2"></div>
