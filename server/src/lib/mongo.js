@@ -74,6 +74,49 @@ const cvFileSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Content of the public "About" section — one single document, edited from /admin/about.
+// Every visible text exists in English (…En) and Arabic (…Ar), like the other content models.
+// Lists (info rows, stats, interests) are arrays so the owner can add, remove and reorder
+// items. If no document exists the site falls back to the defaults in client/src/lib/aboutDefaults.js.
+const aboutSchema = new mongoose.Schema(
+  {
+    badgeEn: { type: String, default: "", maxlength: 200 },
+    badgeAr: { type: String, default: "", maxlength: 200 },
+    titleEn: { type: String, default: "", maxlength: 200 },
+    titleAr: { type: String, default: "", maxlength: 200 },
+    p1En: { type: String, default: "", maxlength: 3000 },
+    p1Ar: { type: String, default: "", maxlength: 3000 },
+    p2En: { type: String, default: "", maxlength: 3000 },
+    p2Ar: { type: String, default: "", maxlength: 3000 },
+    infoItems: [
+      {
+        _id: false,
+        icon: { type: String, enum: ["education", "location", "language", "other"], default: "other" },
+        textEn: { type: String, default: "", maxlength: 300 },
+        textAr: { type: String, default: "", maxlength: 300 },
+      },
+    ],
+    stats: [
+      {
+        _id: false,
+        number: { type: String, default: "", maxlength: 20 },
+        labelEn: { type: String, default: "", maxlength: 100 },
+        labelAr: { type: String, default: "", maxlength: 100 },
+      },
+    ],
+    interestsTitleEn: { type: String, default: "", maxlength: 200 },
+    interestsTitleAr: { type: String, default: "", maxlength: 200 },
+    interests: [
+      {
+        _id: false,
+        en: { type: String, default: "", maxlength: 100 },
+        ar: { type: String, default: "", maxlength: 100 },
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
 const models = {
   Project: mongoose.models.Project || mongoose.model("Project", projectSchema),
   Skill: mongoose.models.Skill || mongoose.model("Skill", skillSchema),
@@ -81,6 +124,7 @@ const models = {
   ContactMessage: mongoose.models.ContactMessage || mongoose.model("ContactMessage", contactMessageSchema),
   AdminUser: mongoose.models.AdminUser || mongoose.model("AdminUser", adminUserSchema),
   CvFile: mongoose.models.CvFile || mongoose.model("CvFile", cvFileSchema),
+  About: mongoose.models.About || mongoose.model("About", aboutSchema),
 };
 
 for (const model of Object.values(models)) {

@@ -12,6 +12,7 @@ const LINKS = [
   { to: "/admin/skills", label: "Skills" },
   { to: "/admin/youtube", label: "YouTube" },
   { to: "/admin/messages", label: "Messages" },
+  { to: "/admin/about", label: "About" },
   { to: "/admin/cv", label: "CV" },
 ];
 

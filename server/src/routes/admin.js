@@ -1,5 +1,5 @@
 const express = require("express");
-const { Project, Skill, YoutubeVideo, ContactMessage, CvFile } = require("../lib/mongo");
+const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -78,6 +78,39 @@ router.put("/cv", async (req, res) => {
 
 router.delete("/cv", async (req, res) => {
   await CvFile.deleteMany({});
+  res.status(204).end();
+});
+
+// ---- About section ----
+// One document holds the whole section. PUT replaces its content; DELETE removes it so the
+// site goes back to its built-in defaults. We copy only the fields we know about (a plain
+// whitelist) and cap the list sizes, so a bad request can't write arbitrary data.
+const ABOUT_TEXT_FIELDS = [
+  "badgeEn", "badgeAr", "titleEn", "titleAr",
+  "p1En", "p1Ar", "p2En", "p2Ar",
+  "interestsTitleEn", "interestsTitleAr",
+];
+const asList = (value, max) => (Array.isArray(value) ? value.slice(0, max) : []);
+
+router.get("/about", async (req, res) => {
+  const about = await About.findOne();
+  res.json(about ? { exists: true, ...about.toJSON() } : { exists: false });
+});
+
+router.put("/about", async (req, res) => {
+  const body = req.body || {};
+  const clean = {};
+  for (const field of ABOUT_TEXT_FIELDS) clean[field] = String(body[field] ?? "");
+  clean.infoItems = asList(body.infoItems, 10).map((i) => ({ icon: i.icon, textEn: String(i.textEn ?? ""), textAr: String(i.textAr ?? "") }));
+  clean.stats = asList(body.stats, 6).map((s) => ({ number: String(s.number ?? ""), labelEn: String(s.labelEn ?? ""), labelAr: String(s.labelAr ?? "") }));
+  clean.interests = asList(body.interests, 20).map((i) => ({ en: String(i.en ?? ""), ar: String(i.ar ?? "") }));
+
+  const about = await About.findOneAndUpdate({}, { $set: clean }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+  res.json({ exists: true, ...about.toJSON() });
+});
+
+router.delete("/about", async (req, res) => {
+  await About.deleteMany({});
   res.status(204).end();
 });
 
