@@ -19,7 +19,7 @@ import { T } from "../i18n/translations";
 const SiteContext = createContext(null);
 
 export function SiteProvider({ children }) {
-  const [theme, setTheme] = useState("dark");
+  const [theme, setTheme] = useState("light");
   const [lang, setLang] = useState("en");
 
   // Keep the <html> element's "light" class in sync so index.css can style both themes.
