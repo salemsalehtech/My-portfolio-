@@ -4,7 +4,7 @@ Execution plan for this portfolio: standing rules, current status, timeline, and
 
 > **Source of truth.** This file is the single authoritative plan. [DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md) is the original Arabic planning notes + archive of prompts already sent; if the two disagree, this file wins. Update task checkboxes here when a task is done.
 >
-> **Repo:** the git remote is `github.com/solx4/My-portfolio-` (GitHub Pages origin `https://solx4.github.io`, matching `CLIENT_ORIGIN` in `render.yaml`). Older prompts/PDFs reference `salemsalehtech/My-portfolio-` — if the repo moves, update `CLIENT_ORIGIN` too or CORS will block the live site.
+> **Repo:** the live repo is `github.com/salemsalehtech/My-portfolio-` (the old `solx4` name redirects to it). GitHub Pages is served from `https://salemsalehtech.github.io/My-portfolio-/`, so `CLIENT_ORIGIN` in `render.yaml` must be `https://salemsalehtech.github.io` (origin only, no path) or CORS will block the live site. If the account/repo is renamed again, update `CLIENT_ORIGIN` too.
 
 ---
 

@@ -26,4 +26,4 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: CLIENT_ORIGIN
-        value: https://solx4.github.io
+        value: https://salemsalehtech.github.io
