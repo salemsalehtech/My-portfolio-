@@ -8,6 +8,8 @@
 // BASE resolves to VITE_API_URL in production (see client/.env.production) or the local
 // "/api" path in dev, which Vite proxies to the server (see client/vite.config.js).
 const BASE = import.meta.env.VITE_API_URL || "/api";
+// Exported for the few places that need a plain URL instead of a fetch call (e.g. a download link).
+export const API_BASE = BASE;
 
 // Internal helper that every api.* method funnels through. It:
 //  1. attaches the admin's JWT (if logged in — see AdminContext.jsx) as a Bearer header,

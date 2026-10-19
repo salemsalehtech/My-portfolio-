@@ -61,12 +61,26 @@ const adminUserSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true },
 });
 
+// The CV PDF is stored right inside MongoDB (a single document, replaced on every upload)
+// instead of on disk: Render's free tier wipes the filesystem on every deploy, the database
+// is the only storage that survives. A CV is a few hundred KB, far below Mongo's 16 MB limit.
+const cvFileSchema = new mongoose.Schema(
+  {
+    filename: { type: String, default: "cv.pdf" },
+    contentType: { type: String, default: "application/pdf" },
+    size: { type: Number, default: 0 },
+    data: { type: Buffer, required: true },
+  },
+  { timestamps: true }
+);
+
 const models = {
   Project: mongoose.models.Project || mongoose.model("Project", projectSchema),
   Skill: mongoose.models.Skill || mongoose.model("Skill", skillSchema),
   YoutubeVideo: mongoose.models.YoutubeVideo || mongoose.model("YoutubeVideo", youtubeVideoSchema),
   ContactMessage: mongoose.models.ContactMessage || mongoose.model("ContactMessage", contactMessageSchema),
   AdminUser: mongoose.models.AdminUser || mongoose.model("AdminUser", adminUserSchema),
+  CvFile: mongoose.models.CvFile || mongoose.model("CvFile", cvFileSchema),
 };
 
 for (const model of Object.values(models)) {

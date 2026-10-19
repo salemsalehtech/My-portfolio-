@@ -3,11 +3,17 @@
 // paragraphs, a short info list (education/location/language), and an "interests" card
 // with a CV download link. No props — all text comes from useSite().t (see
 // i18n/translations.js). Each block fades in on scroll via useReveal().
+import { useEffect, useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
+import { api, API_BASE } from "../lib/api";
 
 export default function About() {
   const { t, lang } = useSite();
+  // The CV is uploaded from the admin dashboard (AdminCV.jsx). Ask the server whether one
+  // exists and only show the download button if so.
+  const [cv, setCv] = useState(null);
+  useEffect(() => { api.get("/cv/info").then(setCv).catch(() => setCv(null)); }, []);
   // One useReveal() per block below, so each fades in independently as the user scrolls
   // to it rather than all at once.
   const [headerRef, headerVisible] = useReveal();
@@ -73,10 +79,12 @@ export default function About() {
                 <span className="interest-tag" key={i}>{i}</span>
               ))}
             </div>
-            <a href={`${import.meta.env.BASE_URL}uploads/Salem-Saleh-CV.pdf`} download className="btn-download">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></svg>
-              {t.about.downloadCV}
-            </a>
+            {cv && cv.available && (
+              <a href={`${API_BASE}/cv`} download className="btn-download">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></svg>
+                {t.about.downloadCV}
+              </a>
+            )}
           </div>
         </div>
       </div>
