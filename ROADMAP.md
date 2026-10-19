@@ -32,7 +32,8 @@ Standing rules that apply to **every** future task.
 | Frontend | React 18 + Vite. Public portfolio (Hero / About / Skills / Projects / YouTube / Contact) + full admin dashboard (Projects, Skills, YouTube, Messages). Cleanup pass (1.1) done. |
 | Backend | Express + Mongoose/MongoDB, JWT auth, rate limiting, helmet, nodemailer. |
 | Language | Bilingual (EN/AR) throughout data and UI. |
-| Deployment | Frontend auto-deploys to GitHub Pages on push to `main`. **Backend not deployed yet** — `client/.env.production` still holds a placeholder `VITE_API_URL`, so the live site currently shows no projects/skills/videos and Contact + admin login fail. |
+| Deployment | **Live (2026-10-19).** Frontend: `https://salemsalehtech.github.io/My-portfolio-/`, served from the **`gh-pages` branch** (Pages source = "Deploy from a branch"). The Actions workflow `deploy-pages.yml` is blocked — GitHub account billing lock ("job was not started because your account is locked due to a billing issue", support ticket opened); until it clears, deploy by hand: `cd client && npm run build`, then push `client/dist` (+ `.nojekyll`) to `gh-pages`. Backend: Render free web service `https://salem-portfolio-server.onrender.com` (auto-deploys on push to `main`; sleeps after 15 min idle, first request ~1 min), database on MongoDB Atlas (M0, network access `0.0.0.0/0`). Production env vars live in Render, never in git (`.env.*` is git-ignored except `.env.example`/`.env.production`). |
+| Known issues | Contact notification email is not delivered — Render's free tier blocks outbound SMTP (587) and `SMTP_USER`/`SMTP_PASS` are placeholders; messages are still saved and readable in `/admin` → Messages. Plan: switch to an HTTP email API (e.g. Resend). |
 | Known gap | About bio, education, location, interests, and hero tagline are hardcoded in `client/src/i18n/translations.js` — violates rule 1 (see Wave A, item A0). |
 | Brand | Dark navy background `#07111E`; gold accents `#E8A020` / `#C8900A`. Fonts: Outfit (headings), DM Sans (body), Tajawal (Arabic). |
 
@@ -53,12 +54,14 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 ## Recommended Next Steps (in order)
 
 1. ~~Manual QA for 1.1~~ — done.
-2. **2.4 Deploy backend** — highest value: the live site is broken until this ships.
-3. **1.3 SEO + Open Graph** — small task, visible win.
-4. **2.1 + 2.2 Backend comments.**
-5. **1.2 + 2.5 PDFs** — write after the code they document is stable.
-6. **Wave A**, starting with **A0**.
-7. **2.6** whenever a custom domain is bought.
+2. ~~2.4 Deploy backend~~ — done 2026-10-19.
+3. **Rotate leaked secrets** — Atlas DB password, Render `JWT_SECRET`, admin password (all were pasted in chat); delete `server/.env.render` and `server/.env.atlas`.
+4. **Unlock GitHub Actions** (billing lock) so deploys are automatic again; then set Pages source back to "GitHub Actions" and delete the `gh-pages` branch.
+5. **1.3 SEO + Open Graph** — small task, visible win.
+6. **2.1 + 2.2 Backend comments.**
+7. **1.2 + 2.5 PDFs** — write after the code they document is stable.
+8. **Wave A**, starting with **A0**.
+9. **2.6** whenever a custom domain is bought.
 
 ---
 
@@ -88,7 +91,7 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
   - *Learn:* REST API concepts; the routes / models / middleware pattern.
 - [x] **2.3 Database decision: MongoDB** — done, no action needed.
   - *Learn:* SQL vs. NoSQL; Documents / Collections in MongoDB.
-- [ ] **2.4 Deploy backend to Render** — owner creates Render + MongoDB Atlas accounts; set environment variables together; update `VITE_API_URL` in `client/.env.production`; full Manual QA on the live site.
+- [x] **2.4 Deploy backend to Render** *(done 2026-10-19)* — owner creates Render + MongoDB Atlas accounts; set environment variables together; update `VITE_API_URL` in `client/.env.production`; full Manual QA on the live site.
   - *Deliverable:* live site fully working — data display, Contact form, admin login.
   - *Learn:* environment variables, how frontend talks to backend over an API, deployment basics.
 - [ ] **2.5 Backend PDF** — same idea as 1.2, for backend + database.
