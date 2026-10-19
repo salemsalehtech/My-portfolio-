@@ -24,13 +24,14 @@ router.post("/", contactLimiter, async (req, res) => {
 
   const saved = await ContactMessage.create({ name: name.trim(), email: email.trim(), message: message.trim() });
 
-  try {
-    await sendContactNotification({ name: saved.name, email: saved.email, message: saved.message });
-  } catch (err) {
-    console.error("Failed to send contact notification email:", err.message);
-  }
-
+  // Reply as soon as the message is saved. The notification email is sent in the background
+  // so a slow or blocked SMTP server (e.g. Render's free tier blocks port 587) can never
+  // make the visitor wait; a failure is only logged.
   res.status(201).json({ success: true });
+
+  sendContactNotification({ name: saved.name, email: saved.email, message: saved.message }).catch((err) => {
+    console.error("Failed to send contact notification email:", err.message);
+  });
 });
 
 module.exports = router;
