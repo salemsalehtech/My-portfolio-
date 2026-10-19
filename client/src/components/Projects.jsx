@@ -14,6 +14,8 @@ export default function Projects() {
   const { data: projects } = useCollection("/projects");
   const [filter, setFilter] = useState("all");
   const [selected, setSelected] = useState(null);
+  const [headerRef, headerVisible] = useReveal();
+  const [filterRef, filterVisible] = useReveal();
   const [gridRef, gridVisible] = useReveal();
 
   const filtered = filter === "all" ? projects : projects.filter((p) => p.category === filter);
@@ -23,13 +25,13 @@ export default function Projects() {
   return (
     <section id="projects" className="section-surface">
       <div className="container">
-        <div className="section-header" data-ao>
+        <div ref={headerRef} className={`section-header ${headerVisible ? "visible" : ""}`} data-ao>
           <div className="section-badge">{t.projects.subtitle}</div>
           <h2>{t.projects.title}</h2>
           <div className="section-line"></div>
         </div>
 
-        <div className="filter-btns" data-ao>
+        <div ref={filterRef} className={`filter-btns ${filterVisible ? "visible" : ""}`} data-ao>
           {FILTERS.map((f) => (
             <button key={f} className={`filter-btn ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>
               {filterLabel[f]}

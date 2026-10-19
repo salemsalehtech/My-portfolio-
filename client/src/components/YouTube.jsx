@@ -8,6 +8,7 @@ import { useCollection } from "../hooks/useCollection";
 export default function YouTube() {
   const { t, lang } = useSite();
   const { data: videos } = useCollection("/youtube");
+  const [headerRef, headerVisible] = useReveal();
   const [cardRef, cardVisible] = useReveal();
   const [listRef, listVisible] = useReveal();
 
@@ -15,7 +16,7 @@ export default function YouTube() {
     <section id="youtube" className="section-bg">
       <div className="yt-bg-glow"></div>
       <div className="container">
-        <div className="section-header" data-ao>
+        <div ref={headerRef} className={`section-header ${headerVisible ? "visible" : ""}`} data-ao>
           <div className="section-badge">{t.youtube.subtitle}</div>
           <h2>{t.youtube.title}</h2>
           <div className="section-line"></div>

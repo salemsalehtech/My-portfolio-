@@ -9,6 +9,7 @@ import { api } from "../lib/api";
 
 export default function Contact() {
   const { t } = useSite();
+  const [headerRef, headerVisible] = useReveal();
   const [formRef, formVisible] = useReveal();
   const [infoRef, infoVisible] = useReveal();
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
@@ -46,7 +47,7 @@ export default function Contact() {
     <section id="contact" className="section-surface">
       <div className="section-bg-circle" style={{ top: "-80px", left: "-80px" }}></div>
       <div className="container">
-        <div className="section-header" data-ao>
+        <div ref={headerRef} className={`section-header ${headerVisible ? "visible" : ""}`} data-ao>
           <div className="section-badge">{t.contact.subtitle}</div>
           <h2>{t.contact.title}</h2>
           <div className="section-line"></div>

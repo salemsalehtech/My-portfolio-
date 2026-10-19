@@ -13,6 +13,8 @@ export default function Skills() {
   const { t, lang } = useSite();
   const [activeTab, setActiveTab] = useState("frontend");
   const { data: skills } = useCollection("/skills");
+  const [headerRef, headerVisible] = useReveal();
+  const [tabsRef, tabsVisible] = useReveal();
   const [sectionRef, sectionVisible] = useReveal();
 
   const list = skills.filter((s) => s.group === activeTab);
@@ -21,13 +23,13 @@ export default function Skills() {
     <section id="skills" className="section-bg">
       <div className="section-bg-circle" style={{ bottom: "-60px", left: "-60px" }}></div>
       <div className="container">
-        <div className="section-header" data-ao>
+        <div ref={headerRef} className={`section-header ${headerVisible ? "visible" : ""}`} data-ao>
           <div className="section-badge">{t.skills.subtitle}</div>
           <h2>{t.skills.title}</h2>
           <div className="section-line"></div>
         </div>
 
-        <div className="skills-tabs" data-ao>
+        <div ref={tabsRef} className={`skills-tabs ${tabsVisible ? "visible" : ""}`} data-ao>
           {TABS.map((tab) => (
             <button
               key={tab}
