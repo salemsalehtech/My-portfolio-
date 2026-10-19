@@ -126,14 +126,24 @@ const testimonialSchema = new mongoose.Schema(
     authorName: { type: String, required: true, maxlength: 120 },
     roleEn: { type: String, default: "", maxlength: 160 },
     roleAr: { type: String, default: "", maxlength: 160 },
-    textEn: { type: String, required: true, maxlength: 1500 },
+    // A testimonial has ONE language when a client wrote it in the form for their language,
+    // so neither text is required on its own — at least one of them is (see the hook below).
+    textEn: { type: String, default: "", maxlength: 1500 },
     textAr: { type: String, default: "", maxlength: 1500 },
     rating: { type: Number, default: 5, min: 1, max: 5 },
     visible: { type: Boolean, default: true },
+    // true while a testimonial sent by a client through the public feedback form waits for the
+    // owner's review (it is also hidden). "Approve" in the dashboard sets visible:true, pending:false.
+    pending: { type: Boolean, default: false },
+    submittedLang: { type: String, enum: ["", "en", "ar"], default: "" },
     order: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
+
+testimonialSchema.pre("validate", function () {
+  if (!this.textEn && !this.textAr) this.invalidate("textEn", "The testimonial text is required");
+});
 
 const models = {
   Project: mongoose.models.Project || mongoose.model("Project", projectSchema),

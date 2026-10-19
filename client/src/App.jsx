@@ -27,6 +27,7 @@ import AdminMessages from "./pages/admin/AdminMessages";
 import AdminCV from "./pages/admin/AdminCV";
 import AdminAbout from "./pages/admin/AdminAbout";
 import AdminTestimonials from "./pages/admin/AdminTestimonials";
+import FeedbackForm from "./pages/FeedbackForm";
 import { Navigate } from "react-router-dom";
 
 export default function App() {
@@ -36,6 +37,8 @@ export default function App() {
         <HashRouter>
           <Routes>
             <Route path="/" element={<Portfolio />} />
+            <Route path="/feedback" element={<Navigate to="/feedback/en" replace />} />
+            <Route path="/feedback/:lang" element={<FeedbackForm />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="/admin/projects" replace />} />

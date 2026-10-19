@@ -118,17 +118,23 @@ router.delete("/about", async (req, res) => {
 // Same CRUD shape as the other resources, but we copy only the known fields from the request
 // instead of passing req.body straight to Mongoose. Schema limits (rating 1-5, text length)
 // are enforced by Mongoose and come back as a 400 error.
-const TESTIMONIAL_FIELDS = ["authorName", "roleEn", "roleAr", "textEn", "textAr", "rating", "visible", "order"];
+const TESTIMONIAL_FIELDS = ["authorName", "roleEn", "roleAr", "textEn", "textAr", "rating", "visible", "pending", "order"];
 const pickTestimonial = (body = {}) => Object.fromEntries(TESTIMONIAL_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
 
 router.get("/testimonials", async (req, res) => {
-  res.json(await Testimonial.find().sort({ order: 1, createdAt: -1 }));
+  // Pending ones (sent by clients, waiting for review) first.
+  res.json(await Testimonial.find().sort({ pending: -1, order: 1, createdAt: -1 }));
 });
 router.post("/testimonials", async (req, res) => {
   res.status(201).json(await Testimonial.create(pickTestimonial(req.body)));
 });
 router.put("/testimonials/:id", async (req, res) => {
-  res.json(await Testimonial.findByIdAndUpdate(req.params.id, pickTestimonial(req.body), { new: true, runValidators: true }));
+  const data = pickTestimonial(req.body);
+  // The "at least one text" rule runs on create; on update, check it here when both texts are sent.
+  if ("textEn" in data && "textAr" in data && !data.textEn && !data.textAr) {
+    return res.status(400).json({ error: "The testimonial text is required" });
+  }
+  res.json(await Testimonial.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
 });
 router.delete("/testimonials/:id", async (req, res) => {
   await Testimonial.findByIdAndDelete(req.params.id);

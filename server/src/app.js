@@ -15,6 +15,11 @@ const adminRouter = require("./routes/admin");
 
 const app = express();
 
+// Render (like most hosts) puts one reverse proxy in front of the app. Without this setting
+// every request looks like it comes from the proxy's IP, so the rate limiters (login, contact,
+// feedback form) would count ALL visitors together instead of one visitor at a time.
+app.set("trust proxy", 1);
+
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://localhost:5173" }));
 // The CV upload sends the PDF as base64 inside JSON, which is bigger than the default 100 KB

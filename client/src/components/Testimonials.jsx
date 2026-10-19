@@ -30,8 +30,9 @@ function TestimonialsContent({ items }) {
   const { t, lang } = useSite();
   const [headerRef, headerVisible] = useReveal();
   const [gridRef, gridVisible] = useReveal();
-  // Show the Arabic text when the site is in Arabic and one was written, otherwise English.
-  const pick = (en, ar) => (lang === "ar" && ar ? ar : en);
+  // Show the text in the site's current language when it exists; a testimonial a client wrote
+  // in just one language falls back to that one (never an empty card).
+  const pick = (en, ar) => (lang === "ar" ? ar || en : en || ar);
 
   return (
     <section id="testimonials" className="section-bg">

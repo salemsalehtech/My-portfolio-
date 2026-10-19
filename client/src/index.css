@@ -348,3 +348,32 @@ footer { background: var(--bg); border-top: 1px solid var(--card-border); paddin
 .testimonial-avatar { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #161616; font-family: var(--font-heading); font-weight: 800; font-size: 17px; }
 .testimonial-name { font-family: var(--font-heading); font-weight: 700; font-size: 15px; color: var(--text-primary); }
 .testimonial-role { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+
+/* ============ CLIENT FEEDBACK FORM (public page /#/feedback/en|ar) ============ */
+.feedback-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 16px; background: var(--bg); color: var(--text-primary); }
+.feedback-card { width: 100%; max-width: 580px; background: var(--card); border: 1px solid var(--card-border); border-radius: 20px; padding: clamp(24px, 5vw, 40px); box-shadow: var(--shadow); }
+.feedback-brand { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+.feedback-card h1 { font-family: var(--font-heading); font-size: clamp(24px, 4vw, 30px); font-weight: 800; letter-spacing: -.5px; margin-bottom: 10px; }
+body .feedback-page[lang="ar"] h1 { font-family: var(--font-ar); letter-spacing: 0; }
+.feedback-intro { color: var(--text-secondary); line-height: 1.7; margin-bottom: 26px; }
+.feedback-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+.feedback-field > span { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.feedback-field textarea { resize: vertical; line-height: 1.7; }
+.feedback-stars { display: flex; gap: 6px; }
+.feedback-stars button { background: none; border: none; cursor: pointer; font-size: 34px; line-height: 1; padding: 2px; color: var(--text-muted); transition: transform .15s, color .15s; }
+.feedback-stars button:hover { transform: scale(1.15); }
+.feedback-stars button.on { color: var(--gold); }
+.feedback-error { color: #E53E3E; font-size: 13px; }
+.feedback-error-box { margin-bottom: 14px; }
+.feedback-trap { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.feedback-card .btn-send { width: 100%; justify-content: center; }
+.feedback-card .btn-send:disabled { opacity: .7; cursor: default; }
+.feedback-done { text-align: center; padding: 18px 0; }
+.feedback-done p { color: var(--text-secondary); line-height: 1.8; }
+
+/* Admin: box with the feedback links to send to clients */
+.admin-linkbox { margin: 0 0 22px; padding: 16px 18px; border: 1px solid var(--card-border); border-radius: 12px; background: var(--card); }
+.admin-linkbox p { margin-bottom: 12px; line-height: 1.6; }
+.admin-linkrow { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.admin-linkrow > span { min-width: 150px; font-size: 14px; }
+.admin-linkrow .form-input { flex: 1; min-width: 220px; padding: 9px 12px; font-size: 13px; }
