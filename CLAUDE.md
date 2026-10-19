@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**Plan & standing rules:** read [ROADMAP.md](ROADMAP.md) before starting any task — it holds the project constitution, current phase, and prioritized backlog.
+
 ## Project overview
 
 A bilingual (English/Arabic) personal portfolio site for Salem Saleh, split into two apps:
@@ -49,7 +51,7 @@ Five Mongoose models, all defined in one file: `Project`, `Skill`, `YoutubeVideo
 - Two React contexts drive global state: `context/SiteContext.jsx` (theme light/dark + language en/ar, persisted onto `<html>`/`<body>` classes and `document.title`) and `context/AdminContext.jsx` (admin auth state). Any component needing translated strings or theme/lang toggles should consume `useSite()`, not prop-drill.
 - `i18n/translations.js` holds the `T` dictionary (`T.en`, `T.ar`) consumed via `useSite().t` — this is the only translation mechanism, there's no i18n library.
 - `lib/api.js` is the sole HTTP client: a `request()` wrapper that reads `adminToken` from `localStorage`, injects it as a Bearer header when present, and throws on non-OK responses. All API calls should go through the exported `api.{get,post,put,patch,del}`, not raw `fetch`.
-- `hooks/useCollection.js` is the shared data-fetching hook used by the admin pages for list+CRUD against a given `/api/admin/...` resource — check it before writing new fetch logic for an admin page.
+- `hooks/useCollection.js` is the shared read-only list-fetching hook used by the public sections (`Projects`, `Skills`, `YouTube`) against `/api/<resource>`. Admin pages don't use it — they call `api.*` directly against `/api/admin/...` with a local `load()` function.
 - Public-facing sections of the portfolio (`Hero`, `About`, `Skills`, `Projects`, `Contact`, `YouTube`, etc.) live under `components/`; admin screens live under `pages/admin/`.
 
 ### Cross-cutting
