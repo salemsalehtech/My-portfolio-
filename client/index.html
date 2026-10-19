@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Light is the default (class="light" on <html>). If the visitor chose dark before, drop
+       the class right away so the page doesn't flash white first. Keep in sync with SiteContext.jsx. -->
+  <script>try { if (localStorage.getItem("theme") === "dark") document.documentElement.classList.remove("light"); } catch (e) {}</script>
   <title>Salem Saleh | Portfolio</title>
 
   <!-- ===== SEO ===== -->

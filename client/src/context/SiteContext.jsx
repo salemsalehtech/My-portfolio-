@@ -19,12 +19,28 @@ import { T } from "../i18n/translations";
 const SiteContext = createContext(null);
 
 export function SiteProvider({ children }) {
-  const [theme, setTheme] = useState("light");
+  // The site opens in the light theme; if the visitor picked the dark one earlier, that
+  // choice (saved in localStorage below) wins. localStorage can throw (private mode,
+  // blocked storage), hence the try/catch — the site just falls back to light.
+  const [theme, setTheme] = useState(() => {
+    try {
+      return localStorage.getItem("theme") === "dark" ? "dark" : "light";
+    } catch {
+      return "light";
+    }
+  });
   const [lang, setLang] = useState("en");
 
-  // Keep the <html> element's "light" class in sync so index.css can style both themes.
+  // Keep the <html> element's "light" class in sync so index.css can style both themes,
+  // and remember the choice for the next visit. (index.html has a tiny inline script that
+  // applies a saved "dark" choice before React loads, so the page doesn't flash white.)
   useEffect(() => {
     document.documentElement.classList.toggle("light", theme === "light");
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      /* storage unavailable: the choice just won't be remembered */
+    }
   }, [theme]);
 
   // Keep the page's lang attribute, RTL class, and browser tab title in sync with the
