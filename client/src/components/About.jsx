@@ -24,13 +24,17 @@ const ICONS = {
   other: <svg {...svgProps}><circle cx="12" cy="12" r="3" /></svg>,
 };
 
+// Fetches the content, then hands it to <AboutContent>. The two are separate components on
+// purpose: useReveal() (the fade-in on scroll) only starts watching the elements that exist
+// when its component first mounts. AboutContent is mounted AFTER the data has arrived, so all
+// of its blocks already exist and get watched. (Keeping the hooks in the same component that
+// waits for data would leave them watching nothing — the blocks would stay invisible.)
 export default function About() {
-  const { t, lang } = useSite();
   // undefined = still loading; otherwise the content to show (saved or default).
   const [content, setContent] = useState(undefined);
   // The CV is uploaded from the admin dashboard (AdminCV.jsx). Ask the server whether one
   // exists and only show the download button if so.
-  const [cv, setCv] = useState(null);
+  const [cv, setCv] = useState(undefined); // undefined = still loading, null = none/failed
   useEffect(() => {
     api.get("/about")
       .then((data) => setContent(data && data.exists ? data : aboutDefaults()))
@@ -38,16 +42,21 @@ export default function About() {
     api.get("/cv/info").then(setCv).catch(() => setCv(null));
   }, []);
 
+  // Waiting for BOTH answers (the server can take a moment to wake up): render the empty
+  // section rather than flashing the default text and swapping it, or adding blocks later.
+  if (!content || cv === undefined) return <section id="about" className="section-surface"></section>;
+  return <AboutContent content={content} cv={cv} />;
+}
+
+function AboutContent({ content, cv }) {
+  const { t, lang } = useSite();
+
   // One useReveal() per block below, so each fades in independently as the user scrolls
   // to it rather than all at once.
   const [headerRef, headerVisible] = useReveal();
   const [statsRef, statsVisible] = useReveal();
   const [textRef, textVisible] = useReveal();
   const [cardRef, cardVisible] = useReveal();
-
-  // Waiting for the server (it can take a moment to wake up): render the empty section
-  // rather than flashing the default text and then swapping it.
-  if (!content) return <section id="about" className="section-surface"></section>;
 
   const pick = (en, ar) => (lang === "ar" && ar ? ar : en);
   const showCv = cv && cv.available;
