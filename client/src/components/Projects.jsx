@@ -1,26 +1,51 @@
-// Projects.jsx — the "Featured Projects" section (id="projects"): a category filter bar
+// Projects.jsx — the "Featured Projects" section (id="projects"): a technology filter bar
 // plus a grid of project cards, fetched live from the public GET /projects API via
 // useCollection(). Clicking a card opens ProjectModal with that project's full details.
+//
+// The filter buttons are NOT a fixed list: they are built from the `tags` of the projects
+// themselves (edited in Admin → Projects), most-used first. Add a tag to a project in the
+// dashboard and a button for it appears here — nothing to change in the code.
 import { useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";
 import ProjectModal from "./ProjectModal";
 
-const FILTERS = ["all", "web", "youtube", "automation"];
+// "React", "react " and "REACT" count as the same tag.
+const tagKey = (tag) => String(tag).trim().toLowerCase();
+
+// Unique tags across all projects as [{ key, label, count }], most used first (then A→Z).
+function collectTags(projects) {
+  const found = new Map();
+  for (const project of projects) {
+    const seenInThisProject = new Set(); // a tag listed twice on one project counts once
+    for (const raw of project.tags || []) {
+      const key = tagKey(raw);
+      if (!key || seenInThisProject.has(key)) continue;
+      seenInThisProject.add(key);
+      const entry = found.get(key);
+      if (entry) entry.count += 1;
+      else found.set(key, { key, label: String(raw).trim(), count: 1 });
+    }
+  }
+  return [...found.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+}
 
 export default function Projects() {
   const { t, lang } = useSite();
   const { data: projects } = useCollection("/projects");
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("all"); // "all" or a tag key
   const [selected, setSelected] = useState(null);
   const [headerRef, headerVisible] = useReveal();
   const [filterRef, filterVisible] = useReveal();
   const [gridRef, gridVisible] = useReveal();
 
-  const filtered = filter === "all" ? projects : projects.filter((p) => p.category === filter);
-
-  const filterLabel = { all: t.projects.filterAll, web: t.projects.filterWeb, youtube: t.projects.filterYoutube, automation: t.projects.filterAuto };
+  const tags = collectTags(projects);
+  // If the selected tag no longer exists (data changed), fall back to showing everything.
+  const activeFilter = tags.some((tag) => tag.key === filter) ? filter : "all";
+  const filtered = activeFilter === "all"
+    ? projects
+    : projects.filter((p) => (p.tags || []).some((tag) => tagKey(tag) === activeFilter));
 
   return (
     <section id="projects" className="section-surface">
@@ -32,9 +57,14 @@ export default function Projects() {
         </div>
 
         <div ref={filterRef} className={`filter-btns ${filterVisible ? "visible" : ""}`} data-ao>
-          {FILTERS.map((f) => (
-            <button key={f} className={`filter-btn ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>
-              {filterLabel[f]}
+          {tags.length > 0 && (
+            <button className={`filter-btn ${activeFilter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>
+              {t.projects.filterAll}
+            </button>
+          )}
+          {tags.map((tag) => (
+            <button key={tag.key} className={`filter-btn ${activeFilter === tag.key ? "active" : ""}`} onClick={() => setFilter(tag.key)}>
+              {tag.label}
             </button>
           ))}
         </div>
