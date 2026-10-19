@@ -7,6 +7,7 @@ import Hero from "../components/Hero";
 import About from "../components/About";
 import Skills from "../components/Skills";
 import Projects from "../components/Projects";
+import Testimonials from "../components/Testimonials";
 import YouTube from "../components/YouTube";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
@@ -23,6 +24,7 @@ export default function Portfolio() {
       <About />
       <Skills />
       <Projects />
+      <Testimonials />
       <YouTube />
       <Contact />
       <Footer />

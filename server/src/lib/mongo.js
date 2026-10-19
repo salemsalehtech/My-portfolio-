@@ -117,6 +117,24 @@ const aboutSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// A client testimonial shown in the public "Testimonials" section. Managed from /admin/testimonials.
+// Texts exist in English and Arabic like the other content models; `visible` lets the owner
+// keep a testimonial saved but hidden (useful later, when clients can submit their own and
+// each one waits for approval).
+const testimonialSchema = new mongoose.Schema(
+  {
+    authorName: { type: String, required: true, maxlength: 120 },
+    roleEn: { type: String, default: "", maxlength: 160 },
+    roleAr: { type: String, default: "", maxlength: 160 },
+    textEn: { type: String, required: true, maxlength: 1500 },
+    textAr: { type: String, default: "", maxlength: 1500 },
+    rating: { type: Number, default: 5, min: 1, max: 5 },
+    visible: { type: Boolean, default: true },
+    order: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+
 const models = {
   Project: mongoose.models.Project || mongoose.model("Project", projectSchema),
   Skill: mongoose.models.Skill || mongoose.model("Skill", skillSchema),
@@ -125,6 +143,7 @@ const models = {
   AdminUser: mongoose.models.AdminUser || mongoose.model("AdminUser", adminUserSchema),
   CvFile: mongoose.models.CvFile || mongoose.model("CvFile", cvFileSchema),
   About: mongoose.models.About || mongoose.model("About", aboutSchema),
+  Testimonial: mongoose.models.Testimonial || mongoose.model("Testimonial", testimonialSchema),
 };
 
 for (const model of Object.values(models)) {

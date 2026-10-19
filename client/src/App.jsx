@@ -26,6 +26,7 @@ import AdminYoutube from "./pages/admin/AdminYoutube";
 import AdminMessages from "./pages/admin/AdminMessages";
 import AdminCV from "./pages/admin/AdminCV";
 import AdminAbout from "./pages/admin/AdminAbout";
+import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import { Navigate } from "react-router-dom";
 
 export default function App() {
@@ -42,6 +43,7 @@ export default function App() {
               <Route path="skills" element={<AdminSkills />} />
               <Route path="youtube" element={<AdminYoutube />} />
               <Route path="messages" element={<AdminMessages />} />
+              <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="about" element={<AdminAbout />} />
               <Route path="cv" element={<AdminCV />} />
             </Route>

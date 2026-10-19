@@ -1,5 +1,5 @@
 const express = require("express");
-const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About } = require("../lib/mongo");
+const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -111,6 +111,27 @@ router.put("/about", async (req, res) => {
 
 router.delete("/about", async (req, res) => {
   await About.deleteMany({});
+  res.status(204).end();
+});
+
+// ---- Testimonials ----
+// Same CRUD shape as the other resources, but we copy only the known fields from the request
+// instead of passing req.body straight to Mongoose. Schema limits (rating 1-5, text length)
+// are enforced by Mongoose and come back as a 400 error.
+const TESTIMONIAL_FIELDS = ["authorName", "roleEn", "roleAr", "textEn", "textAr", "rating", "visible", "order"];
+const pickTestimonial = (body = {}) => Object.fromEntries(TESTIMONIAL_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+
+router.get("/testimonials", async (req, res) => {
+  res.json(await Testimonial.find().sort({ order: 1, createdAt: -1 }));
+});
+router.post("/testimonials", async (req, res) => {
+  res.status(201).json(await Testimonial.create(pickTestimonial(req.body)));
+});
+router.put("/testimonials/:id", async (req, res) => {
+  res.json(await Testimonial.findByIdAndUpdate(req.params.id, pickTestimonial(req.body), { new: true, runValidators: true }));
+});
+router.delete("/testimonials/:id", async (req, res) => {
+  await Testimonial.findByIdAndDelete(req.params.id);
   res.status(204).end();
 });
 
