@@ -34,7 +34,8 @@ Standing rules that apply to **every** future task.
 | Language | Bilingual (EN/AR) throughout data and UI. |
 | Deployment | **Live (2026-10-19).** Frontend: `https://salemsalehtech.github.io/My-portfolio-/`, served from the **`gh-pages` branch** (Pages source = "Deploy from a branch"). The Actions workflow `deploy-pages.yml` is blocked — GitHub account billing lock ("job was not started because your account is locked due to a billing issue", support ticket opened); until it clears, deploy by hand: `cd client && npm run build`, then push `client/dist` (+ `.nojekyll`) to `gh-pages`. Backend: Render free web service `https://salem-portfolio-server.onrender.com` (auto-deploys on push to `main`; sleeps after 15 min idle, first request ~1 min), database on MongoDB Atlas (M0, network access `0.0.0.0/0`). Production env vars live in Render, never in git (`.env.*` is git-ignored except `.env.example`/`.env.production`). |
 | Known issues | Contact notification email is not delivered — Render's free tier blocks outbound SMTP (587) and `SMTP_USER`/`SMTP_PASS` are placeholders; messages are still saved and readable in `/admin` → Messages. Plan: switch to an HTTP email API (e.g. Resend). |
-| Known gap | About bio, education, location, interests, and hero tagline are hardcoded in `client/src/i18n/translations.js` — violates rule 1 (see Wave A, item A0). |
+| Known gap | Hero name/tagline/rotating titles and the Contact/Footer social links are still hardcoded (`translations.js`, `Contact.jsx`, `Footer.jsx`) — violates rule 1. The About section is now fully dashboard-managed. |
+| Theme | Light theme by default; dark theme is neutral gray (`#141414`). The visitor's choice is remembered in `localStorage`. |
 | Brand | Dark navy background `#07111E`; gold accents `#E8A020` / `#C8900A`. Fonts: Outfit (headings), DM Sans (body), Tajawal (Arabic). |
 
 ---
@@ -55,13 +56,14 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 
 1. ~~Manual QA for 1.1~~ — done.
 2. ~~2.4 Deploy backend~~ — done 2026-10-19.
-3. **Rotate leaked secrets** — Atlas DB password, Render `JWT_SECRET`, admin password (all were pasted in chat); delete `server/.env.render` and `server/.env.atlas`.
+3. **Rotate leaked secrets** — Atlas DB password, Render `JWT_SECRET`, admin password (all were pasted in chat); delete `server/.env.render` and `server/.env.atlas`. *Owner decided (2026-10-19) to postpone this until the site grows — keep reminding before big releases.*
 4. **Unlock GitHub Actions** (billing lock) so deploys are automatic again; then set Pages source back to "GitHub Actions" and delete the `gh-pages` branch.
-5. **1.3 SEO + Open Graph** — small task, visible win.
-6. **2.1 + 2.2 Backend comments.**
-7. **1.2 + 2.5 PDFs** — write after the code they document is stable.
-8. **Wave A**, starting with **A0**.
-9. **2.6** whenever a custom domain is bought.
+5. ~~1.3 SEO + Open Graph~~ — done (a landscape 1200×630 share image is still to make).
+6. **Finish Wave A:** USP + case studies, "About me" video.
+7. **Contact notification email** via an HTTP email API (Resend) — also notifies new pending testimonials.
+8. **2.1 + 2.2 Backend comments.**
+9. **1.2 + 2.5 PDFs** — write after the code they document is stable.
+10. **2.6** whenever a custom domain is bought.
 
 ---
 
@@ -75,7 +77,7 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 - [ ] **1.2 Frontend PDF** — beginner-friendly PDF documenting every file and component.
   - *Deliverable:* reference PDF to return to while learning or adding features.
   - *Learn:* reading technical docs and mapping them line-by-line to real code.
-- [ ] **1.3 Basic SEO + Open Graph** — meta title/description + OG tags in `client/index.html`.
+- [x] **1.3 Basic SEO + Open Graph** *(done 2026-10-19)* — meta title/description + OG tags in `client/index.html`.
   - *Deliverable:* shared links on Facebook/LinkedIn show image, title, and description.
   - *Learn:* SEO basics, what Open Graph is and why it matters for a personal brand.
 
@@ -110,13 +112,14 @@ Every item follows rule 1 (dashboard-managed). Waves are ordered by proximity an
 
 ### Wave A — nearest (repeats an existing pattern) · right after Phase 2
 
-- **A0. Site content from dashboard** — move About bio/education/location/interests, hero tagline, and CV link out of `translations.js` into an admin-editable "site settings" resource (fixes the rule 1 gap).
-- **Testimonials + post-project client feedback form** 🔒 — feedback shows as a testimonial after owner approval.
-- **Offered Services section** — what services are offered.
-- **USP statement + case studies** — one differentiating line; projects presented as problem → solution → result.
-- **Filter projects by tag** — `Project.tags` already exists; mostly a UI change.
-- **CV download button** — PDF link set from the dashboard.
-- **"About me" video** — in About; video link set from the dashboard.
+- [x] **A0. About section from dashboard** — `/admin/about`: headings, bio, info rows, stat cards, interests (EN/AR, add/remove/reorder). *Done 2026-10-19.* Hero tagline still hardcoded (see Known gap).
+- [x] **Testimonials** — `/admin/testimonials` (rating, visible/hidden, order). *Done 2026-10-19.*
+- [x] **Client feedback form** 🔒 — links `/#/feedback/en` and `/#/feedback/ar` (copy them from Admin → Testimonials); submissions arrive hidden + "Pending" and go live on "Approve". Rate limited (5 successful/hour/IP), honeypot. *Done 2026-10-19.*
+- [x] **Offered Services section** — `/admin/services` (built-in icons, EN/AR, visible/order); section "What I Offer" after About. *Done 2026-10-20.*
+- [ ] **USP statement + case studies** — one differentiating line; projects presented as problem → solution → result.
+- [x] **Filter projects by tag** — buttons built from the projects' own tags (replaced the hardcoded category buttons). *Done 2026-10-19.*
+- [x] **CV download button** — PDF uploaded at `/admin/cv`, stored in MongoDB; button shown only when a CV exists. *Done 2026-10-19.*
+- [ ] **"About me" video** — in About; video link set from the dashboard.
 
 ### Wave B — medium (needs external integrations) · ~1–2 months after Wave A
 
