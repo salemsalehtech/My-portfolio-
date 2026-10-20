@@ -343,7 +343,7 @@ footer { background: var(--bg); border-top: 1px solid var(--card-border); paddin
 .testimonial-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); border-color: rgba(232,160,32,.3); }
 .testimonial-stars { display: flex; gap: 3px; font-size: 17px; color: var(--text-muted); letter-spacing: 1px; }
 .testimonial-stars .on { color: var(--gold); }
-.testimonial-text { margin: 0; flex: 1; font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
+.testimonial-text { margin: 0; text-align: start; flex: 1; font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
 .testimonial-author { display: flex; align-items: center; gap: 13px; padding-top: 16px; border-top: 1px solid var(--card-border); }
 .testimonial-avatar { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: #161616; font-family: var(--font-heading); font-weight: 800; font-size: 17px; }
 .testimonial-name { font-family: var(--font-heading); font-weight: 700; font-size: 15px; color: var(--text-primary); }
@@ -387,7 +387,7 @@ body .feedback-page[lang="ar"] h1 { font-family: var(--font-ar); letter-spacing:
 .service-card .service-icon { margin-bottom: 20px; }
 .service-title { font-family: var(--font-heading); font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
 body.ar .service-title { font-family: var(--font-ar); }
-.service-desc { font-size: 14.5px; line-height: 1.8; color: var(--text-secondary); }
+.service-desc { text-align: start; font-size: 14.5px; line-height: 1.8; color: var(--text-secondary); }
 .admin-icon-cell { color: var(--gold); width: 44px; }
 
 /* The navbar has up to 8 links now (Services / Reviews appear when they have content), which

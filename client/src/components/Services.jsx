@@ -36,8 +36,8 @@ function ServicesContent({ items }) {
           {items.map((item) => (
             <div className="service-card" key={item.id}>
               <div className="service-icon">{serviceIcon(item.icon)}</div>
-              <h3 className="service-title">{pick(item.titleEn, item.titleAr)}</h3>
-              <p className="service-desc">{pick(item.descEn, item.descAr)}</p>
+              <h3 className="service-title" dir="auto">{pick(item.titleEn, item.titleAr)}</h3>
+              <p className="service-desc" dir="auto">{pick(item.descEn, item.descAr)}</p>
             </div>
           ))}
         </div>

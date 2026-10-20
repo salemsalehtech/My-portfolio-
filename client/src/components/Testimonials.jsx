@@ -46,12 +46,12 @@ function TestimonialsContent({ items }) {
           {items.map((item) => (
             <figure className="testimonial-card" key={item.id}>
               <Stars rating={item.rating} />
-              <blockquote className="testimonial-text">{pick(item.textEn, item.textAr)}</blockquote>
+              <blockquote className="testimonial-text" dir="auto">{pick(item.textEn, item.textAr)}</blockquote>
               <figcaption className="testimonial-author">
                 <div className="testimonial-avatar">{item.authorName.trim().charAt(0).toUpperCase()}</div>
                 <div>
-                  <div className="testimonial-name">{item.authorName}</div>
-                  <div className="testimonial-role">{pick(item.roleEn, item.roleAr)}</div>
+                  <div className="testimonial-name" dir="auto">{item.authorName}</div>
+                  <div className="testimonial-role" dir="auto">{pick(item.roleEn, item.roleAr)}</div>
                 </div>
               </figcaption>
             </figure>
