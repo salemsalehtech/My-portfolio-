@@ -1,17 +1,16 @@
-// Testimonials.jsx — the "What Clients Say" section (id="testimonials"): a grid of cards
-// with the client's words, star rating, name and role. The cards come from the public
-// GET /testimonials API (only the ones marked visible), managed in Admin → Testimonials.
+// Testimonials.jsx — the "What Clients Say" section (id="testimonials"): cards with the
+// client's words, star rating, name and role. The list comes from the public GET /testimonials
+// API (only the ones marked visible, managed in Admin → Testimonials); Portfolio.jsx fetches it
+// and passes it in as `items` / `loading`, because the Navbar also needs to know if it's empty.
 //
 // If there are no testimonials the whole section is skipped, so the page never shows an
-// empty box. As in About.jsx, the component that renders the content is separate from the
-// one that fetches it: useReveal() (fade-in on scroll) only watches elements that exist
-// when its component first mounts, and the content mounts after the data has arrived.
+// empty box. As in About.jsx, the component that renders the content is separate from this
+// one: useReveal() (fade-in on scroll) only watches elements that exist when its component
+// first mounts, and the content mounts after the data has arrived.
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
-import { useCollection } from "../hooks/useCollection";
 
-export default function Testimonials() {
-  const { data: items, loading } = useCollection("/testimonials");
+export default function Testimonials({ items, loading }) {
   if (loading || items.length === 0) return null;
   return <TestimonialsContent items={items} />;
 }

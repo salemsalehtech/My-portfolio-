@@ -9,7 +9,9 @@
 // lives in lib/scrollToSection.js since it's a plain DOM utility, not a stateful hook.)
 import { useEffect, useState } from "react";
 
-const SECTION_IDS = ["home", "about", "skills", "projects", "youtube", "contact"];
+// In page order. Optional sections (services, testimonials) that aren't on the page right now
+// are simply skipped below — getElementById returns null for them.
+const SECTION_IDS = ["home", "about", "services", "skills", "projects", "testimonials", "youtube", "contact"];
 
 export function useScrollTracking() {
   const [scrolled, setScrolled] = useState(false);

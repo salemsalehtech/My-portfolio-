@@ -17,7 +17,7 @@ export const T = {
     greeting: "Hello, I'm", name: 'Salem Saleh',
     tagline: 'Building digital experiences & educating the next generation of developers.',
     ctaProjects: 'View Projects', ctaYoutube: 'Watch on YouTube',
-    nav: { home:'Home', about:'About', skills:'Skills', projects:'Projects', youtube:'YouTube', contact:'Contact' },
+    nav: { home:'Home', about:'About', services:'Services', skills:'Skills', projects:'Projects', testimonials:'Reviews', youtube:'YouTube', contact:'Contact' },
     about: {
       title:'About Me', subtitle:'Passionate Developer & Educator',
       p1:"I'm a software engineer graduated from Borg Al-Arab Technological University with expertise in full-stack web development. I build elegant, high-performance web applications using modern tools and frameworks.",
@@ -39,7 +39,7 @@ export const T = {
     greeting:'مرحباً، أنا', name:'سالم صالح',
     tagline:'أبني تجارب رقمية وأُعلّم الجيل القادم من المطورين.',
     ctaProjects:'عرض المشاريع', ctaYoutube:'شاهد على يوتيوب',
-    nav:{ home:'الرئيسية', about:'عني', skills:'المهارات', projects:'المشاريع', youtube:'يوتيوب', contact:'تواصل' },
+    nav:{ home:'الرئيسية', about:'عني', services:'الخدمات', skills:'المهارات', projects:'المشاريع', testimonials:'الآراء', youtube:'يوتيوب', contact:'تواصل' },
     about:{
       title:'عني', subtitle:'مطور شغوف ومُعلّم',
       p1:'أنا مهندس برمجيات متخرج من جامعة برج العرب التكنولوجية، متخصص في تطوير الويب الشامل. أبني تطبيقات ويب أنيقة وعالية الأداء باستخدام أحدث الأدوات.',

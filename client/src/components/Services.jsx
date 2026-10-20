@@ -1,17 +1,16 @@
-// Services.jsx — the "What I Offer" section (id="services"): a grid of cards, each with an
-// icon, a title and a short description. The cards come from the public GET /services API
-// (only the visible ones), managed in Admin → Services.
+// Services.jsx — the "What I Offer" section (id="services"): cards, each with an icon, a
+// title and a short description. The list comes from the public GET /services API (only the
+// visible ones, managed in Admin → Services); Portfolio.jsx fetches it and passes it in as
+// `items` / `loading`, because the Navbar also needs to know if it's empty.
 //
 // If there are no services the whole section is skipped. As in About.jsx / Testimonials.jsx,
-// fetching and rendering are two components: useReveal() (fade-in on scroll) only watches the
+// the content is a separate component: useReveal() (fade-in on scroll) only watches the
 // elements that exist when its component first mounts, and the content mounts after the data.
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
-import { useCollection } from "../hooks/useCollection";
 import { serviceIcon } from "../lib/serviceIcons";
 
-export default function Services() {
-  const { data: items, loading } = useCollection("/services");
+export default function Services({ items, loading }) {
   if (loading || items.length === 0) return null;
   return <ServicesContent items={items} />;
 }
