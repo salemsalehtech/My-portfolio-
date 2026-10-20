@@ -141,6 +141,25 @@ const testimonialSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// A service card in the public "What I Offer" section, managed from /admin/services.
+// `icon` picks one of the built-in icons (client/src/lib/serviceIcons.jsx); keep both lists in sync.
+const SERVICE_ICONS = ["web", "mobile", "backend", "code", "design", "teaching", "automation", "database", "consulting"];
+const serviceSchema = new mongoose.Schema(
+  {
+    titleEn: { type: String, default: "", maxlength: 120 },
+    titleAr: { type: String, default: "", maxlength: 120 },
+    descEn: { type: String, default: "", maxlength: 600 },
+    descAr: { type: String, default: "", maxlength: 600 },
+    icon: { type: String, enum: SERVICE_ICONS, default: "web" },
+    visible: { type: Boolean, default: true },
+    order: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+serviceSchema.pre("validate", function () {
+  if (!this.titleEn && !this.titleAr) this.invalidate("titleEn", "A service title is required");
+});
+
 testimonialSchema.pre("validate", function () {
   if (!this.textEn && !this.textAr) this.invalidate("textEn", "The testimonial text is required");
 });
@@ -154,6 +173,7 @@ const models = {
   CvFile: mongoose.models.CvFile || mongoose.model("CvFile", cvFileSchema),
   About: mongoose.models.About || mongoose.model("About", aboutSchema),
   Testimonial: mongoose.models.Testimonial || mongoose.model("Testimonial", testimonialSchema),
+  Service: mongoose.models.Service || mongoose.model("Service", serviceSchema),
 };
 
 for (const model of Object.values(models)) {

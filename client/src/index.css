@@ -377,3 +377,14 @@ body .feedback-page[lang="ar"] h1 { font-family: var(--font-ar); letter-spacing:
 .admin-linkrow { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
 .admin-linkrow > span { min-width: 150px; font-size: 14px; }
 .admin-linkrow .form-input { flex: 1; min-width: 220px; padding: 9px 12px; font-size: 13px; }
+
+/* ============ SERVICES ============ */
+.services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 22px; }
+.service-card { padding: 30px 26px; background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; transition: transform .3s, box-shadow .3s, border-color .3s; }
+.service-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); border-color: rgba(232,160,32,.3); }
+.service-icon { width: 54px; height: 54px; flex-shrink: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--gold-dim); color: var(--gold); border: 1px solid var(--card-border); }
+.service-card .service-icon { margin-bottom: 20px; }
+.service-title { font-family: var(--font-heading); font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
+body.ar .service-title { font-family: var(--font-ar); }
+.service-desc { font-size: 14.5px; line-height: 1.8; color: var(--text-secondary); }
+.admin-icon-cell { color: var(--gold); width: 44px; }

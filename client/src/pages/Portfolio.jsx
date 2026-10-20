@@ -8,6 +8,7 @@ import About from "../components/About";
 import Skills from "../components/Skills";
 import Projects from "../components/Projects";
 import Testimonials from "../components/Testimonials";
+import Services from "../components/Services";
 import YouTube from "../components/YouTube";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
@@ -22,6 +23,7 @@ export default function Portfolio() {
       <Navbar scrolled={scrolled} activeSection={activeSection} />
       <Hero />
       <About />
+      <Services />
       <Skills />
       <Projects />
       <Testimonials />

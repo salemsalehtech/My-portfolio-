@@ -10,6 +10,7 @@ const contactRouter = require("./routes/contact");
 const cvRouter = require("./routes/cv");
 const aboutRouter = require("./routes/about");
 const testimonialsRouter = require("./routes/testimonials");
+const servicesRouter = require("./routes/services");
 const authRouter = require("./routes/auth");
 const adminRouter = require("./routes/admin");
 
@@ -36,6 +37,7 @@ app.use("/api/contact", contactRouter);
 app.use("/api/cv", cvRouter);
 app.use("/api/about", aboutRouter);
 app.use("/api/testimonials", testimonialsRouter);
+app.use("/api/services", servicesRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 

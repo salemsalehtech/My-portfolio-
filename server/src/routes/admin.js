@@ -1,5 +1,5 @@
 const express = require("express");
-const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial } = require("../lib/mongo");
+const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -138,6 +138,30 @@ router.put("/testimonials/:id", async (req, res) => {
 });
 router.delete("/testimonials/:id", async (req, res) => {
   await Testimonial.findByIdAndDelete(req.params.id);
+  res.status(204).end();
+});
+
+// ---- Services ----
+// Same CRUD shape as testimonials: only known fields are copied from the request.
+const SERVICE_FIELDS = ["titleEn", "titleAr", "descEn", "descAr", "icon", "visible", "order"];
+const pickService = (body = {}) => Object.fromEntries(SERVICE_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+
+router.get("/services", async (req, res) => {
+  res.json(await Service.find().sort({ order: 1, createdAt: 1 }));
+});
+router.post("/services", async (req, res) => {
+  res.status(201).json(await Service.create(pickService(req.body)));
+});
+router.put("/services/:id", async (req, res) => {
+  const data = pickService(req.body);
+  // The "at least one title" rule runs on create; on update, check it here when both titles are sent.
+  if ("titleEn" in data && "titleAr" in data && !data.titleEn && !data.titleAr) {
+    return res.status(400).json({ error: "A service title is required" });
+  }
+  res.json(await Service.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
+});
+router.delete("/services/:id", async (req, res) => {
+  await Service.findByIdAndDelete(req.params.id);
   res.status(204).end();
 });
 
