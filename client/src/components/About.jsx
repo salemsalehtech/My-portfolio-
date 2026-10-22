@@ -14,6 +14,7 @@ import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { api, API_BASE } from "../lib/api";
 import { aboutDefaults } from "../lib/aboutDefaults";
+import { readCache, writeCache } from "../lib/apiCache";
 
 // Little icon next to each info row, chosen by the row's `icon` field.
 const svgProps = { width: 15, height: 15, viewBox: "0 0 24 24", fill: "none", stroke: "var(--gold)", strokeWidth: 2 };
@@ -24,26 +25,32 @@ const ICONS = {
   other: <svg {...svgProps}><circle cx="12" cy="12" r="3" /></svg>,
 };
 
-// Fetches the content, then hands it to <AboutContent>. The two are separate components on
-// purpose: useReveal() (the fade-in on scroll) only starts watching the elements that exist
-// when its component first mounts. AboutContent is mounted AFTER the data has arrived, so all
-// of its blocks already exist and get watched. (Keeping the hooks in the same component that
-// waits for data would leave them watching nothing — the blocks would stay invisible.)
+// The /about answer (saved content, or { exists: false }) turned into what we display.
+const toContent = (data) => (data && data.exists ? data : aboutDefaults());
+
+// Fetches the content, then hands it to <AboutContent>. If this browser has seen the About
+// content before (lib/apiCache.js), it is shown immediately and refreshed when the server
+// answers — so returning visitors don't wait for a sleeping server.
 export default function About() {
   // undefined = still loading; otherwise the content to show (saved or default).
-  const [content, setContent] = useState(undefined);
+  const [content, setContent] = useState(() => {
+    const cached = readCache("/about");
+    return cached === undefined ? undefined : toContent(cached);
+  });
   // The CV is uploaded from the admin dashboard (AdminCV.jsx). Ask the server whether one
   // exists and only show the download button if so.
-  const [cv, setCv] = useState(undefined); // undefined = still loading, null = none/failed
+  const [cv, setCv] = useState(() => readCache("/cv/info")); // undefined = still loading, null = none/failed
   useEffect(() => {
     api.get("/about")
-      .then((data) => setContent(data && data.exists ? data : aboutDefaults()))
-      .catch(() => setContent(aboutDefaults()));
-    api.get("/cv/info").then(setCv).catch(() => setCv(null));
+      .then((data) => { setContent(toContent(data)); writeCache("/about", data); })
+      .catch(() => setContent((current) => current || aboutDefaults()));
+    api.get("/cv/info")
+      .then((info) => { setCv(info); writeCache("/cv/info", info); })
+      .catch(() => setCv((current) => (current === undefined ? null : current)));
   }, []);
 
-  // Waiting for BOTH answers (the server can take a moment to wake up): render the empty
-  // section rather than flashing the default text and swapping it, or adding blocks later.
+  // First visit, waiting for BOTH answers (the server can take a moment to wake up): render the
+  // empty section rather than flashing the default text and then swapping it.
   if (!content || cv === undefined) return <section id="about" className="section-surface"></section>;
   return <AboutContent content={content} cv={cv} />;
 }
