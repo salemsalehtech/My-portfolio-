@@ -1,6 +1,7 @@
 require("dotenv").config();
 const app = require("./app");
 const { connectMongo } = require("./lib/mongo");
+const { startKeepAlive } = require("./lib/keepAlive");
 
 const REQUIRED_ENV_VARS = ["MONGODB_URI", "JWT_SECRET"];
 const missing = REQUIRED_ENV_VARS.filter((key) => !process.env[key]);
@@ -24,6 +25,7 @@ connectMongo()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`API listening on http://localhost:${PORT}`);
+      startKeepAlive(); // only does something on Render (see lib/keepAlive.js)
     });
   })
   .catch((error) => {
