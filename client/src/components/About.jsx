@@ -15,6 +15,7 @@ import { useReveal } from "../hooks/useReveal";
 import { api, API_BASE } from "../lib/api";
 import { aboutDefaults } from "../lib/aboutDefaults";
 import { readCache, writeCache } from "../lib/apiCache";
+import { youtubeId, youtubeEmbedUrl } from "../lib/youtube";
 
 // Little icon next to each info row, chosen by the row's `icon` field.
 const svgProps = { width: 15, height: 15, viewBox: "0 0 24 24", fill: "none", stroke: "var(--gold)", strokeWidth: 2 };
@@ -64,9 +65,12 @@ function AboutContent({ content, cv }) {
   const [statsRef, statsVisible] = useReveal();
   const [textRef, textVisible] = useReveal();
   const [cardRef, cardVisible] = useReveal();
+  const [videoRef, videoVisible] = useReveal();
 
   const pick = (en, ar) => (lang === "ar" && ar ? ar : en);
   const showCv = cv && cv.available;
+  // Optional "about me" video (Admin → About): embedded only if it's a valid YouTube link.
+  const videoId = youtubeId(content.videoUrl);
 
   return (
     <section id="about" className="section-surface">
@@ -126,6 +130,19 @@ function AboutContent({ content, cv }) {
             </div>
           )}
         </div>
+
+        {videoId && (
+          <div ref={videoRef} className={`about-video ${videoVisible ? "visible" : ""}`} data-ao>
+            <iframe
+              src={youtubeEmbedUrl(videoId)}
+              title={pick(content.titleEn, content.titleAr)}
+              loading="lazy"
+              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+            ></iframe>
+          </div>
+        )}
       </div>
     </section>
   );

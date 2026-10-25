@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { aboutDefaults } from "../../lib/aboutDefaults";
 import { Field, ListEditor } from "./FormParts";
+import { youtubeId, youtubeEmbedUrl } from "../../lib/youtube";
 
 const ICONS = [
   { value: "education", label: "Education" },
@@ -127,6 +128,23 @@ export default function AdminAbout() {
             </>
           )}
         />
+
+        <h2>“About me” video (optional)</h2>
+        <Field
+          label="YouTube link — shown under the About section; leave empty for no video"
+          type="url"
+          placeholder="https://www.youtube.com/watch?v=…  or  https://youtu.be/…"
+          value={form.videoUrl || ""}
+          onChange={set("videoUrl")}
+        />
+        {form.videoUrl && !youtubeId(form.videoUrl) && (
+          <p className="admin-error">This doesn’t look like a YouTube video link — the server will refuse it.</p>
+        )}
+        {youtubeId(form.videoUrl) && (
+          <div className="about-video admin-video-preview">
+            <iframe src={youtubeEmbedUrl(youtubeId(form.videoUrl))} title="Video preview" loading="lazy" allowFullScreen></iframe>
+          </div>
+        )}
 
         {error && <p className="admin-error">{error}</p>}
         <div className="admin-form-actions">

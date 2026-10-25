@@ -88,7 +88,7 @@ router.delete("/cv", async (req, res) => {
 const ABOUT_TEXT_FIELDS = [
   "badgeEn", "badgeAr", "titleEn", "titleAr",
   "p1En", "p1Ar", "p2En", "p2Ar",
-  "interestsTitleEn", "interestsTitleAr",
+  "interestsTitleEn", "interestsTitleAr", "videoUrl",
 ];
 const asList = (value, max) => (Array.isArray(value) ? value.slice(0, max) : []);
 

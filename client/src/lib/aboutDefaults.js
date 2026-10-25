@@ -27,5 +27,6 @@ export function aboutDefaults() {
     ],
     interestsTitleEn: en.about.interestsTitle, interestsTitleAr: ar.about.interestsTitle,
     interests: en.interests.map((item, i) => ({ en: item, ar: ar.interests[i] || item })),
+    videoUrl: "", // optional YouTube "about me" video — none by default
   };
 }

@@ -114,6 +114,17 @@ const aboutSchema = new mongoose.Schema(
     ],
     interestsTitleEn: { type: String, default: "", maxlength: 200 },
     interestsTitleAr: { type: String, default: "", maxlength: 200 },
+    // Optional "about me" video: a YouTube link, embedded in the About section. Only YouTube
+    // video links are accepted (same formats as client/src/lib/youtube.js).
+    videoUrl: {
+      type: String,
+      default: "",
+      maxlength: 300,
+      validate: {
+        validator: (v) => v === "" || /^https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)[\w-]{11}/i.test(v),
+        message: "The video must be a YouTube link (youtube.com/watch?v=…, youtu.be/…, or /shorts/…)",
+      },
+    },
     interests: [
       {
         _id: false,
