@@ -19,9 +19,12 @@ import Footer from "../components/Footer";
 import ScrollTop from "../components/ScrollTop";
 import { useScrollTracking } from "../hooks/useScrollTracking";
 import { useCollection } from "../hooks/useCollection";
+import { useSiteSettings } from "../hooks/useSiteSettings";
 
 export default function Portfolio() {
   const { scrolled, activeSection, showScrollTop } = useScrollTracking();
+  // Site-wide profile content (Hero texts, links, location…) — used by several sections.
+  const settings = useSiteSettings();
   const services = useCollection("/services");
   const testimonials = useCollection("/testimonials");
 
@@ -40,15 +43,15 @@ export default function Portfolio() {
   return (
     <>
       <Navbar scrolled={scrolled} activeSection={activeSection} sections={navSections} />
-      <Hero />
+      <Hero settings={settings} />
       <About />
       <Services items={services.data} loading={services.loading} />
       <Skills />
       <Projects />
       <Testimonials items={testimonials.data} loading={testimonials.loading} />
-      <YouTube />
-      <Contact />
-      <Footer />
+      <YouTube settings={settings} />
+      <Contact settings={settings} />
+      <Footer settings={settings} />
       <ScrollTop visible={showScrollTop} />
     </>
   );

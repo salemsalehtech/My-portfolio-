@@ -396,3 +396,10 @@ body.ar .service-title { font-family: var(--font-ar); }
   .nav-links, .nav-actions { display: none; }
   .btn-menu { display: flex; }
 }
+
+/* Hero USP line (Admin → Profile & Links): one sentence that sets you apart, under the tagline */
+.hero-usp { margin: -10px 0 0; padding: 4px 0 4px 14px; border-left: 3px solid var(--gold); color: var(--text-primary); font-size: 15.5px; font-weight: 500; line-height: 1.7; max-width: 520px; }
+body.ar .hero-usp { padding: 4px 14px 4px 0; border-left: none; border-right: 3px solid var(--gold); }
+@media (max-width: 900px) {
+  .hero-usp, body.ar .hero-usp { border: none; padding: 0; margin-left: auto; margin-right: auto; }
+}

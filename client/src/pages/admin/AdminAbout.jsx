@@ -8,6 +8,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { aboutDefaults } from "../../lib/aboutDefaults";
+import { Field, ListEditor } from "./FormParts";
 
 const ICONS = [
   { value: "education", label: "Education" },
@@ -15,48 +16,6 @@ const ICONS = [
   { value: "language", label: "Language" },
   { value: "other", label: "Other" },
 ];
-
-// A labelled text input / textarea. `rtl` makes Arabic fields type right-to-left.
-function Field({ label, value, onChange, multiline, rtl }) {
-  const props = { className: "form-input", value, dir: rtl ? "rtl" : "ltr", onChange: (e) => onChange(e.target.value) };
-  return (
-    <label>
-      {label}
-      {multiline ? <textarea rows={4} {...props} /> : <input {...props} />}
-    </label>
-  );
-}
-
-// Editable list with add / remove / move up / move down. `renderRow(item, update)` draws one row.
-function ListEditor({ title, items, onChange, blank, renderRow }) {
-  const update = (index, patch) => onChange(items.map((item, i) => (i === index ? { ...item, ...patch } : item)));
-  const remove = (index) => onChange(items.filter((_, i) => i !== index));
-  const move = (index, step) => {
-    const target = index + step;
-    if (target < 0 || target >= items.length) return;
-    const next = [...items];
-    [next[index], next[target]] = [next[target], next[index]];
-    onChange(next);
-  };
-
-  return (
-    <div style={{ marginBottom: 28 }}>
-      <h2>{title}</h2>
-      {items.length === 0 && <p className="admin-empty">Nothing here — this block is hidden on the site.</p>}
-      {items.map((item, index) => (
-        <div key={index} className="admin-form-row" style={{ alignItems: "end", marginBottom: 10 }}>
-          {renderRow(item, (patch) => update(index, patch))}
-          <div className="actions">
-            <button type="button" className="admin-btn" onClick={() => move(index, -1)} disabled={index === 0}>↑</button>
-            <button type="button" className="admin-btn" onClick={() => move(index, 1)} disabled={index === items.length - 1}>↓</button>
-            <button type="button" className="admin-btn admin-btn-danger" onClick={() => remove(index)}>✕</button>
-          </div>
-        </div>
-      ))}
-      <button type="button" className="admin-btn" onClick={() => onChange([...items, { ...blank }])}>+ Add</button>
-    </div>
-  );
-}
 
 export default function AdminAbout() {
   // ---- STATE ----

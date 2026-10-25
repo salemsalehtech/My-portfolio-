@@ -1,12 +1,18 @@
-// YouTube.jsx — the "YouTube Channel" section (id="youtube"): a static channel-info card
-// plus a list of videos fetched live from the public GET /youtube API via useCollection().
-// Each video links out to YouTube directly (there's no in-page player).
+// YouTube.jsx — the "YouTube Channel" section (id="youtube"): a channel-info card plus a list
+// of videos fetched live from the public GET /youtube API via useCollection(). Each video links
+// out to YouTube directly (there's no in-page player).
+//
+// Props: `settings` — the site-wide profile content from Admin → "Profile & Links" (loaded in
+// pages/Portfolio.jsx): the channel link, its @handle (read from the link) and the description.
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";
+import { pick, youtubeHandle } from "../lib/pick";
+import { YoutubeIcon } from "../lib/socialIcons";
 
-export default function YouTube() {
+export default function YouTube({ settings }) {
   const { t, lang } = useSite();
+  const channelUrl = settings.youtubeUrl;
   const { data: videos } = useCollection("/youtube");
   const [headerRef, headerVisible] = useReveal();
   const [cardRef, cardVisible] = useReveal();
@@ -25,15 +31,17 @@ export default function YouTube() {
         <div className="yt-grid">
           <div ref={cardRef} className={`yt-channel-card ${cardVisible ? "visible" : ""}`} data-ao>
             <div className="yt-logo">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="white"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" /></svg>
+              <YoutubeIcon size={32} fill="white" />
             </div>
-            <h3>Salem Saleh</h3>
-            <p className="yt-handle">@SalemSaleh1</p>
-            <p className="yt-desc">{t.youtube.channelDesc}</p>
-            <a href="https://www.youtube.com/@SalemSaleh1" target="_blank" rel="noopener noreferrer" className="btn-youtube">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" /></svg>
-              {t.youtube.subscribe}
-            </a>
+            <h3>{pick(lang, settings.nameEn, settings.nameAr)}</h3>
+            {channelUrl && <p className="yt-handle">{youtubeHandle(channelUrl)}</p>}
+            <p className="yt-desc">{pick(lang, settings.channelDescEn, settings.channelDescAr)}</p>
+            {channelUrl && (
+              <a href={channelUrl} target="_blank" rel="noopener noreferrer" className="btn-youtube">
+                <YoutubeIcon size={15} />
+                {t.youtube.subscribe}
+              </a>
+            )}
           </div>
 
           <div ref={listRef} className={`yt-videos ${listVisible ? "visible" : ""}`} data-ao="right">

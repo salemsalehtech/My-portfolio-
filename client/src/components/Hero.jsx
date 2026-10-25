@@ -1,35 +1,52 @@
 // Hero.jsx — the landing/intro section shown at the top of the public portfolio
-// (id="home"). Renders the greeting, name, a rotating job-title line, tagline, CTA
-// buttons, social links, the avatar image, and the canvas particle background (see
-// Particles.jsx). No props — reads theme/language from useSite() and rotates through the
-// localized titles in i18n/translations.js#heroTitles.
+// (id="home"). Renders the greeting, name, a rotating job-title line, tagline, the optional
+// USP line, CTA buttons, social links, the avatar image, and the canvas particle background
+// (see Particles.jsx).
+//
+// Props: `settings` — the site-wide profile content from Admin → "Profile & Links" (loaded
+// once in pages/Portfolio.jsx via useSiteSettings; never empty, it falls back to defaults).
+// Every text has an English and an Arabic version; pick() chooses for the current language.
+// A link left empty in the dashboard hides its button.
 import { useEffect, useState } from "react";
 import { useSite } from "../context/SiteContext";
-import { heroTitles } from "../i18n/translations";
 import { scrollToSection } from "../lib/scrollToSection";
 import { useReveal } from "../hooks/useReveal";
+import { pick } from "../lib/pick";
+import { GithubIcon, LinkedinIcon, YoutubeIcon } from "../lib/socialIcons";
 import Particles from "./Particles";
 
-export default function Hero() {
+export default function Hero({ settings }) {
   const { t, lang } = useSite();
   const [heroIdx, setHeroIdx] = useState(0);
   const [fading, setFading] = useState(false);
   const [textRef, textVisible] = useReveal();
   const [avatarRef, avatarVisible] = useReveal();
 
-  // Cycles through the 3 job titles in heroTitles every 3.2s: fade out (380ms), swap to
-  // the next title, then fade back in (the fade-in itself is just the CSS transition on
-  // `opacity` reacting to `fading` flipping back to false below).
+  const titles = settings.titles.map((title) => pick(lang, title.en, title.ar)).filter(Boolean);
+  const count = titles.length;
+
+  // Cycles through the job titles every 3.2s: fade out (380ms), swap to the next title, then
+  // fade back in (the fade-in itself is just the CSS transition on `opacity` reacting to
+  // `fading` flipping back to false below). With 0 or 1 title there is nothing to rotate.
   useEffect(() => {
+    if (count < 2) return;
     const cycle = setInterval(() => {
       setFading(true);
       setTimeout(() => {
-        setHeroIdx((i) => (i + 1) % 3);
+        setHeroIdx((i) => (i + 1) % count);
         setFading(false);
       }, 380);
     }, 3200);
     return () => clearInterval(cycle);
-  }, []);
+  }, [count]);
+
+  const socials = [
+    { url: settings.githubUrl, label: "GitHub", className: "social-btn", Icon: GithubIcon },
+    { url: settings.linkedinUrl, label: "LinkedIn", className: "social-btn social-linkedin", Icon: LinkedinIcon },
+    { url: settings.youtubeUrl, label: "YouTube", className: "social-btn social-youtube", Icon: YoutubeIcon },
+  ].filter((s) => s.url);
+  const usp = pick(lang, settings.uspEn, settings.uspAr);
+  const name = pick(lang, settings.nameEn, settings.nameAr);
 
   return (
     <section id="home" className="hero">
@@ -39,32 +56,35 @@ export default function Hero() {
         <div ref={textRef} className={`hero-text ${textVisible ? "visible" : ""}`} data-ao>
           <div className="hero-greeting">
             <div className="hero-line"></div>
-            <span>{t.greeting}</span>
+            <span>{pick(lang, settings.greetingEn, settings.greetingAr)}</span>
           </div>
-          <h1>{t.name}</h1>
-          <div className="hero-subtitle">
-            <span className="hero-dash">⎯</span>
-            <span id="heroSub" style={{ opacity: fading ? 0 : 1 }}>{heroTitles[lang][heroIdx]}</span>
-          </div>
-          <p className="hero-tagline">{t.tagline}</p>
+          <h1>{name}</h1>
+          {count > 0 && (
+            <div className="hero-subtitle">
+              <span className="hero-dash">⎯</span>
+              <span id="heroSub" style={{ opacity: fading ? 0 : 1 }}>{titles[heroIdx % count]}</span>
+            </div>
+          )}
+          <p className="hero-tagline">{pick(lang, settings.taglineEn, settings.taglineAr)}</p>
+          {usp && <p className="hero-usp">{usp}</p>}
           <div className="hero-ctas">
             <button className="btn-primary" onClick={() => scrollToSection("projects")}>{t.ctaProjects}</button>
-            <a href="https://www.youtube.com/@SalemSaleh1" target="_blank" rel="noopener noreferrer" className="btn-secondary">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" /></svg>
-              <span>{t.ctaYoutube}</span>
-            </a>
+            {settings.youtubeUrl && (
+              <a href={settings.youtubeUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+                <YoutubeIcon size={15} />
+                <span>{t.ctaYoutube}</span>
+              </a>
+            )}
           </div>
-          <div className="hero-socials">
-            <a href="https://github.com/salemsalehtech" target="_blank" rel="noopener noreferrer" className="social-btn" aria-label="GitHub">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.23c-3.34.73-4.03-1.42-4.03-1.42-.55-1.39-1.33-1.76-1.33-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 016 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.7.8.58A12 12 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
-            </a>
-            <a href="https://www.linkedin.com/in/salemsalehtech" target="_blank" rel="noopener noreferrer" className="social-btn social-linkedin" aria-label="LinkedIn">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 110-4.12 2.06 2.06 0 010 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45C23.2 24 24 23.23 24 22.27V1.73C24 .77 23.2 0 22.22 0z" /></svg>
-            </a>
-            <a href="https://www.youtube.com/@SalemSaleh1" target="_blank" rel="noopener noreferrer" className="social-btn social-youtube" aria-label="YouTube">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 00.5 6.2 31 31 0 000 12a31 31 0 00.5 5.8 3 3 0 002.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 002.1-2.1A31 31 0 0024 12a31 31 0 00-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" /></svg>
-            </a>
-          </div>
+          {socials.length > 0 && (
+            <div className="hero-socials">
+              {socials.map(({ url, label, className, Icon }) => (
+                <a key={label} href={url} target="_blank" rel="noopener noreferrer" className={className} aria-label={label}>
+                  <Icon size={17} />
+                </a>
+              ))}
+            </div>
+          )}
         </div>
         <div ref={avatarRef} className={`hero-avatar ${avatarVisible ? "visible" : ""}`} data-ao="scale">
           <div className="avatar-wrapper">
@@ -72,7 +92,7 @@ export default function Hero() {
             <div className="avatar-ring ring-2"></div>
             <div className="avatar-dashed"></div>
             <div className="avatar-img">
-              <img src={`${import.meta.env.BASE_URL}uploads/imagr.png`} alt="Salem Saleh" />
+              <img src={`${import.meta.env.BASE_URL}uploads/imagr.png`} alt={name} />
             </div>
             <div className="avatar-dot dot-1"></div>
             <div className="avatar-dot dot-2"></div>

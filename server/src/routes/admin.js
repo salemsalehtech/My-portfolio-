@@ -1,5 +1,5 @@
 const express = require("express");
-const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service } = require("../lib/mongo");
+const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -138,6 +138,34 @@ router.put("/testimonials/:id", async (req, res) => {
 });
 router.delete("/testimonials/:id", async (req, res) => {
   await Testimonial.findByIdAndDelete(req.params.id);
+  res.status(204).end();
+});
+
+// ---- Site settings ("Profile & Links") ----
+// One document, same approach as About: whitelist of text fields + a capped `titles` list.
+// Link/email formats are checked by the schema (runValidators) and come back as a 400.
+const SETTINGS_TEXT_FIELDS = [
+  "greetingEn", "greetingAr", "nameEn", "nameAr", "taglineEn", "taglineAr", "uspEn", "uspAr",
+  "email", "githubUrl", "linkedinUrl", "youtubeUrl",
+  "locationEn", "locationAr", "roleEn", "roleAr", "channelDescEn", "channelDescAr",
+];
+
+router.get("/settings", async (req, res) => {
+  const settings = await SiteSettings.findOne();
+  res.json(settings ? { exists: true, ...settings.toJSON() } : { exists: false });
+});
+
+router.put("/settings", async (req, res) => {
+  const body = req.body || {};
+  const clean = {};
+  for (const field of SETTINGS_TEXT_FIELDS) clean[field] = String(body[field] ?? "").trim();
+  clean.titles = asList(body.titles, 6).map((t) => ({ en: String(t.en ?? "").trim(), ar: String(t.ar ?? "").trim() }));
+  const settings = await SiteSettings.findOneAndUpdate({}, { $set: clean }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
+  res.json({ exists: true, ...settings.toJSON() });
+});
+
+router.delete("/settings", async (req, res) => {
+  await SiteSettings.deleteMany({});
   res.status(204).end();
 });
 

@@ -141,6 +141,41 @@ const testimonialSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Site-wide profile content, edited from /admin/settings ("Profile & Links"): the Hero (greeting,
+// name, rotating titles, tagline, USP line), the contact links (email, GitHub, LinkedIn, YouTube),
+// the location, the footer role and the YouTube channel description. One single document; if
+// none exists the site uses the defaults in client/src/lib/siteDefaults.js.
+// Links are validated to start with http(s):// — never let a "javascript:" URL into an href.
+const httpUrl = {
+  type: String,
+  default: "",
+  maxlength: 300,
+  validate: { validator: (v) => v === "" || /^https?:\/\/\S+$/i.test(v), message: "Links must start with http:// or https://" },
+};
+const shortText = { type: String, default: "", maxlength: 160 };
+const siteSettingsSchema = new mongoose.Schema(
+  {
+    greetingEn: shortText, greetingAr: shortText,
+    nameEn: shortText, nameAr: shortText,
+    titles: [{ _id: false, en: { type: String, default: "", maxlength: 80 }, ar: { type: String, default: "", maxlength: 80 } }],
+    taglineEn: { type: String, default: "", maxlength: 300 }, taglineAr: { type: String, default: "", maxlength: 300 },
+    uspEn: { type: String, default: "", maxlength: 300 }, uspAr: { type: String, default: "", maxlength: 300 },
+    email: {
+      type: String,
+      default: "",
+      maxlength: 200,
+      validate: { validator: (v) => v === "" || /^\S+@\S+\.\S+$/.test(v), message: "Please enter a valid email address" },
+    },
+    githubUrl: httpUrl,
+    linkedinUrl: httpUrl,
+    youtubeUrl: httpUrl,
+    locationEn: shortText, locationAr: shortText,
+    roleEn: shortText, roleAr: shortText,
+    channelDescEn: { type: String, default: "", maxlength: 500 }, channelDescAr: { type: String, default: "", maxlength: 500 },
+  },
+  { timestamps: true }
+);
+
 // A service card in the public "What I Offer" section, managed from /admin/services.
 // `icon` picks one of the built-in icons (client/src/lib/serviceIcons.jsx); keep both lists in sync.
 const SERVICE_ICONS = ["web", "mobile", "backend", "code", "design", "teaching", "automation", "database", "consulting"];
@@ -174,6 +209,7 @@ const models = {
   About: mongoose.models.About || mongoose.model("About", aboutSchema),
   Testimonial: mongoose.models.Testimonial || mongoose.model("Testimonial", testimonialSchema),
   Service: mongoose.models.Service || mongoose.model("Service", serviceSchema),
+  SiteSettings: mongoose.models.SiteSettings || mongoose.model("SiteSettings", siteSettingsSchema),
 };
 
 for (const model of Object.values(models)) {

@@ -8,6 +8,7 @@ import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";
 
 const LINKS = [
+  { to: "/admin/settings", label: "Profile & Links" },
   { to: "/admin/projects", label: "Projects" },
   { to: "/admin/skills", label: "Skills" },
   { to: "/admin/youtube", label: "YouTube" },
