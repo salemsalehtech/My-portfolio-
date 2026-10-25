@@ -23,6 +23,7 @@ const settingsRouter = require("./routes/settings");
 const certificatesRouter = require("./routes/certificates");
 const analyticsRouter = require("./routes/analytics");
 const postsRouter = require("./routes/posts");
+const coursesRouter = require("./routes/courses");
 const authRouter = require("./routes/auth");
 const adminRouter = require("./routes/admin");
 
@@ -51,6 +52,8 @@ app.use("/api/admin/cv", express.json({ limit: "6mb" }));
 app.use("/api/admin/certificates", express.json({ limit: "4mb" }));
 // Blog posts: long Markdown texts in two languages + cover pictures (max 2 MB).
 app.use("/api/admin/posts", express.json({ limit: "4mb" }));
+// Course cover pictures (max 2 MB).
+app.use("/api/admin/courses", express.json({ limit: "4mb" }));
 // Reads JSON request bodies into req.body (max 100 KB by default — plenty for every form).
 app.use(express.json());
 
@@ -72,6 +75,7 @@ app.use("/api/settings", settingsRouter);
 app.use("/api/certificates", certificatesRouter);
 app.use("/api/analytics", analyticsRouter);
 app.use("/api/posts", postsRouter);
+app.use("/api/courses", coursesRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 

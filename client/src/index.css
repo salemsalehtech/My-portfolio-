@@ -392,7 +392,7 @@ body.ar .service-title { font-family: var(--font-ar); }
 .service-desc { text-align: start; font-size: 14.5px; line-height: 1.8; color: var(--text-secondary); }
 .admin-icon-cell { color: var(--gold); width: 44px; }
 
-/* The navbar has up to 10 links now (Services / Certificates / Reviews / Blog appear when they have content), which
+/* The navbar has up to 11 links now (Services / Certificates / Reviews / Blog / Courses appear when they have content), which
    no longer fit next to the logo and buttons on mid-size screens: switch to the menu earlier. */
 @media (max-width: 1300px) {
   .nav-links, .nav-actions { display: none; }
@@ -533,3 +533,8 @@ body.ar .cert-title { font-family: var(--font-ar); }
 .editor-spacer { flex: 1; }
 .editor-body { min-height: 420px; font-family: Consolas, "JetBrains Mono", monospace; font-size: 14px; line-height: 1.7; resize: vertical; }
 .editor-preview { min-height: 420px; padding: 18px 22px; border: 1.5px solid var(--card-border); border-radius: 10px; background: var(--surface); }
+
+/* ============ COURSES (cards reuse the certificate card styles) ============ */
+.course-card .cert-image { position: relative; aspect-ratio: 16 / 9; }
+.course-platform { position: absolute; top: 12px; inset-inline-start: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(0,0,0,.65); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .3px; }
+.course-desc { font-size: 14px; line-height: 1.75; color: var(--text-secondary); text-align: start; }

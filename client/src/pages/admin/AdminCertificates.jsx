@@ -8,21 +8,12 @@
 // certificate without deleting it; `order` sorts the cards (lowest first).
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../lib/api";
+import { readAsBase64 } from "../../lib/readAsBase64";
 import { certificateImageUrl } from "../../components/Certificates";
 
 const EMPTY = { titleEn: "", titleAr: "", issuerEn: "", issuerAr: "", date: "", credentialUrl: "", visible: true, order: 0 };
 const MAX_MB = 2; // keep in sync with MAX_IMAGE_BYTES on the server
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
-
-// Reads a File and resolves with its content as base64 (without the "data:…," prefix).
-function readAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(",")[1]);
-    reader.onerror = () => reject(new Error("Could not read the file"));
-    reader.readAsDataURL(file);
-  });
-}
 
 export default function AdminCertificates() {
   // ---- STATE ----

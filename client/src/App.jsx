@@ -33,6 +33,7 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminCertificates from "./pages/admin/AdminCertificates";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminPosts from "./pages/admin/AdminPosts";
+import AdminCourses from "./pages/admin/AdminCourses";
 import BlogList from "./pages/BlogList";
 import { Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
@@ -67,6 +68,7 @@ export default function App() {
               <Route path="certificates" element={<AdminCertificates />} />
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="posts" element={<AdminPosts />} />
+              <Route path="courses" element={<AdminCourses />} />
               <Route path="posts/:id" element={<Suspense fallback={loading}><AdminPostEditor /></Suspense>} />
               <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="about" element={<AdminAbout />} />

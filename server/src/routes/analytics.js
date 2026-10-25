@@ -20,7 +20,7 @@ const eventLimiter = rateLimit({
 });
 
 // Must match the section ids of the site (client/src/pages/Portfolio.jsx).
-const SECTIONS = ["home", "about", "services", "skills", "projects", "certificates", "testimonials", "blog", "youtube", "contact"];
+const SECTIONS = ["home", "about", "services", "skills", "projects", "certificates", "testimonials", "blog", "courses", "youtube", "contact"];
 const MAX_REFERRERS_PER_DAY = 50; // beyond that, new sources are counted as "other"
 
 // Today's date in Cairo (the owner's time zone), as "YYYY-MM-DD".

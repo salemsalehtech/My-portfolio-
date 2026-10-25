@@ -5,19 +5,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
+import { readAsBase64 } from "../../lib/readAsBase64";
 import { postCoverUrl } from "../../lib/posts";
 
 const MAX_MB = 2;
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
-
-function readAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(",")[1]);
-    reader.onerror = () => reject(new Error("Could not read the file"));
-    reader.readAsDataURL(file);
-  });
-}
 
 // The public address of a post (HashRouter: everything after #).
 const publicUrl = (slug) => `${window.location.origin}${window.location.pathname}#/blog/${slug}`;

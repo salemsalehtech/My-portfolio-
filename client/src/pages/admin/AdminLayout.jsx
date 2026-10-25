@@ -17,6 +17,7 @@ const LINKS = [
   { to: "/admin/services", label: "Services" },
   { to: "/admin/certificates", label: "Certificates" },
   { to: "/admin/posts", label: "Blog" },
+  { to: "/admin/courses", label: "Courses" },
   { to: "/admin/testimonials", label: "Testimonials" },
   { to: "/admin/about", label: "About" },
   { to: "/admin/cv", label: "CV" },

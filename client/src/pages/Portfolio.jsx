@@ -2,10 +2,10 @@
 // and wires up the scroll-tracking state (useScrollTracking, see hooks/useScrollTracking.js)
 // that Navbar and ScrollTop need.
 //
-// Most sections load their own data. Services and Testimonials are the exception: they are
-// OPTIONAL (hidden when the dashboard has none), and the Navbar must know whether they exist to
-// show their links — so their lists are fetched once here and passed to both the section and
-// the Navbar.
+// Most sections load their own data. The optional ones (Services, Certificates, Testimonials,
+// Blog, Courses) are the exception: they are hidden when the dashboard has none, and the Navbar
+// must know whether they exist to show their links — so their lists are fetched once here and
+// passed to both the section and the Navbar.
 import Navbar from "../components/Navbar";
 import Hero from "../components/Hero";
 import About from "../components/About";
@@ -15,6 +15,7 @@ import Testimonials from "../components/Testimonials";
 import Services from "../components/Services";
 import Certificates from "../components/Certificates";
 import BlogSection from "../components/BlogSection";
+import Courses from "../components/Courses";
 import YouTube from "../components/YouTube";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
@@ -39,6 +40,7 @@ export default function Portfolio() {
   const testimonials = useCollection("/testimonials");
   const certificates = useCollection("/certificates");
   const posts = useCollection("/posts");
+  const courses = useCollection("/courses");
 
   // Navbar links, in page order. The optional sections only get a link when they have content.
   const navSections = [
@@ -50,6 +52,7 @@ export default function Portfolio() {
     ...(certificates.data.length > 0 ? ["certificates"] : []),
     ...(testimonials.data.length > 0 ? ["testimonials"] : []),
     ...(posts.data.length > 0 ? ["blog"] : []),
+    ...(courses.data.length > 0 ? ["courses"] : []),
     "youtube",
     "contact",
   ];
@@ -65,6 +68,7 @@ export default function Portfolio() {
       <Certificates items={certificates.data} loading={certificates.loading} />
       <Testimonials items={testimonials.data} loading={testimonials.loading} />
       <BlogSection items={posts.data} loading={posts.loading} />
+      <Courses items={courses.data} loading={courses.loading} />
       <YouTube settings={settings} />
       <Contact settings={settings} />
       <Footer settings={settings} />

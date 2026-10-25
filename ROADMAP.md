@@ -63,8 +63,9 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 7. **Contact notification email** via Resend — *postponed by the owner (2026-10-25)*. Code is ready on branch `feat/email-resend` (needs `RESEND_API_KEY` + `SITE_URL` in Render).
 8. ~~2.1 + 2.2 Backend comments~~ — done 2026-10-25 (comment-only diff, verified).
 9. ~~1.2 + 2.5 PDFs~~ — done 2026-10-25: `docs/guides/frontend-guide.pdf`, `docs/guides/backend-guide.pdf` (Arabic; rebuild with `bash docs/guides/build-pdfs.sh`).
-10. **Wave B** — ~~certificates~~, ~~visitor analytics~~, ~~blog~~ done; next: course section, newsletter 🔒 (needs the email), chat 🔒.
+10. **Wave B** — ~~certificates~~, ~~visitor analytics~~, ~~blog~~, ~~courses~~ done; next: newsletter 🔒 (needs the email), chat 🔒.
 11. **2.6** whenever a custom domain is bought.
+12. **Google Search visibility** — *postponed by the owner (2026-10-25)*. Add `client/public/robots.txt` (disallow `/admin`) + `sitemap.xml`, register the site in Google Search Console (URL-prefix property, HTML-tag verification — owner sends the meta tag), submit the sitemap, Request indexing; owner links the site from LinkedIn/GitHub/YouTube. Best done together with 2.6.
 
 ---
 
@@ -128,7 +129,7 @@ Every item follows rule 1 (dashboard-managed). Waves are ordered by proximity an
 - [x] **Technical blog** — `/admin/posts` (+ editor with Markdown preview): EN/AR title/summary/body, unique slug, tags, draft/published, cover picture; site: "Latest articles" (3 newest) on the home page + navbar link, `/#/blog` (tag filter) and `/#/blog/:slug`. Markdown rendered with marked + sanitized by DOMPurify, both lazy-loaded (home page unaffected). Reads counted in Analytics. *Done 2026-10-25.* ⚠ SEO: hash URLs (`/#/blog/…`) are one page for Google — clean URLs are planned with the custom domain (2.6).
 - [x] **Certificates / achievements** — `/admin/certificates`: EN/AR title + issuer, date, verify link (http(s) only), picture upload (PNG/JPEG/WebP ≤ 2 MB, stored in MongoDB, type checked by magic bytes), visible/order; section after Projects + navbar link when not empty. *Done 2026-10-25.*
 - **Newsletter signup** 🔒 — notify visitors of new course/product/article.
-- **Course / social-media content section** — course summary + files + exercises.
+- [x] **Course / social-media content section** — `/admin/courses`: EN/AR title, description and details line ("12 lessons · Free"), platform, link (http(s) only), cover picture (same rules as certificates), visible/order; "Courses & Content" section after the blog + navbar link when not empty. *Done 2026-10-25.* Files/exercises per course can come later if needed.
 - [x] **Visitor analytics in admin** — `/admin/analytics`: visits per day (SVG bar chart + table), totals, mobile/Arabic share, CV downloads, top sections / projects / referrers, 7/30/90 days. Privacy-friendly: daily counters only (no IP, no cookies), whitelisted values, rate limited; the admin and Do-Not-Track browsers are not counted. *Done 2026-10-25.*
 - **Lightweight visitor chat widget** 🔒 — very simple; fully separate from any other chat system (not UniConnect).
 

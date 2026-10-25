@@ -4,18 +4,9 @@
 // PUT /api/admin/cv as base64, and stored in MongoDB (see server/src/routes/admin.js).
 import { useEffect, useRef, useState } from "react";
 import { api, API_BASE } from "../../lib/api";
+import { readAsBase64 } from "../../lib/readAsBase64";
 
 const MAX_MB = 4; // keep in sync with MAX_CV_BYTES on the server
-
-// Reads a File and resolves with its content as a base64 string (without the "data:" prefix).
-function readAsBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(",")[1]);
-    reader.onerror = () => reject(new Error("Could not read the file"));
-    reader.readAsDataURL(file);
-  });
-}
 
 export default function AdminCV() {
   const [info, setInfo] = useState(null); // null while loading, then { available, filename, size, updatedAt }

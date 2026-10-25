@@ -7,7 +7,7 @@
 // Single-document resources (about, settings, cv) use PUT / DELETE without an :id.
 // The public site reads the same data through the read-only routers (routes/projects.js, …).
 const express = require("express");
-const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, DailyStat, Post } = require("../lib/mongo");
+const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, DailyStat, Post, Course } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -220,6 +220,20 @@ function imageType(buffer) {
   return null;
 }
 
+// Checks an uploaded picture ({ data: "<base64>" } in the request body). Returns
+// { image: { data, contentType, size } } ready to save, or { error } for a 400 response.
+// Used by certificate pictures, blog covers and course covers.
+function readImageUpload(body) {
+  const { data } = body || {};
+  if (!data || typeof data !== "string") return { error: "An image file is required" };
+  const buffer = Buffer.from(data, "base64");
+  if (buffer.length === 0) return { error: "The file is empty" };
+  if (buffer.length > MAX_IMAGE_BYTES) return { error: "Image is too large (max 2 MB)" };
+  const contentType = imageType(buffer);
+  if (!contentType) return { error: "The image must be PNG, JPEG or WebP" };
+  return { image: { data: buffer, contentType, size: buffer.length } };
+}
+
 router.get("/certificates", async (req, res) => {
   res.json(await Certificate.find().sort({ order: 1, createdAt: -1 }));
 });
@@ -240,19 +254,9 @@ router.delete("/certificates/:id", async (req, res) => {
 
 // PUT /api/admin/certificates/:id/image  { data: "<base64>" } — PNG, JPEG or WebP, max 2 MB.
 router.put("/certificates/:id/image", async (req, res) => {
-  const { data } = req.body || {};
-  if (!data || typeof data !== "string") return res.status(400).json({ error: "An image file is required" });
-  const buffer = Buffer.from(data, "base64");
-  if (buffer.length === 0) return res.status(400).json({ error: "The file is empty" });
-  if (buffer.length > MAX_IMAGE_BYTES) return res.status(400).json({ error: "Image is too large (max 2 MB)" });
-  const contentType = imageType(buffer);
-  if (!contentType) return res.status(400).json({ error: "The image must be PNG, JPEG or WebP" });
-
-  const cert = await Certificate.findByIdAndUpdate(
-    req.params.id,
-    { image: { data: buffer, contentType, size: buffer.length } },
-    { new: true }
-  );
+  const { image, error } = readImageUpload(req.body);
+  if (error) return res.status(400).json({ error });
+  const cert = await Certificate.findByIdAndUpdate(req.params.id, { image }, { new: true });
   if (!cert) return res.status(404).json({ error: "Certificate not found" });
   res.json(cert);
 });
@@ -261,6 +265,43 @@ router.delete("/certificates/:id/image", async (req, res) => {
   const cert = await Certificate.findByIdAndUpdate(req.params.id, { image: { contentType: "", size: 0 } }, { new: true });
   if (!cert) return res.status(404).json({ error: "Certificate not found" });
   res.json(cert);
+});
+
+// ---- Courses ----
+// Same as certificates: CRUD + a separate route to upload / remove the cover picture.
+const COURSE_FIELDS = ["titleEn", "titleAr", "descEn", "descAr", "platform", "detailsEn", "detailsAr", "url", "visible", "order"];
+const pickCourse = (body = {}) => Object.fromEntries(COURSE_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+
+router.get("/courses", async (req, res) => {
+  res.json(await Course.find().sort({ order: 1, createdAt: -1 }));
+});
+router.post("/courses", async (req, res) => {
+  res.status(201).json(await Course.create(pickCourse(req.body)));
+});
+router.put("/courses/:id", async (req, res) => {
+  const data = pickCourse(req.body);
+  if ("titleEn" in data && "titleAr" in data && !data.titleEn && !data.titleAr) {
+    return res.status(400).json({ error: "A course title is required" });
+  }
+  res.json(await Course.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
+});
+router.delete("/courses/:id", async (req, res) => {
+  await Course.findByIdAndDelete(req.params.id);
+  res.status(204).end();
+});
+
+// PUT /api/admin/courses/:id/image  { data: "<base64>" } — same rules as certificate pictures.
+router.put("/courses/:id/image", async (req, res) => {
+  const { image, error } = readImageUpload(req.body);
+  if (error) return res.status(400).json({ error });
+  const course = await Course.findByIdAndUpdate(req.params.id, { image }, { new: true });
+  if (!course) return res.status(404).json({ error: "Course not found" });
+  res.json(course);
+});
+router.delete("/courses/:id/image", async (req, res) => {
+  const course = await Course.findByIdAndUpdate(req.params.id, { image: { contentType: "", size: 0 } }, { new: true });
+  if (!course) return res.status(404).json({ error: "Course not found" });
+  res.json(course);
 });
 
 // ---- Visitor analytics (read-only) ----
@@ -357,14 +398,9 @@ router.delete("/posts/:id", async (req, res) => {
 
 // PUT /api/admin/posts/:id/cover  { data: "<base64>" } — same rules as certificate pictures.
 router.put("/posts/:id/cover", async (req, res) => {
-  const { data } = req.body || {};
-  if (!data || typeof data !== "string") return res.status(400).json({ error: "An image file is required" });
-  const buffer = Buffer.from(data, "base64");
-  if (buffer.length === 0) return res.status(400).json({ error: "The file is empty" });
-  if (buffer.length > MAX_IMAGE_BYTES) return res.status(400).json({ error: "Image is too large (max 2 MB)" });
-  const contentType = imageType(buffer);
-  if (!contentType) return res.status(400).json({ error: "The image must be PNG, JPEG or WebP" });
-  const post = await Post.findByIdAndUpdate(req.params.id, { cover: { data: buffer, contentType, size: buffer.length } }, { new: true });
+  const { image, error } = readImageUpload(req.body);
+  if (error) return res.status(400).json({ error });
+  const post = await Post.findByIdAndUpdate(req.params.id, { cover: image }, { new: true });
   if (!post) return res.status(404).json({ error: "Post not found" });
   res.json(post);
 });

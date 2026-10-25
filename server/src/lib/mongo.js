@@ -326,6 +326,33 @@ certificateSchema.pre("validate", function () {
   if (!this.titleEn && !this.titleAr) this.invalidate("titleEn", "A certificate title is required");
 });
 
+// A course or content series (Courses section) — e.g. a YouTube playlist, a Udemy course or a
+// Facebook series — managed from /admin/courses. Each card links out to `url`. The cover picture
+// works exactly like the certificate picture (`hasImage` in JSON, served by GET /api/courses/:id/image).
+const courseSchema = new mongoose.Schema(
+  {
+    titleEn: { type: String, default: "", maxlength: 160 },
+    titleAr: { type: String, default: "", maxlength: 160 },
+    descEn: { type: String, default: "", maxlength: 500 },
+    descAr: { type: String, default: "", maxlength: 500 },
+    platform: { type: String, default: "", maxlength: 40 }, // free text, e.g. "YouTube" or "Udemy"
+    detailsEn: { type: String, default: "", maxlength: 80 }, // short line, e.g. "12 lessons · Free"
+    detailsAr: { type: String, default: "", maxlength: 80 },
+    url: httpUrl,
+    image: {
+      data: { type: Buffer, select: false },
+      contentType: { type: String, default: "" },
+      size: { type: Number, default: 0 },
+    },
+    visible: { type: Boolean, default: true },
+    order: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+courseSchema.pre("validate", function () {
+  if (!this.titleEn && !this.titleAr) this.invalidate("titleEn", "A course title is required");
+});
+
 // Turn each schema into a model. `mongoose.models.X ||` reuses an existing model instead of
 // redefining it if this file is loaded twice (which would throw an error).
 const models = {
@@ -342,6 +369,7 @@ const models = {
   Certificate: mongoose.models.Certificate || mongoose.model("Certificate", certificateSchema),
   DailyStat: mongoose.models.DailyStat || mongoose.model("DailyStat", dailyStatSchema),
   Post: mongoose.models.Post || mongoose.model("Post", postSchema),
+  Course: mongoose.models.Course || mongoose.model("Course", courseSchema),
 };
 
 // When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and
@@ -357,18 +385,20 @@ for (const model of Object.values(models)) {
   });
 }
 
-// Certificates: same as above, plus never send the image itself in JSON — just `hasImage`.
-// The picture is fetched separately from GET /api/certificates/:id/image.
-models.Certificate.schema.set("toJSON", {
-  transform: (_document, ret) => {
-    ret.id = ret._id.toString();
-    ret.hasImage = Boolean(ret.image && ret.image.size);
-    delete ret._id;
-    delete ret.__v;
-    delete ret.image;
-    return ret;
-  },
-});
+// Certificates and courses: same as above, plus never send the image itself in JSON — just
+// `hasImage`. The picture is fetched separately from GET /api/certificates/:id/image (or /courses).
+for (const model of [models.Certificate, models.Course]) {
+  model.schema.set("toJSON", {
+    transform: (_document, ret) => {
+      ret.id = ret._id.toString();
+      ret.hasImage = Boolean(ret.image && ret.image.size);
+      delete ret._id;
+      delete ret.__v;
+      delete ret.image;
+      return ret;
+    },
+  });
+}
 
 // Blog posts: the cover picture becomes `hasCover` (fetched from GET /api/posts/:slug/cover).
 models.Post.schema.set("toJSON", {
