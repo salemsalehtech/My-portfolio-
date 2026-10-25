@@ -88,7 +88,7 @@ export default function Projects() {
                   <p className="project-desc">{desc}</p>
                   <div className="project-footer">
                     <span className="project-cat">{cat}</span>
-                    <span className="project-more">Details →</span>
+                    <span className="project-more">{t.projects.details}</span>
                   </div>
                 </div>
               </div>

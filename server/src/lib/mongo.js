@@ -19,6 +19,14 @@ const projectSchema = new mongoose.Schema(
     gradient: { type: String, default: "" },
     catLabelEn: { type: String, default: "" },
     catLabelAr: { type: String, default: "" },
+    // Optional case study, shown in the project's details popup as
+    // "The problem → The solution → The result". Empty parts are simply not shown.
+    problemEn: { type: String, default: "", maxlength: 1500 },
+    problemAr: { type: String, default: "", maxlength: 1500 },
+    solutionEn: { type: String, default: "", maxlength: 1500 },
+    solutionAr: { type: String, default: "", maxlength: 1500 },
+    resultEn: { type: String, default: "", maxlength: 1500 },
+    resultAr: { type: String, default: "", maxlength: 1500 },
     order: { type: Number, default: 0 },
   },
   { timestamps: true }

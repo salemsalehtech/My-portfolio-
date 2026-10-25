@@ -20,7 +20,15 @@ const EMPTY = {
   titleEn: "", titleAr: "", descEn: "", descAr: "", tags: "", category: "web",
   githubUrl: "", demoUrl: "", gradient: "linear-gradient(135deg,#1E3A5F,#2E5B9A)",
   catLabelEn: "", catLabelAr: "", order: 0,
+  problemEn: "", problemAr: "", solutionEn: "", solutionAr: "", resultEn: "", resultAr: "",
 };
+
+// The optional case-study fields, drawn as pairs of EN/AR text areas in the form below.
+const CASE_STUDY = [
+  { key: "problem", label: "The problem" },
+  { key: "solution", label: "The solution" },
+  { key: "result", label: "The result" },
+];
 
 export default function AdminProjects() {
   // ---- STATE ----
@@ -37,7 +45,8 @@ export default function AdminProjects() {
   // ---- FORM HANDLERS ----
   const openNew = () => { setForm(EMPTY); setEditing("new"); };
   // tags is an array on the server; join it into "a, b, c" for the text input here.
-  const openEdit = (p) => { setForm({ ...p, tags: p.tags.join(", ") }); setEditing(p.id); };
+  // `...EMPTY` first so projects saved before the case-study fields existed still get "" values.
+  const openEdit = (p) => { setForm({ ...EMPTY, ...p, tags: p.tags.join(", ") }); setEditing(p.id); };
 
   const save = async (e) => {
     e.preventDefault();
@@ -137,6 +146,21 @@ export default function AdminProjects() {
               <label>Gradient (CSS)
                 <input className="form-input" value={form.gradient} onChange={(e) => setForm({ ...form, gradient: e.target.value })} />
               </label>
+
+              <h3 style={{ marginTop: 10 }}>Case study (optional)</h3>
+              <p style={{ opacity: 0.7, fontSize: 13, margin: 0 }}>
+                Shown in the project popup as Problem → Solution → Result. Leave a part empty to skip it.
+              </p>
+              {CASE_STUDY.map(({ key, label }) => (
+                <div className="admin-form-row" key={key}>
+                  <label>{label} (EN)
+                    <textarea className="form-input form-textarea" rows={3} value={form[`${key}En`]} onChange={(e) => setForm({ ...form, [`${key}En`]: e.target.value })} maxLength={1500} />
+                  </label>
+                  <label>{label} (AR)
+                    <textarea className="form-input form-textarea" rows={3} dir="rtl" value={form[`${key}Ar`]} onChange={(e) => setForm({ ...form, [`${key}Ar`]: e.target.value })} maxLength={1500} />
+                  </label>
+                </div>
+              ))}
               <div className="admin-form-actions">
                 <button type="button" className="admin-btn" onClick={() => setEditing(null)}>Cancel</button>
                 <button type="submit" className="admin-btn admin-btn-primary">Save</button>
