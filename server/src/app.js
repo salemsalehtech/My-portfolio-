@@ -52,8 +52,9 @@ app.use("/api/admin/cv", express.json({ limit: "6mb" }));
 app.use("/api/admin/certificates", express.json({ limit: "4mb" }));
 // Blog posts: long Markdown texts in two languages + cover pictures (max 2 MB).
 app.use("/api/admin/posts", express.json({ limit: "4mb" }));
-// Course cover pictures (max 2 MB).
+// Course and project pictures (max 2 MB).
 app.use("/api/admin/courses", express.json({ limit: "4mb" }));
+app.use("/api/admin/projects", express.json({ limit: "4mb" }));
 // Reads JSON request bodies into req.body (max 100 KB by default — plenty for every form).
 app.use(express.json());
 

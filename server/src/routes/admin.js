@@ -19,14 +19,16 @@ router.use(requireAuth);
 // The oldest resources (projects, skills, youtube) pass req.body straight to Mongoose; the
 // schema ignores unknown fields. Newer ones copy only whitelisted fields (see pickService).
 // `runValidators: true` makes updates respect the schema's limits too (not only creates).
+// The picture is never taken from the form — only from the upload route (PUT /projects/:id/image).
+const withoutImage = ({ image, ...rest } = {}) => rest;
 router.get("/projects", async (req, res) => {
   res.json(await Project.find().sort({ order: 1 }));
 });
 router.post("/projects", async (req, res) => {
-  res.status(201).json(await Project.create(req.body));
+  res.status(201).json(await Project.create(withoutImage(req.body)));
 });
 router.put("/projects/:id", async (req, res) => {
-  res.json(await Project.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }));
+  res.json(await Project.findByIdAndUpdate(req.params.id, withoutImage(req.body), { new: true, runValidators: true }));
 });
 router.delete("/projects/:id", async (req, res) => {
   await Project.findByIdAndDelete(req.params.id);
@@ -265,6 +267,20 @@ router.delete("/certificates/:id/image", async (req, res) => {
   const cert = await Certificate.findByIdAndUpdate(req.params.id, { image: { contentType: "", size: 0 } }, { new: true });
   if (!cert) return res.status(404).json({ error: "Certificate not found" });
   res.json(cert);
+});
+
+// PUT /api/admin/projects/:id/image  { data: "<base64>" } — same rules as certificate pictures.
+router.put("/projects/:id/image", async (req, res) => {
+  const { image, error } = readImageUpload(req.body);
+  if (error) return res.status(400).json({ error });
+  const project = await Project.findByIdAndUpdate(req.params.id, { image }, { new: true });
+  if (!project) return res.status(404).json({ error: "Project not found" });
+  res.json(project);
+});
+router.delete("/projects/:id/image", async (req, res) => {
+  const project = await Project.findByIdAndUpdate(req.params.id, { image: { contentType: "", size: 0 } }, { new: true });
+  if (!project) return res.status(404).json({ error: "Project not found" });
+  res.json(project);
 });
 
 // ---- Courses ----

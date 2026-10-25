@@ -11,8 +11,13 @@
 // components/Projects.jsx), catLabelEn/catLabelAr is the filter chip label, and `tags` is
 // stored as an array on the server but edited here as one comma-separated text field for
 // simplicity (see the split/join in save()/openEdit() below).
-import { useEffect, useState } from "react";
+//
+// Picture: "Upload picture" on a row sends a screenshot to PUT /admin/projects/:id/image
+// (PNG / JPEG / WebP, max 2 MB — same as certificates). A new project must be saved first.
+import { useEffect, useRef, useState } from "react";
 import { api } from "../../lib/api";
+import { readAsBase64 } from "../../lib/readAsBase64";
+import { projectImageUrl } from "../../components/Projects";
 
 // ---- Blank form shape, used both for a fresh "New Project" and as the shape `form` state
 //      always has ----
@@ -30,11 +35,18 @@ const CASE_STUDY = [
   { key: "result", label: "The result" },
 ];
 
+const MAX_MB = 2; // keep in sync with MAX_IMAGE_BYTES on the server
+const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
 export default function AdminProjects() {
   // ---- STATE ----
   const [projects, setProjects] = useState([]); // the table's data
   const [editing, setEditing] = useState(null); // null | "new" | <project id>
   const [form, setForm] = useState(EMPTY);       // the modal form's current values
+  const [error, setError] = useState("");        // picture upload problems
+  const [uploadingId, setUploadingId] = useState(null);
+  const fileInput = useRef(null);
+  const uploadFor = useRef(null); // which project the file picker was opened for
 
   // ---- DATA LOADING ----
   // Re-fetches the full list from the server; called on mount and again after every
@@ -65,6 +77,33 @@ export default function AdminProjects() {
     load();
   };
 
+  // ---- PICTURE ----
+  const pickImage = (p) => { uploadFor.current = p.id; setError(""); fileInput.current.click(); };
+
+  const upload = async (e) => {
+    const file = e.target.files[0];
+    const id = uploadFor.current;
+    e.target.value = ""; // allow choosing the same file again later
+    if (!file || !id) return;
+    if (!IMAGE_TYPES.includes(file.type)) return setError("Please choose a PNG, JPEG or WebP image.");
+    if (file.size > MAX_MB * 1024 * 1024) return setError(`The image is too large (max ${MAX_MB} MB).`);
+    setUploadingId(id);
+    try {
+      await api.put(`/admin/projects/${id}/image`, { data: await readAsBase64(file) });
+      load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploadingId(null);
+    }
+  };
+
+  const removeImage = async (p) => {
+    if (!confirm("Remove the picture of this project?")) return;
+    await api.del(`/admin/projects/${p.id}/image`);
+    load();
+  };
+
   // ---- RENDER: table of existing projects ----
   return (
     <div>
@@ -72,18 +111,27 @@ export default function AdminProjects() {
       <div className="admin-toolbar">
         <button className="admin-btn admin-btn-primary" onClick={openNew}>+ New Project</button>
       </div>
+      {error && editing === null && <p className="admin-error">{error}</p>}
+      <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} hidden />
       <table className="admin-table">
         <thead>
-          <tr><th>Title</th><th>Category</th><th>Order</th><th></th></tr>
+          <tr><th>Picture</th><th>Title</th><th>Category</th><th>Order</th><th></th></tr>
         </thead>
         <tbody>
-          {projects.length === 0 && <tr><td colSpan={4} className="admin-empty">No projects yet.</td></tr>}
+          {projects.length === 0 && <tr><td colSpan={5} className="admin-empty">No projects yet.</td></tr>}
           {projects.map((p) => (
             <tr key={p.id}>
+              <td className="admin-thumb-cell">
+                {p.hasImage ? <img className="admin-thumb" src={projectImageUrl(p)} alt="" /> : "—"}
+              </td>
               <td>{p.titleEn}</td>
               <td>{p.category}</td>
               <td>{p.order}</td>
               <td className="actions">
+                <button className="admin-btn" onClick={() => pickImage(p)} disabled={uploadingId === p.id}>
+                  {uploadingId === p.id ? "Uploading…" : p.hasImage ? "Replace picture" : "Upload picture"}
+                </button>
+                {p.hasImage && <button className="admin-btn" onClick={() => removeImage(p)}>Remove picture</button>}
                 <button className="admin-btn" onClick={() => openEdit(p)}>Edit</button>
                 <button className="admin-btn admin-btn-danger" onClick={() => remove(p.id)}>Delete</button>
               </td>
@@ -91,6 +139,7 @@ export default function AdminProjects() {
           ))}
         </tbody>
       </table>
+      <p style={{ opacity: 0.7, fontSize: 13 }}>Pictures: PNG, JPEG or WebP, up to {MAX_MB} MB. A landscape screenshot (16:9, e.g. 1280×720) looks best. Projects without a picture show their gradient.</p>
 
       {/* ---- RENDER: create/edit modal form (only mounted while editing !== null) ---- */}
       {editing !== null && (
@@ -143,7 +192,7 @@ export default function AdminProjects() {
                   <input className="form-input" value={form.demoUrl} onChange={(e) => setForm({ ...form, demoUrl: e.target.value })} />
                 </label>
               </div>
-              <label>Gradient (CSS)
+              <label>Gradient (CSS) — shown when the project has no picture
                 <input className="form-input" value={form.gradient} onChange={(e) => setForm({ ...form, gradient: e.target.value })} />
               </label>
 

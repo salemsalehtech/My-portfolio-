@@ -538,3 +538,10 @@ body.ar .cert-title { font-family: var(--font-ar); }
 .course-card .cert-image { position: relative; aspect-ratio: 16 / 9; }
 .course-platform { position: absolute; top: 12px; inset-inline-start: 12px; padding: 4px 10px; border-radius: 999px; background: rgba(0,0,0,.65); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .3px; }
 .course-desc { font-size: 14px; line-height: 1.75; color: var(--text-secondary); text-align: start; }
+
+/* ============ PROJECT PICTURES (Admin → Projects → Upload picture) ============ */
+.projects-grid.has-images .project-thumb { height: auto; aspect-ratio: 16 / 9; }
+.project-thumb-img, .modal-header-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.project-thumb-img { transition: transform .4s; }
+.project-card:hover .project-thumb-img { transform: scale(1.04); }
+.modal-header.has-image { height: auto; aspect-ratio: 16 / 9; }

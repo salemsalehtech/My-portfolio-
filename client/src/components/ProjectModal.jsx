@@ -15,6 +15,7 @@
 import { useSite } from "../context/SiteContext";
 import { pick } from "../lib/pick";
 import { GithubIcon } from "../lib/socialIcons";
+import { projectImageUrl } from "./Projects";
 
 const isLink = (url) => /^https?:\/\/\S+$/i.test(url || "");
 
@@ -35,7 +36,8 @@ export default function ProjectModal({ project, onClose }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header" style={{ background: project.gradient }}>
+        <div className={`modal-header ${project.hasImage ? "has-image" : ""}`} style={{ background: project.gradient }}>
+          {project.hasImage && <img className="modal-header-img" src={projectImageUrl(project)} alt="" />}
           <button className="modal-close" onClick={onClose}>✕</button>
           <div className="modal-tags">
             {project.tags.map((tag) => (

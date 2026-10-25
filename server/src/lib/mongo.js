@@ -43,6 +43,13 @@ const projectSchema = new mongoose.Schema(
     solutionAr: { type: String, default: "", maxlength: 1500 },
     resultEn: { type: String, default: "", maxlength: 1500 },
     resultAr: { type: String, default: "", maxlength: 1500 },
+    // Optional screenshot / cover picture (like the certificate picture: stored in the document,
+    // never sent in JSON — the site reads `hasImage` and loads GET /api/projects/:id/image).
+    image: {
+      data: { type: Buffer, select: false },
+      contentType: { type: String, default: "" },
+      size: { type: Number, default: 0 },
+    },
     order: { type: Number, default: 0 },
   },
   { timestamps: true }
@@ -385,9 +392,9 @@ for (const model of Object.values(models)) {
   });
 }
 
-// Certificates and courses: same as above, plus never send the image itself in JSON — just
-// `hasImage`. The picture is fetched separately from GET /api/certificates/:id/image (or /courses).
-for (const model of [models.Certificate, models.Course]) {
+// Projects, certificates and courses: same as above, plus never send the image itself in JSON —
+// just `hasImage`. The picture is fetched separately from GET /api/<resource>/:id/image.
+for (const model of [models.Project, models.Certificate, models.Course]) {
   model.schema.set("toJSON", {
     transform: (_document, ret) => {
       ret.id = ret._id.toString();

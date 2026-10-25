@@ -5,12 +5,21 @@
 // The filter buttons are NOT a fixed list: they are built from the `tags` of the projects
 // themselves (edited in Admin → Projects), most-used first. Add a tag to a project in the
 // dashboard and a button for it appears here — nothing to change in the code.
+//
+// A project with a picture shows it on its card; one without shows its gradient. As soon as any
+// project has a picture, all card tops get the same taller 16:9 size so the rows stay even.
 import { useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";
 import ProjectModal from "./ProjectModal";
 import { track } from "../lib/analytics";
+import { API_BASE } from "../lib/api";
+
+// The project's picture (Admin → Projects → Upload picture). `?v=<updatedAt>` changes when a new
+// picture is uploaded, so browsers never keep showing an old one.
+export const projectImageUrl = (project) =>
+  `${API_BASE}/projects/${project.id}/image?v=${encodeURIComponent(project.updatedAt || "")}`;
 
 // "React", "react " and "REACT" count as the same tag.
 const tagKey = (tag) => String(tag).trim().toLowerCase();
@@ -70,7 +79,7 @@ export default function Projects() {
           ))}
         </div>
 
-        <div ref={gridRef} className={`projects-grid ${gridVisible ? "visible" : ""}`} data-ao>
+        <div ref={gridRef} className={`projects-grid ${projects.some((p) => p.hasImage) ? "has-images" : ""} ${gridVisible ? "visible" : ""}`} data-ao>
           {filtered.map((project) => {
             const title = lang === "ar" ? project.titleAr : project.titleEn;
             const desc = lang === "ar" ? project.descAr : project.descEn;
@@ -78,6 +87,7 @@ export default function Projects() {
             return (
               <div className="project-card" key={project.id} onClick={() => { setSelected(project); track("project", project.id); }}>
                 <div className="project-thumb" style={{ background: project.gradient }}>
+                  {project.hasImage && <img className="project-thumb-img" src={projectImageUrl(project)} alt="" loading="lazy" />}
                   <div className="project-tags">
                     {project.tags.map((tag) => (
                       <span className="project-tag" key={tag}>{tag}</span>

@@ -163,7 +163,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
 <h2>الـ collections الموجودة</h2>
 <table>
   <tr><th>Model</th><th>فيه إيه</th></tr>
-  <tr><td><code>Project</code></td><td>المشاريع + دراسة الحالة (مشكلة/حل/نتيجة) + tags</td></tr>
+  <tr><td><code>Project</code></td><td>المشاريع + دراسة الحالة (مشكلة/حل/نتيجة) + tags + صورة اختيارية (زي الشهادات)</td></tr>
   <tr><td><code>Skill</code></td><td>المهارات (نسبة، مجموعة، لون)</td></tr>
   <tr><td><code>YoutubeVideo</code></td><td>فيديوهات قسم يوتيوب</td></tr>
   <tr><td><code>Service</code></td><td>الخدمات (أيقونة، ظاهر/مخفي)</td></tr>
@@ -239,7 +239,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>/projects</code> · <code>/skills</code> · <code>/youtube</code> · <code>/services</code> · <code>/testimonials</code> · <code>/certificates</code> · <code>/courses</code></td><td><code>GET</code> الكل · <code>POST</code> إضافة · <code>PUT /:id</code> تعديل · <code>DELETE /:id</code> حذف</td></tr>
   <tr><td><code>/about</code> · <code>/settings</code></td><td><code>GET</code> · <code>PUT</code> حفظ المستند · <code>DELETE</code> رجوع للأصلي</td></tr>
   <tr><td><code>/cv</code></td><td><code>PUT</code> رفع/استبدال PDF (base64) · <code>DELETE</code></td></tr>
-  <tr><td><code>/certificates/:id/image</code> · <code>/courses/:id/image</code></td><td><code>PUT</code> رفع صورة (PNG/JPEG/WebP، أقصى 2MB، بيتأكد من نوعها الحقيقي) · <code>DELETE</code></td></tr>
+  <tr><td><code>/projects/:id/image</code> · <code>/certificates/:id/image</code> · <code>/courses/:id/image</code></td><td><code>PUT</code> رفع صورة (PNG/JPEG/WebP، أقصى 2MB، بيتأكد من نوعها الحقيقي) · <code>DELETE</code></td></tr>
   <tr><td><code>/messages</code></td><td><code>GET</code> · <code>PATCH /:id</code> مقروءة · <code>DELETE /:id</code></td></tr>
   <tr><td><code>/posts</code> · <code>/posts/:id</code></td><td><code>GET</code> الكل (مسودات كمان) · <code>GET /:id</code> كامل للمحرر · <code>POST</code> · <code>PUT /:id</code> · <code>DELETE /:id</code> · <code>PUT/DELETE /:id/cover</code></td></tr>
   <tr><td><code>/analytics?days=7|30|90</code></td><td><code>GET</code> ملخص الإحصائيات (يومي + إجماليات + الأكتر)</td></tr>
