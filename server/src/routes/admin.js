@@ -1,11 +1,24 @@
+// admin.js — every route the dashboard (/admin) uses to change the site's content, mounted at
+// /api/admin in app.js. Each resource follows the same REST pattern:
+//   GET    /api/admin/<resource>       list everything (including hidden items)
+//   POST   /api/admin/<resource>       create            → 201 + the new item
+//   PUT    /api/admin/<resource>/:id   update            → the updated item
+//   DELETE /api/admin/<resource>/:id   delete            → 204 (no content)
+// Single-document resources (about, settings, cv) use PUT / DELETE without an :id.
+// The public site reads the same data through the read-only routers (routes/projects.js, …).
 const express = require("express");
 const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
+// The lock on the whole file: requireAuth runs before EVERY route below, so none of them can
+// be reached without a valid login token (see middleware/auth.js).
 router.use(requireAuth);
 
 // ---- Projects ----
+// The oldest resources (projects, skills, youtube) pass req.body straight to Mongoose; the
+// schema ignores unknown fields. Newer ones copy only whitelisted fields (see pickService).
+// `runValidators: true` makes updates respect the schema's limits too (not only creates).
 router.get("/projects", async (req, res) => {
   res.json(await Project.find().sort({ order: 1 }));
 });
@@ -194,6 +207,8 @@ router.delete("/services/:id", async (req, res) => {
 });
 
 // ---- Contact messages ----
+// Messages are created by the public contact form (routes/contact.js); here the admin can only
+// list them (newest first), mark them read/unread, and delete them.
 router.get("/messages", async (req, res) => {
   res.json(await ContactMessage.find().sort({ createdAt: -1 }));
 });

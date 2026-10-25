@@ -1,3 +1,5 @@
+// youtube.js — public, read-only list of YouTube videos shown in the YouTube section:
+// GET /api/youtube, sorted by `order`. Managed in routes/admin.js (login required).
 const express = require("express");
 const { YoutubeVideo } = require("../lib/mongo");
 

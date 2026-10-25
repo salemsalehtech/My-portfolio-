@@ -1,3 +1,11 @@
+// seed.js — fills a database with starter content: `npm run seed` (from the server folder).
+//
+// ⚠ It DELETES all projects, skills and YouTube videos first, then inserts the sample ones
+// below — run it on a fresh database, not on one whose content you edited in the dashboard.
+// It also creates/updates the admin login from ADMIN_EMAIL / ADMIN_PASSWORD (in .env), storing
+// only a bcrypt hash of the password. Other content (about, services, testimonials, settings,
+// CV, messages) is not touched — the site shows built-in defaults until you edit it.
+// (The file sits in a "prisma" folder for historical reasons; the project uses Mongoose now.)
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const { connectMongo, Project, Skill, YoutubeVideo, AdminUser } = require("../src/lib/mongo");

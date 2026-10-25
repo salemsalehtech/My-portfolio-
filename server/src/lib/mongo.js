@@ -1,11 +1,27 @@
+// mongo.js — the database layer: connects to MongoDB and defines every "model" (the shape of
+// one kind of document, like a table definition in SQL).
+//
+// Basics:
+//   - A Schema lists the fields of a document and their rules (type, default, required,
+//     maxlength, enum, custom validate…). Mongoose refuses to save data that breaks them.
+//   - A Model (mongoose.model("Project", projectSchema)) is what the routes use to read and
+//     write: Project.find(), Project.create(…), Project.findByIdAndUpdate(…), …
+//   - Each model is stored in its own MongoDB "collection" (projects, skills, …), so adding a
+//     new feature = a new schema + model, without touching the existing ones.
+//   - Displayed texts exist twice, …En and …Ar, for the bilingual site.
+//   - { timestamps: true } adds createdAt / updatedAt automatically.
 const mongoose = require("mongoose");
 
+// Opens the connection (called once by server.js before the server starts listening).
+// MONGODB_URI comes from .env locally (local MongoDB) or from Render's settings (MongoDB Atlas).
 async function connectMongo() {
   const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/salem_portfolio";
   await mongoose.connect(uri);
   console.log("Connected to MongoDB");
 }
 
+// A portfolio project (Projects section + its details popup). `tags` feed the technology filter
+// buttons, `gradient` is the CSS background of the card, `order` sorts the cards.
 const projectSchema = new mongoose.Schema(
   {
     titleEn: { type: String, required: true },
@@ -32,6 +48,8 @@ const projectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// A skill bar in the Skills section: `percentage` = bar width, `group` = which tab it's under
+// (frontend / backend / tools), `color` / `textColor` = the small badge with `abbr`.
 const skillSchema = new mongoose.Schema({
   name: { type: String, required: true },
   abbr: { type: String, default: "" },
@@ -44,6 +62,7 @@ const skillSchema = new mongoose.Schema({
   order: { type: Number, default: 0 },
 });
 
+// A video card in the YouTube section (`url` opens the video on YouTube).
 const youtubeVideoSchema = new mongoose.Schema({
   titleEn: { type: String, required: true },
   titleAr: { type: String, default: "" },
@@ -54,6 +73,7 @@ const youtubeVideoSchema = new mongoose.Schema({
   order: { type: Number, default: 0 },
 });
 
+// A message sent through the contact form; `read` is toggled in Admin → Messages.
 const contactMessageSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -64,6 +84,8 @@ const contactMessageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// The dashboard login. Only a bcrypt HASH of the password is stored, never the password itself
+// (created/updated by `npm run seed` from ADMIN_EMAIL / ADMIN_PASSWORD).
 const adminUserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true },
   passwordHash: { type: String, required: true },
@@ -218,6 +240,8 @@ testimonialSchema.pre("validate", function () {
   if (!this.textEn && !this.textAr) this.invalidate("textEn", "The testimonial text is required");
 });
 
+// Turn each schema into a model. `mongoose.models.X ||` reuses an existing model instead of
+// redefining it if this file is loaded twice (which would throw an error).
 const models = {
   Project: mongoose.models.Project || mongoose.model("Project", projectSchema),
   Skill: mongoose.models.Skill || mongoose.model("Skill", skillSchema),
@@ -231,6 +255,8 @@ const models = {
   SiteSettings: mongoose.models.SiteSettings || mongoose.model("SiteSettings", siteSettingsSchema),
 };
 
+// When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and
+// drop the internal `__v` version field — so the client always works with `item.id`.
 for (const model of Object.values(models)) {
   model.schema.set("toJSON", {
     transform: (_document, ret) => {
