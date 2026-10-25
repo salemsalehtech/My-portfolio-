@@ -63,7 +63,7 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 7. **Contact notification email** via Resend — *postponed by the owner (2026-10-25)*. Code is ready on branch `feat/email-resend` (needs `RESEND_API_KEY` + `SITE_URL` in Render).
 8. ~~2.1 + 2.2 Backend comments~~ — done 2026-10-25 (comment-only diff, verified).
 9. ~~1.2 + 2.5 PDFs~~ — done 2026-10-25: `docs/guides/frontend-guide.pdf`, `docs/guides/backend-guide.pdf` (Arabic; rebuild with `bash docs/guides/build-pdfs.sh`).
-10. **Wave B** (blog, certificates, newsletter 🔒, course section, visitor analytics, chat 🔒).
+10. **Wave B** — ~~certificates~~ done; next: visitor analytics, blog, course section, newsletter 🔒 (needs the email), chat 🔒.
 11. **2.6** whenever a custom domain is bought.
 
 ---
@@ -126,7 +126,7 @@ Every item follows rule 1 (dashboard-managed). Waves are ordered by proximity an
 ### Wave B — medium (needs external integrations) · ~1–2 months after Wave A
 
 - **Technical blog** — improves SEO and reputation as developer/teacher.
-- **Certificates / achievements** — course certificates (e.g. DEPI) and achievements.
+- [x] **Certificates / achievements** — `/admin/certificates`: EN/AR title + issuer, date, verify link (http(s) only), picture upload (PNG/JPEG/WebP ≤ 2 MB, stored in MongoDB, type checked by magic bytes), visible/order; section after Projects + navbar link when not empty. *Done 2026-10-25.*
 - **Newsletter signup** 🔒 — notify visitors of new course/product/article.
 - **Course / social-media content section** — course summary + files + exercises.
 - **Visitor analytics in admin** — visitor count and most-viewed pages inside `/admin`.

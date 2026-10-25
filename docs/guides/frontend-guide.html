@@ -218,6 +218,7 @@ setStatus(<span class="s">"success"</span>);   <span class="c">// الشاشة �
   <tr><td>الخدمات</td><td><code>Services.jsx</code></td><td><code>GET /services</code></td><td>Services</td></tr>
   <tr><td>المهارات</td><td><code>Skills.jsx</code></td><td><code>GET /skills</code></td><td>Skills</td></tr>
   <tr><td>المشاريع + دراسة الحالة</td><td><code>Projects.jsx</code> + <code>ProjectModal.jsx</code></td><td><code>GET /projects</code></td><td>Projects</td></tr>
+  <tr><td>الشهادات</td><td><code>Certificates.jsx</code></td><td><code>GET /certificates</code> + صورة كل شهادة</td><td>Certificates</td></tr>
   <tr><td>آراء العملاء</td><td><code>Testimonials.jsx</code></td><td><code>GET /testimonials</code></td><td>Testimonials</td></tr>
   <tr><td>يوتيوب</td><td><code>YouTube.jsx</code></td><td><code>GET /youtube</code> + settings</td><td>YouTube + Profile &amp; Links</td></tr>
   <tr><td>التواصل</td><td><code>Contact.jsx</code></td><td>settings (روابط) + <code>POST /contact</code></td><td>Profile &amp; Links / Messages</td></tr>
@@ -225,7 +226,7 @@ setStatus(<span class="s">"success"</span>);   <span class="c">// الشاشة �
 </table>
 <h2>تفاصيل تستاهل تعرفها</h2>
 <ul>
-  <li><strong>الأقسام الاختيارية</strong> (الخدمات، الآراء) بتختفي لو فاضية — وروابطها في الـ Navbar كمان. عشان كده <code>Portfolio.jsx</code> هو اللي بيجيب بياناتها ويديها للقسم وللـ Navbar.</li>
+  <li><strong>الأقسام الاختيارية</strong> (الخدمات، الشهادات، الآراء) بتختفي لو فاضية — وروابطها في الـ Navbar كمان. عشان كده <code>Portfolio.jsx</code> هو اللي بيجيب بياناتها ويديها للقسم وللـ Navbar.</li>
   <li><strong>فلتر المشاريع</strong> أزراره مش مكتوبة في الكود: بتتبني من حقل Tags في المشاريع نفسها، الأكتر استخدامًا الأول.</li>
   <li><strong>نافذة المشروع</strong> بتعرض "المشكلة ← الحل ← النتيجة" لو موجودين، وأزرار Demo/Code بتظهر بس لو الرابط حقيقي (يبدأ بـ http).</li>
   <li><strong>الصور والملفات</strong> في <code>public/</code> لازم رابطها يتبني بـ <code>import.meta.env.BASE_URL</code> عشان الموقع شغّال تحت <code>/My-portfolio-/</code>.</li>

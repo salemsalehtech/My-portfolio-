@@ -7,7 +7,7 @@
 // Single-document resources (about, settings, cv) use PUT / DELETE without an :id.
 // The public site reads the same data through the read-only routers (routes/projects.js, …).
 const express = require("express");
-const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings } = require("../lib/mongo");
+const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -204,6 +204,63 @@ router.put("/services/:id", async (req, res) => {
 router.delete("/services/:id", async (req, res) => {
   await Service.findByIdAndDelete(req.params.id);
   res.status(204).end();
+});
+
+// ---- Certificates ----
+// CRUD like services, plus a separate route to upload / remove the certificate picture.
+const CERTIFICATE_FIELDS = ["titleEn", "titleAr", "issuerEn", "issuerAr", "date", "credentialUrl", "visible", "order"];
+const pickCertificate = (body = {}) => Object.fromEntries(CERTIFICATE_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+
+// The real file type, read from the first bytes (never trust the file name or the browser).
+function imageType(buffer) {
+  if (buffer.length > 8 && buffer[0] === 0x89 && buffer.subarray(1, 4).toString("latin1") === "PNG") return "image/png";
+  if (buffer.length > 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return "image/jpeg";
+  if (buffer.length > 12 && buffer.subarray(0, 4).toString("latin1") === "RIFF" && buffer.subarray(8, 12).toString("latin1") === "WEBP") return "image/webp";
+  return null;
+}
+
+router.get("/certificates", async (req, res) => {
+  res.json(await Certificate.find().sort({ order: 1, createdAt: -1 }));
+});
+router.post("/certificates", async (req, res) => {
+  res.status(201).json(await Certificate.create(pickCertificate(req.body)));
+});
+router.put("/certificates/:id", async (req, res) => {
+  const data = pickCertificate(req.body);
+  if ("titleEn" in data && "titleAr" in data && !data.titleEn && !data.titleAr) {
+    return res.status(400).json({ error: "A certificate title is required" });
+  }
+  res.json(await Certificate.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
+});
+router.delete("/certificates/:id", async (req, res) => {
+  await Certificate.findByIdAndDelete(req.params.id);
+  res.status(204).end();
+});
+
+// PUT /api/admin/certificates/:id/image  { data: "<base64>" } — PNG, JPEG or WebP, max 2 MB.
+router.put("/certificates/:id/image", async (req, res) => {
+  const { data } = req.body || {};
+  if (!data || typeof data !== "string") return res.status(400).json({ error: "An image file is required" });
+  const buffer = Buffer.from(data, "base64");
+  if (buffer.length === 0) return res.status(400).json({ error: "The file is empty" });
+  if (buffer.length > MAX_IMAGE_BYTES) return res.status(400).json({ error: "Image is too large (max 2 MB)" });
+  const contentType = imageType(buffer);
+  if (!contentType) return res.status(400).json({ error: "The image must be PNG, JPEG or WebP" });
+
+  const cert = await Certificate.findByIdAndUpdate(
+    req.params.id,
+    { image: { data: buffer, contentType, size: buffer.length } },
+    { new: true }
+  );
+  if (!cert) return res.status(404).json({ error: "Certificate not found" });
+  res.json(cert);
+});
+
+router.delete("/certificates/:id/image", async (req, res) => {
+  const cert = await Certificate.findByIdAndUpdate(req.params.id, { image: { contentType: "", size: 0 } }, { new: true });
+  if (!cert) return res.status(404).json({ error: "Certificate not found" });
+  res.json(cert);
 });
 
 // ---- Contact messages ----

@@ -167,6 +167,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>Skill</code></td><td>المهارات (نسبة، مجموعة، لون)</td></tr>
   <tr><td><code>YoutubeVideo</code></td><td>فيديوهات قسم يوتيوب</td></tr>
   <tr><td><code>Service</code></td><td>الخدمات (أيقونة، ظاهر/مخفي)</td></tr>
+  <tr><td><code>Certificate</code></td><td>الشهادات + صورة الشهادة نفسها (Buffer، ما بتترجعش في القوايم)</td></tr>
   <tr><td><code>Testimonial</code></td><td>آراء العملاء (تقييم، ظاهر، <code>pending</code> للي مستني موافقتك)</td></tr>
   <tr><td><code>About</code></td><td>مستند واحد: نصوص قسم About + رابط الفيديو</td></tr>
   <tr><td><code>SiteSettings</code></td><td>مستند واحد: Hero + الروابط + المكان + الفوتر</td></tr>
@@ -220,6 +221,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>GET /api/services</code> · <code>/testimonials</code></td><td>الظاهر بس (<code>visible: true</code>)</td></tr>
   <tr><td><code>GET /api/about</code> · <code>/settings</code></td><td>المستند المحفوظ أو <code>{ exists: false }</code></td></tr>
   <tr><td><code>GET /api/cv/info</code> · <code>GET /api/cv</code></td><td>هل فيه CV؟ / تحميل الملف</td></tr>
+  <tr><td><code>GET /api/certificates</code> · <code>GET /api/certificates/:id/image</code></td><td>الشهادات الظاهرة / صورة شهادة (مسموح تتعرض على دومين الموقع)</td></tr>
   <tr><td><code>POST /api/contact</code></td><td>رسالة من فورم التواصل</td></tr>
   <tr><td><code>POST /api/testimonials/submit</code></td><td>رأي عميل من اللينك (بيتحفظ Pending)</td></tr>
   <tr><td><code>POST /api/auth/login</code></td><td>تسجيل الدخول ← توكن</td></tr>
@@ -227,9 +229,10 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
 <h2>الأدمن (لازم توكن) — تحت <code>/api/admin</code></h2>
 <table>
   <tr><th>المورد</th><th>العمليات</th></tr>
-  <tr><td><code>/projects</code> · <code>/skills</code> · <code>/youtube</code> · <code>/services</code> · <code>/testimonials</code></td><td><code>GET</code> الكل · <code>POST</code> إضافة · <code>PUT /:id</code> تعديل · <code>DELETE /:id</code> حذف</td></tr>
+  <tr><td><code>/projects</code> · <code>/skills</code> · <code>/youtube</code> · <code>/services</code> · <code>/testimonials</code> · <code>/certificates</code></td><td><code>GET</code> الكل · <code>POST</code> إضافة · <code>PUT /:id</code> تعديل · <code>DELETE /:id</code> حذف</td></tr>
   <tr><td><code>/about</code> · <code>/settings</code></td><td><code>GET</code> · <code>PUT</code> حفظ المستند · <code>DELETE</code> رجوع للأصلي</td></tr>
   <tr><td><code>/cv</code></td><td><code>PUT</code> رفع/استبدال PDF (base64) · <code>DELETE</code></td></tr>
+  <tr><td><code>/certificates/:id/image</code></td><td><code>PUT</code> رفع صورة (PNG/JPEG/WebP، أقصى 2MB، بيتأكد من نوعها الحقيقي) · <code>DELETE</code></td></tr>
   <tr><td><code>/messages</code></td><td><code>GET</code> · <code>PATCH /:id</code> مقروءة · <code>DELETE /:id</code></td></tr>
 </table>
 <div class="tip"><b>جرّب بنفسك</b>افتح في المتصفح <code>https://salem-portfolio-server.onrender.com/api/projects</code> — هتشوف الـ JSON اللي الموقع بيستخدمه.</div>

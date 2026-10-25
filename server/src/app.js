@@ -20,6 +20,7 @@ const aboutRouter = require("./routes/about");
 const testimonialsRouter = require("./routes/testimonials");
 const servicesRouter = require("./routes/services");
 const settingsRouter = require("./routes/settings");
+const certificatesRouter = require("./routes/certificates");
 const authRouter = require("./routes/auth");
 const adminRouter = require("./routes/admin");
 
@@ -44,6 +45,8 @@ app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://localhost:5173" }));
 // The CV upload sends the PDF as base64 inside JSON, which is bigger than the default 100 KB
 // body limit — so this one path gets a higher limit. It must come BEFORE the global parser.
 app.use("/api/admin/cv", express.json({ limit: "6mb" }));
+// Same for certificate pictures (max 2 MB, ~2.7 MB once base64-encoded).
+app.use("/api/admin/certificates", express.json({ limit: "4mb" }));
 // Reads JSON request bodies into req.body (max 100 KB by default — plenty for every form).
 app.use(express.json());
 
@@ -62,6 +65,7 @@ app.use("/api/about", aboutRouter);
 app.use("/api/testimonials", testimonialsRouter);
 app.use("/api/services", servicesRouter);
 app.use("/api/settings", settingsRouter);
+app.use("/api/certificates", certificatesRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 
@@ -71,7 +75,8 @@ app.use("/api/admin", adminRouter);
 app.use((err, req, res, next) => {
   console.error(err);
   // A Mongoose validation failure (e.g. a text that is too long) is the client's mistake, not a server crash.
-  const status = err.status || (err.name === "ValidationError" ? 400 : 500);
+  // A malformed id in the URL (CastError) is too — e.g. PUT /api/admin/services/not-an-id.
+  const status = err.status || (err.name === "ValidationError" || err.name === "CastError" ? 400 : 500);
   res.status(status).json({ error: err.message || "Internal server error" });
 });
 

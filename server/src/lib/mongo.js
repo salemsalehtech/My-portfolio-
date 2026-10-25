@@ -240,6 +240,32 @@ testimonialSchema.pre("validate", function () {
   if (!this.textEn && !this.textAr) this.invalidate("textEn", "The testimonial text is required");
 });
 
+// A certificate / achievement card (Certificates section), managed from /admin/certificates.
+// The certificate picture is stored inside the document (like the CV — Render's disk is wiped on
+// every deploy). `image.data` has `select: false`, so lists never load the image bytes; only the
+// image route asks for them explicitly. In JSON the image is replaced by `hasImage` (see below).
+const certificateSchema = new mongoose.Schema(
+  {
+    titleEn: { type: String, default: "", maxlength: 160 },
+    titleAr: { type: String, default: "", maxlength: 160 },
+    issuerEn: { type: String, default: "", maxlength: 120 },
+    issuerAr: { type: String, default: "", maxlength: 120 },
+    date: { type: String, default: "", maxlength: 40 }, // free text, e.g. "2025" or "Jun 2025"
+    credentialUrl: httpUrl, // optional "verify" link — must be http(s)
+    image: {
+      data: { type: Buffer, select: false },
+      contentType: { type: String, default: "" },
+      size: { type: Number, default: 0 },
+    },
+    visible: { type: Boolean, default: true },
+    order: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+certificateSchema.pre("validate", function () {
+  if (!this.titleEn && !this.titleAr) this.invalidate("titleEn", "A certificate title is required");
+});
+
 // Turn each schema into a model. `mongoose.models.X ||` reuses an existing model instead of
 // redefining it if this file is loaded twice (which would throw an error).
 const models = {
@@ -253,6 +279,7 @@ const models = {
   Testimonial: mongoose.models.Testimonial || mongoose.model("Testimonial", testimonialSchema),
   Service: mongoose.models.Service || mongoose.model("Service", serviceSchema),
   SiteSettings: mongoose.models.SiteSettings || mongoose.model("SiteSettings", siteSettingsSchema),
+  Certificate: mongoose.models.Certificate || mongoose.model("Certificate", certificateSchema),
 };
 
 // When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and
@@ -267,5 +294,18 @@ for (const model of Object.values(models)) {
     },
   });
 }
+
+// Certificates: same as above, plus never send the image itself in JSON — just `hasImage`.
+// The picture is fetched separately from GET /api/certificates/:id/image.
+models.Certificate.schema.set("toJSON", {
+  transform: (_document, ret) => {
+    ret.id = ret._id.toString();
+    ret.hasImage = Boolean(ret.image && ret.image.size);
+    delete ret._id;
+    delete ret.__v;
+    delete ret.image;
+    return ret;
+  },
+});
 
 module.exports = { connectMongo, ...models };
