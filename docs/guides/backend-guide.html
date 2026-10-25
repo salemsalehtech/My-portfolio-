@@ -173,6 +173,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>SiteSettings</code></td><td>مستند واحد: Hero + الروابط + المكان + الفوتر</td></tr>
   <tr><td><code>CvFile</code></td><td>ملف الـ CV نفسه (Buffer) — لأن قرص Render بيتمسح مع كل نشر</td></tr>
   <tr><td><code>ContactMessage</code></td><td>رسايل فورم التواصل</td></tr>
+  <tr><td><code>Post</code></td><td>مقالات المدونة: عنوان وملخص ونص Markdown بلغتين، رابط (slug) فريد، مسودة/منشور، صورة غلاف</td></tr>
   <tr><td><code>DailyStat</code></td><td>إحصائيات الزوار: مستند واحد لكل يوم فيه <strong>عدّادات بس</strong> (من غير IP ولا كوكيز)</td></tr>
   <tr><td><code>AdminUser</code></td><td>حساب الأدمن (الباسورد مشفّر)</td></tr>
 </table>
@@ -226,6 +227,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>GET /api/certificates</code> · <code>GET /api/certificates/:id/image</code></td><td>الشهادات الظاهرة / صورة شهادة (مسموح تتعرض على دومين الموقع)</td></tr>
   <tr><td><code>POST /api/contact</code></td><td>رسالة من فورم التواصل</td></tr>
   <tr><td><code>POST /api/testimonials/submit</code></td><td>رأي عميل من اللينك (بيتحفظ Pending)</td></tr>
+  <tr><td><code>GET /api/posts</code> · <code>/posts/:slug</code> · <code>/posts/:slug/cover</code></td><td>المقالات المنشورة بس (القايمة من غير النص الكامل) / مقال كامل / صورة الغلاف</td></tr>
   <tr><td><code>POST /api/analytics/event</code></td><td>حدث مجهول (زيارة، قسم، مشروع، تحميل CV) ← +1 في عدّاد اليوم</td></tr>
   <tr><td><code>POST /api/auth/login</code></td><td>تسجيل الدخول ← توكن</td></tr>
 </table>
@@ -237,6 +239,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>/cv</code></td><td><code>PUT</code> رفع/استبدال PDF (base64) · <code>DELETE</code></td></tr>
   <tr><td><code>/certificates/:id/image</code></td><td><code>PUT</code> رفع صورة (PNG/JPEG/WebP، أقصى 2MB، بيتأكد من نوعها الحقيقي) · <code>DELETE</code></td></tr>
   <tr><td><code>/messages</code></td><td><code>GET</code> · <code>PATCH /:id</code> مقروءة · <code>DELETE /:id</code></td></tr>
+  <tr><td><code>/posts</code> · <code>/posts/:id</code></td><td><code>GET</code> الكل (مسودات كمان) · <code>GET /:id</code> كامل للمحرر · <code>POST</code> · <code>PUT /:id</code> · <code>DELETE /:id</code> · <code>PUT/DELETE /:id/cover</code></td></tr>
   <tr><td><code>/analytics?days=7|30|90</code></td><td><code>GET</code> ملخص الإحصائيات (يومي + إجماليات + الأكتر)</td></tr>
 </table>
 <div class="tip"><b>جرّب بنفسك</b>افتح في المتصفح <code>https://salem-portfolio-server.onrender.com/api/projects</code> — هتشوف الـ JSON اللي الموقع بيستخدمه.</div>

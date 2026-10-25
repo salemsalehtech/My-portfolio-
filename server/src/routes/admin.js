@@ -7,7 +7,7 @@
 // Single-document resources (about, settings, cv) use PUT / DELETE without an :id.
 // The public site reads the same data through the read-only routers (routes/projects.js, …).
 const express = require("express");
-const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, DailyStat } = require("../lib/mongo");
+const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, DailyStat, Post } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -285,13 +285,19 @@ router.get("/analytics", async (req, res) => {
   const byDate = Object.fromEntries(docs.map((d) => [d.date, d]));
 
   const totals = { visits: 0, mobile: 0, desktop: 0, langEn: 0, langAr: 0, cvDownloads: 0 };
-  const sections = {}, projects = {}, referrers = {};
+  const sections = {}, projects = {}, referrers = {}, posts = {};
   for (const doc of docs) {
     for (const field of Object.keys(totals)) totals[field] += doc[field] || 0;
     addCounts(sections, doc.sections);
     addCounts(projects, doc.projects);
     addCounts(referrers, doc.referrers);
+    addCounts(posts, doc.posts);
   }
+
+  // Blog post slugs -> current titles.
+  const topPosts = topList(posts);
+  const foundPosts = await Post.find({ slug: { $in: topPosts.map(([slug]) => slug) } }).select("slug titleEn titleAr").lean();
+  const postTitles = Object.fromEntries(foundPosts.map((p) => [p.slug, p.titleEn || p.titleAr]));
 
   // Project ids -> current titles (a deleted project shows as "(deleted project)").
   const topProjects = topList(projects);
@@ -305,7 +311,67 @@ router.get("/analytics", async (req, res) => {
     sections: topList(sections).map(([name, count]) => ({ name, count })),
     projects: topProjects.map(([id, count]) => ({ id, title: titles[id] || "(deleted project)", count })),
     referrers: topList(referrers).map(([key, count]) => ({ host: fromKey(key), count })),
+    posts: topPosts.map(([slug, count]) => ({ slug, title: postTitles[slug] || "(deleted post)", count })),
   });
+});
+
+// ---- Blog posts ----
+// Lists are sent without the full text; GET /posts/:id returns everything for the editor.
+// Publishing: the first time a post becomes published, publishedAt is set to "now" (it keeps
+// that date if it is later unpublished and published again).
+const POST_FIELDS = ["slug", "titleEn", "titleAr", "excerptEn", "excerptAr", "bodyEn", "bodyAr", "tags", "published"];
+function pickPost(body = {}) {
+  const data = Object.fromEntries(POST_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+  if ("slug" in data) data.slug = String(data.slug || "").trim().toLowerCase();
+  if ("tags" in data) data.tags = (Array.isArray(data.tags) ? data.tags : []).map((t) => String(t).trim()).filter(Boolean);
+  if ("published" in data) data.published = Boolean(data.published);
+  return data;
+}
+
+router.get("/posts", async (req, res) => {
+  res.json(await Post.find().select("-bodyEn -bodyAr").sort({ updatedAt: -1 }));
+});
+router.get("/posts/:id", async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) return res.status(404).json({ error: "Post not found" });
+  res.json(post);
+});
+router.post("/posts", async (req, res) => {
+  const post = new Post(pickPost(req.body));
+  if (post.published && !post.publishedAt) post.publishedAt = new Date();
+  await post.save();
+  res.status(201).json(post);
+});
+router.put("/posts/:id", async (req, res) => {
+  const post = await Post.findById(req.params.id);
+  if (!post) return res.status(404).json({ error: "Post not found" });
+  post.set(pickPost(req.body));
+  if (post.published && !post.publishedAt) post.publishedAt = new Date();
+  await post.save(); // runs every schema check (slug format, lengths, "a title is required", unique slug)
+  res.json(post);
+});
+router.delete("/posts/:id", async (req, res) => {
+  await Post.findByIdAndDelete(req.params.id);
+  res.status(204).end();
+});
+
+// PUT /api/admin/posts/:id/cover  { data: "<base64>" } — same rules as certificate pictures.
+router.put("/posts/:id/cover", async (req, res) => {
+  const { data } = req.body || {};
+  if (!data || typeof data !== "string") return res.status(400).json({ error: "An image file is required" });
+  const buffer = Buffer.from(data, "base64");
+  if (buffer.length === 0) return res.status(400).json({ error: "The file is empty" });
+  if (buffer.length > MAX_IMAGE_BYTES) return res.status(400).json({ error: "Image is too large (max 2 MB)" });
+  const contentType = imageType(buffer);
+  if (!contentType) return res.status(400).json({ error: "The image must be PNG, JPEG or WebP" });
+  const post = await Post.findByIdAndUpdate(req.params.id, { cover: { data: buffer, contentType, size: buffer.length } }, { new: true });
+  if (!post) return res.status(404).json({ error: "Post not found" });
+  res.json(post);
+});
+router.delete("/posts/:id/cover", async (req, res) => {
+  const post = await Post.findByIdAndUpdate(req.params.id, { cover: { contentType: "", size: 0 } }, { new: true });
+  if (!post) return res.status(404).json({ error: "Post not found" });
+  res.json(post);
 });
 
 // ---- Contact messages ----

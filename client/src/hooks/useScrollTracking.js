@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 
 // In page order. Optional sections (services, testimonials) that aren't on the page right now
 // are simply skipped below — getElementById returns null for them.
-const SECTION_IDS = ["home", "about", "services", "skills", "projects", "certificates", "testimonials", "youtube", "contact"];
+const SECTION_IDS = ["home", "about", "services", "skills", "projects", "certificates", "testimonials", "blog", "youtube", "contact"];
 
 export function useScrollTracking() {
   const [scrolled, setScrolled] = useState(false);

@@ -163,6 +163,7 @@ export default function AdminAnalytics() {
           <div className="an-grid-3">
             <TopTable title="Sections viewed" rows={data.sections} label={(r) => T.en.nav[r.name] || r.name} />
             <TopTable title="Projects opened" rows={data.projects} label={(r) => r.title} />
+            <TopTable title="Articles read" rows={data.posts || []} label={(r) => r.title} />
             <TopTable title="Where visitors came from" rows={data.referrers} label={(r) => (r.host === "direct" ? "Direct / unknown" : r.host === "other" ? "Other sites" : r.host)} />
           </div>
         </>

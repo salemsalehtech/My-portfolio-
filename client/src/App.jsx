@@ -32,7 +32,17 @@ import AdminServices from "./pages/admin/AdminServices";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminCertificates from "./pages/admin/AdminCertificates";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminPosts from "./pages/admin/AdminPosts";
+import BlogList from "./pages/BlogList";
 import { Navigate } from "react-router-dom";
+import { lazy, Suspense } from "react";
+
+// The article page and the post editor use the Markdown libraries (marked + DOMPurify). Loading
+// them lazily puts that code in a separate file that is only downloaded when one of these two
+// pages is opened — the home page stays as light as before.
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const AdminPostEditor = lazy(() => import("./pages/admin/AdminPostEditor"));
+const loading = <p style={{ padding: 40, textAlign: "center" }}>…</p>;
 
 export default function App() {
   return (
@@ -41,6 +51,8 @@ export default function App() {
         <HashRouter>
           <Routes>
             <Route path="/" element={<Portfolio />} />
+            <Route path="/blog" element={<BlogList />} />
+            <Route path="/blog/:slug" element={<Suspense fallback={loading}><BlogPost /></Suspense>} />
             <Route path="/feedback" element={<Navigate to="/feedback/en" replace />} />
             <Route path="/feedback/:lang" element={<FeedbackForm />} />
             <Route path="/admin/login" element={<AdminLogin />} />
@@ -54,6 +66,8 @@ export default function App() {
               <Route path="services" element={<AdminServices />} />
               <Route path="certificates" element={<AdminCertificates />} />
               <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="posts" element={<AdminPosts />} />
+              <Route path="posts/:id" element={<Suspense fallback={loading}><AdminPostEditor /></Suspense>} />
               <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="about" element={<AdminAbout />} />
               <Route path="cv" element={<AdminCV />} />

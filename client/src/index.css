@@ -392,9 +392,9 @@ body.ar .service-title { font-family: var(--font-ar); }
 .service-desc { text-align: start; font-size: 14.5px; line-height: 1.8; color: var(--text-secondary); }
 .admin-icon-cell { color: var(--gold); width: 44px; }
 
-/* The navbar has up to 9 links now (Services / Certificates / Reviews appear when they have content), which
+/* The navbar has up to 10 links now (Services / Certificates / Reviews / Blog appear when they have content), which
    no longer fit next to the logo and buttons on mid-size screens: switch to the menu earlier. */
-@media (max-width: 1200px) {
+@media (max-width: 1300px) {
   .nav-links, .nav-actions { display: none; }
   .btn-menu { display: flex; }
 }
@@ -467,3 +467,69 @@ body.ar .cert-title { font-family: var(--font-ar); }
 .an-bar-cell { width: 30%; min-width: 60px; }
 .an-inline-bar { height: 6px; border-radius: 3px; background: var(--chart-grid); overflow: hidden; }
 .an-inline-bar span { display: block; height: 100%; background: var(--chart-bar); border-radius: 3px; }
+
+/* ============ BLOG: cards (home section + all-articles page) ============ */
+.posts-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px; }
+.post-card { flex: 1 1 290px; max-width: 370px; display: flex; flex-direction: column; background: var(--card); border: 1px solid var(--card-border); border-radius: 16px; overflow: hidden; color: inherit; transition: transform .3s, box-shadow .3s, border-color .3s; }
+.post-card:hover { transform: translateY(-6px); box-shadow: var(--shadow); border-color: rgba(232,160,32,.3); }
+.post-cover { aspect-ratio: 1200 / 630; background: var(--surface); border-bottom: 1px solid var(--card-border); overflow: hidden; }
+.post-cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
+.post-card:hover .post-cover img { transform: scale(1.04); }
+.post-cover-empty { display: flex; align-items: center; justify-content: center; color: var(--gold); background: var(--gold-dim); }
+.post-card-body { padding: 20px 22px 22px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.post-date { font-size: 12.5px; color: var(--text-muted); font-weight: 600; letter-spacing: .3px; }
+.post-title { font-family: var(--font-heading); font-size: 19px; font-weight: 700; line-height: 1.4; color: var(--text-primary); }
+.post-title[dir="rtl"] { font-family: var(--font-ar); }
+.post-excerpt { font-size: 14.5px; line-height: 1.75; color: var(--text-secondary); }
+.post-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.post-tag { font-size: 11.5px; font-weight: 600; padding: 3px 10px; border-radius: 20px; background: var(--gold-dim); color: var(--gold); }
+.post-read { margin-top: auto; padding-top: 6px; font-size: 13.5px; font-weight: 700; color: var(--gold); }
+.blog-all { text-align: center; margin-top: 34px; }
+.blog-all .btn-secondary { display: inline-flex; }
+
+/* ============ BLOG: pages ============ */
+.blog-page { min-height: 100vh; background: var(--bg); }
+.blog-header { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px clamp(16px, 4vw, 60px); background: var(--surface); border-bottom: 1px solid var(--card-border); }
+.blog-header .nav-logo { color: inherit; }
+.blog-header-links { display: flex; gap: 4px; }
+.blog-header-actions { display: flex; gap: 8px; }
+.blog-main { padding-top: 48px; padding-bottom: 80px; }
+.blog-page-title { font-family: var(--font-heading); font-size: clamp(30px, 4vw, 44px); font-weight: 800; color: var(--text-primary); letter-spacing: -1px; line-height: 1.2; }
+.blog-empty { text-align: center; color: var(--text-secondary); padding: 40px 0; display: flex; flex-direction: column; gap: 18px; align-items: center; }
+.post-article { max-width: 760px; margin: 0 auto; }
+.post-back { display: inline-block; margin-bottom: 24px; font-size: 14px; font-weight: 600; color: var(--gold); }
+.post-article-title { font-family: var(--font-heading); font-size: clamp(28px, 4.2vw, 42px); font-weight: 800; line-height: 1.25; letter-spacing: -.5px; color: var(--text-primary); margin-bottom: 14px; }
+.post-article[dir="rtl"] .post-article-title { font-family: var(--font-ar); line-height: 1.5; }
+.post-article-meta { display: flex; gap: 8px; flex-wrap: wrap; font-size: 14px; color: var(--text-secondary); margin-bottom: 14px; }
+.post-article .post-tags { margin-bottom: 26px; }
+.post-article-cover { width: 100%; border-radius: 16px; border: 1px solid var(--card-border); margin-bottom: 34px; display: block; }
+
+/* Article text (rendered Markdown) — also used by the editor preview */
+.prose { font-size: 17px; line-height: 1.85; color: var(--text-primary); overflow-wrap: anywhere; }
+.prose[dir="rtl"], .post-article[dir="rtl"] .prose { font-family: var(--font-ar); }
+.prose > * + * { margin-top: 1.05em; }
+.prose h1, .prose h2, .prose h3, .prose h4 { font-family: var(--font-heading); line-height: 1.35; margin-top: 1.8em; color: var(--text-primary); }
+.prose[dir="rtl"] h1, .prose[dir="rtl"] h2, .prose[dir="rtl"] h3, .post-article[dir="rtl"] .prose h2, .post-article[dir="rtl"] .prose h3 { font-family: var(--font-ar); }
+.prose h2 { font-size: 1.5em; } .prose h3 { font-size: 1.25em; } .prose h4 { font-size: 1.1em; }
+.prose a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+.prose ul, .prose ol { padding-inline-start: 1.4em; }
+.prose li + li { margin-top: .35em; }
+.prose blockquote { border-inline-start: 4px solid var(--gold); padding: 6px 18px; color: var(--text-secondary); background: var(--gold-dim); border-radius: 0 8px 8px 0; }
+.prose[dir="rtl"] blockquote, .post-article[dir="rtl"] .prose blockquote { border-radius: 8px 0 0 8px; }
+.prose code { font-family: Consolas, "JetBrains Mono", monospace; font-size: .88em; background: var(--surface); border: 1px solid var(--card-border); border-radius: 5px; padding: 1px 6px; direction: ltr; unicode-bidi: embed; }
+.prose pre { direction: ltr; text-align: left; background: #161616; color: #EDEDED; border-radius: 10px; padding: 16px 18px; overflow-x: auto; font-size: .85em; line-height: 1.65; border-left: 4px solid var(--gold); }
+.prose pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+.prose img { max-width: 100%; height: auto; border-radius: 12px; display: block; margin-inline: auto; }
+.prose table { width: 100%; border-collapse: collapse; font-size: .92em; display: block; overflow-x: auto; }
+.prose th, .prose td { border: 1px solid var(--card-border); padding: 8px 12px; text-align: start; }
+.prose th { background: var(--surface); }
+.prose hr { border: none; border-top: 1px solid var(--card-border); margin: 2em 0; }
+
+/* ============ BLOG: admin ============ */
+.admin-sub { font-size: 12.5px; color: var(--text-secondary); font-weight: 400; }
+.admin-row-draft td { opacity: .75; }
+.post-editor { max-width: 980px; }
+.editor-tabs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.editor-spacer { flex: 1; }
+.editor-body { min-height: 420px; font-family: Consolas, "JetBrains Mono", monospace; font-size: 14px; line-height: 1.7; resize: vertical; }
+.editor-preview { min-height: 420px; padding: 18px 22px; border: 1.5px solid var(--card-border); border-radius: 10px; background: var(--surface); }

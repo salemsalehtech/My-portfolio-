@@ -278,9 +278,49 @@ const dailyStatSchema = new mongoose.Schema(
     sections: { type: Map, of: Number, default: {} },
     projects: { type: Map, of: Number, default: {} },
     referrers: { type: Map, of: Number, default: {} },
+    posts: { type: Map, of: Number, default: {} }, // blog post slug -> times read
   },
   { timestamps: true }
 );
+
+// A blog article, managed from /admin/posts. The text is Markdown (bodyEn / bodyAr), turned into
+// HTML in the browser and sanitized there (client/src/lib/markdown.js). `slug` is the readable
+// part of the address: /#/blog/<slug>. A post stays a private draft until `published` is true;
+// `publishedAt` is set the first time it is published. The cover picture works like the
+// certificate picture (stored in the document, `select: false`, never in JSON lists).
+const postSchema = new mongoose.Schema(
+  {
+    slug: {
+      type: String,
+      required: [true, "A link name (slug) is required"],
+      unique: true,
+      maxlength: 80,
+      match: [/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "The link name may only use a-z, 0-9 and single dashes"],
+    },
+    titleEn: { type: String, default: "", maxlength: 200 },
+    titleAr: { type: String, default: "", maxlength: 200 },
+    excerptEn: { type: String, default: "", maxlength: 400 },
+    excerptAr: { type: String, default: "", maxlength: 400 },
+    bodyEn: { type: String, default: "", maxlength: 60000 },
+    bodyAr: { type: String, default: "", maxlength: 60000 },
+    tags: {
+      type: [String],
+      default: [],
+      validate: { validator: (tags) => tags.length <= 8 && tags.every((t) => t.length <= 30), message: "Up to 8 tags, 30 characters each" },
+    },
+    published: { type: Boolean, default: false },
+    publishedAt: { type: Date, default: null },
+    cover: {
+      data: { type: Buffer, select: false },
+      contentType: { type: String, default: "" },
+      size: { type: Number, default: 0 },
+    },
+  },
+  { timestamps: true }
+);
+postSchema.pre("validate", function () {
+  if (!this.titleEn && !this.titleAr) this.invalidate("titleEn", "A post title is required");
+});
 
 certificateSchema.pre("validate", function () {
   if (!this.titleEn && !this.titleAr) this.invalidate("titleEn", "A certificate title is required");
@@ -301,6 +341,7 @@ const models = {
   SiteSettings: mongoose.models.SiteSettings || mongoose.model("SiteSettings", siteSettingsSchema),
   Certificate: mongoose.models.Certificate || mongoose.model("Certificate", certificateSchema),
   DailyStat: mongoose.models.DailyStat || mongoose.model("DailyStat", dailyStatSchema),
+  Post: mongoose.models.Post || mongoose.model("Post", postSchema),
 };
 
 // When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and
@@ -325,6 +366,18 @@ models.Certificate.schema.set("toJSON", {
     delete ret._id;
     delete ret.__v;
     delete ret.image;
+    return ret;
+  },
+});
+
+// Blog posts: the cover picture becomes `hasCover` (fetched from GET /api/posts/:slug/cover).
+models.Post.schema.set("toJSON", {
+  transform: (_document, ret) => {
+    ret.id = ret._id.toString();
+    ret.hasCover = Boolean(ret.cover && ret.cover.size);
+    delete ret._id;
+    delete ret.__v;
+    delete ret.cover;
     return ret;
   },
 });

@@ -1,10 +1,10 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const rateLimit = require("express-rate-limit");
-const { DailyStat, Project } = require("../lib/mongo");
+const { DailyStat, Project, Post } = require("../lib/mongo");
 
 // Privacy-friendly visitor analytics: POST /api/analytics/event.
-// The site (client/src/lib/analytics.js) sends tiny events — "visit", "section", "project",
+// The site (client/src/lib/analytics.js) sends tiny events — "visit", "section", "project", "post",
 // "cv". Nothing about the visitor is stored: no IP, no cookie, no id — each event just adds 1
 // to a counter in today's DailyStat document. Every value is checked against a fixed list or
 // format first, so nobody can fill the database with arbitrary keys.
@@ -20,7 +20,7 @@ const eventLimiter = rateLimit({
 });
 
 // Must match the section ids of the site (client/src/pages/Portfolio.jsx).
-const SECTIONS = ["home", "about", "services", "skills", "projects", "certificates", "testimonials", "youtube", "contact"];
+const SECTIONS = ["home", "about", "services", "skills", "projects", "certificates", "testimonials", "blog", "youtube", "contact"];
 const MAX_REFERRERS_PER_DAY = 50; // beyond that, new sources are counted as "other"
 
 // Today's date in Cairo (the owner's time zone), as "YYYY-MM-DD".
@@ -60,6 +60,8 @@ router.post("/event", eventLimiter, async (req, res) => {
     inc[`sections.${name}`] = 1;
   } else if (type === "project" && mongoose.isValidObjectId(name) && (await Project.exists({ _id: name }))) {
     inc[`projects.${name}`] = 1;
+  } else if (type === "post" && typeof name === "string" && /^[a-z0-9-]{1,80}$/.test(name) && (await Post.exists({ slug: name, published: true }))) {
+    inc[`posts.${name}`] = 1;
   } else if (type === "cv") {
     inc.cvDownloads = 1;
   } else {

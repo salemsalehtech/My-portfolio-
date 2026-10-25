@@ -63,7 +63,7 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 7. **Contact notification email** via Resend — *postponed by the owner (2026-10-25)*. Code is ready on branch `feat/email-resend` (needs `RESEND_API_KEY` + `SITE_URL` in Render).
 8. ~~2.1 + 2.2 Backend comments~~ — done 2026-10-25 (comment-only diff, verified).
 9. ~~1.2 + 2.5 PDFs~~ — done 2026-10-25: `docs/guides/frontend-guide.pdf`, `docs/guides/backend-guide.pdf` (Arabic; rebuild with `bash docs/guides/build-pdfs.sh`).
-10. **Wave B** — ~~certificates~~, ~~visitor analytics~~ done; next: blog, course section, newsletter 🔒 (needs the email), chat 🔒.
+10. **Wave B** — ~~certificates~~, ~~visitor analytics~~, ~~blog~~ done; next: course section, newsletter 🔒 (needs the email), chat 🔒.
 11. **2.6** whenever a custom domain is bought.
 
 ---
@@ -100,7 +100,7 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 - [x] **2.5 Backend PDF** *(done 2026-10-25 — `docs/guides/backend-guide.pdf`)* — same idea as 1.2, for backend + database.
   - *Deliverable:* reference PDF for the backend.
   - *Learn:* connecting API docs to real usage from the frontend.
-- [ ] **2.6 Custom domain** *(later, once purchased)* — DNS records, enable domain in GitHub Pages, set `base` in `vite.config.js` back to `"/"`, update `CLIENT_ORIGIN`.
+- [ ] **2.6 Custom domain** — and switch to clean URLs (BrowserRouter + GitHub Pages 404.html fallback) so blog posts can be indexed by Google; keep old `/#/…` links (feedback links already sent to clients) redirecting. *(later, once purchased)* — DNS records, enable domain in GitHub Pages, set `base` in `vite.config.js` back to `"/"`, update `CLIENT_ORIGIN`.
   - *Deliverable:* site on own domain instead of the GitHub URL.
   - *Learn:* DNS basics (A record / CNAME), how a domain points to hosting.
 
@@ -125,7 +125,7 @@ Every item follows rule 1 (dashboard-managed). Waves are ordered by proximity an
 
 ### Wave B — medium (needs external integrations) · ~1–2 months after Wave A
 
-- **Technical blog** — improves SEO and reputation as developer/teacher.
+- [x] **Technical blog** — `/admin/posts` (+ editor with Markdown preview): EN/AR title/summary/body, unique slug, tags, draft/published, cover picture; site: "Latest articles" (3 newest) on the home page + navbar link, `/#/blog` (tag filter) and `/#/blog/:slug`. Markdown rendered with marked + sanitized by DOMPurify, both lazy-loaded (home page unaffected). Reads counted in Analytics. *Done 2026-10-25.* ⚠ SEO: hash URLs (`/#/blog/…`) are one page for Google — clean URLs are planned with the custom domain (2.6).
 - [x] **Certificates / achievements** — `/admin/certificates`: EN/AR title + issuer, date, verify link (http(s) only), picture upload (PNG/JPEG/WebP ≤ 2 MB, stored in MongoDB, type checked by magic bytes), visible/order; section after Projects + navbar link when not empty. *Done 2026-10-25.*
 - **Newsletter signup** 🔒 — notify visitors of new course/product/article.
 - **Course / social-media content section** — course summary + files + exercises.

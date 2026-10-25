@@ -17,7 +17,7 @@ export const T = {
     greeting: "Hello, I'm", name: 'Salem Saleh',
     tagline: 'Building digital experiences & educating the next generation of developers.',
     ctaProjects: 'View Projects', ctaYoutube: 'Watch on YouTube',
-    nav: { home:'Home', about:'About', services:'Services', skills:'Skills', projects:'Projects', certificates:'Certificates', testimonials:'Reviews', youtube:'YouTube', contact:'Contact' },
+    nav: { home:'Home', about:'About', services:'Services', skills:'Skills', projects:'Projects', certificates:'Certificates', testimonials:'Reviews', blog:'Blog', youtube:'YouTube', contact:'Contact' },
     about: {
       title:'About Me', subtitle:'Passionate Developer & Educator',
       p1:"I'm a software engineer graduated from Borg Al-Arab Technological University with expertise in full-stack web development. I build elegant, high-performance web applications using modern tools and frameworks.",
@@ -30,6 +30,7 @@ export const T = {
     projects:{ title:'Featured Projects', subtitle:'Things I have built', filterAll:'All', filterWeb:'Web Dev', filterYoutube:'YouTube', filterAuto:'Automation', viewCode:'Source Code', liveDemo:'Live Demo', details:'Details →', caseStudy:'Case study', problem:'The problem', solution:'The solution', result:'The result' },
     services:{ title:'What I Offer', subtitle:'Services' },
     certificates:{ title:'Certificates & Achievements', subtitle:'Credentials', view:'Verify' },
+    blog:{ title:'Latest Articles', subtitle:'Blog', all:'All articles', readMore:'Read article →', minRead:'min read', empty:'No articles yet.', notFound:'This article does not exist or is no longer published.' },
     testimonials:{ title:'What Clients Say', subtitle:'Testimonials' },
     youtube:{ title:'YouTube Channel', subtitle:'Educational content', subscribe:'Subscribe Now', channelDesc:'Free programming courses in Arabic covering web development, Laravel, JavaScript, and more.' },
     contact:{ title:'Get In Touch', subtitle:"Let's work together", name:'Your Name', email:'Your Email', message:'Your Message', send:'Send Message', sending:'Sending…', success:"Message sent! I'll get back to you soon.", error:'Something went wrong. Please try again.', connectTitle:'Connect With Me', locationLabel:'Location' },
@@ -40,7 +41,7 @@ export const T = {
     greeting:'مرحباً، أنا', name:'سالم صالح',
     tagline:'أبني تجارب رقمية وأُعلّم الجيل القادم من المطورين.',
     ctaProjects:'عرض المشاريع', ctaYoutube:'شاهد على يوتيوب',
-    nav:{ home:'الرئيسية', about:'عني', services:'الخدمات', skills:'المهارات', projects:'المشاريع', certificates:'الشهادات', testimonials:'الآراء', youtube:'يوتيوب', contact:'تواصل' },
+    nav:{ home:'الرئيسية', about:'عني', services:'الخدمات', skills:'المهارات', projects:'المشاريع', certificates:'الشهادات', testimonials:'الآراء', blog:'المدونة', youtube:'يوتيوب', contact:'تواصل' },
     about:{
       title:'عني', subtitle:'مطور شغوف ومُعلّم',
       p1:'أنا مهندس برمجيات متخرج من جامعة برج العرب التكنولوجية، متخصص في تطوير الويب الشامل. أبني تطبيقات ويب أنيقة وعالية الأداء باستخدام أحدث الأدوات.',
@@ -53,6 +54,7 @@ export const T = {
     projects:{ title:'المشاريع المميزة', subtitle:'ما قمت ببنائه', filterAll:'الكل', filterWeb:'تطوير ويب', filterYoutube:'يوتيوب', filterAuto:'أتمتة', viewCode:'الكود المصدري', liveDemo:'العرض المباشر', details:'التفاصيل ←', caseStudy:'دراسة حالة', problem:'المشكلة', solution:'الحل', result:'النتيجة' },
     services:{ title:'ماذا أقدم', subtitle:'الخدمات' },
     certificates:{ title:'الشهادات والإنجازات', subtitle:'إنجازاتي', view:'تحقق من الشهادة' },
+    blog:{ title:'أحدث المقالات', subtitle:'المدونة', all:'كل المقالات', readMore:'اقرأ المقال ←', minRead:'دقائق قراءة', empty:'لا توجد مقالات بعد.', notFound:'هذا المقال غير موجود أو لم يعد منشورًا.' },
     testimonials:{ title:'آراء العملاء', subtitle:'ماذا يقول عملائي' },
     youtube:{ title:'قناة يوتيوب', subtitle:'محتوى تعليمي', subscribe:'اشترك الآن', channelDesc:'دورات برمجة مجانية باللغة العربية تغطي تطوير الويب و Laravel و JavaScript والمزيد.' },
     contact:{ title:'تواصل معي', subtitle:'لنعمل معاً', name:'اسمك', email:'بريدك الإلكتروني', message:'رسالتك', send:'إرسال الرسالة', sending:'جارٍ الإرسال…', success:'تم الإرسال! سأرد قريباً.', error:'حدث خطأ ما. حاول مرة أخرى.', connectTitle:'تواصل معي', locationLabel:'الموقع' },

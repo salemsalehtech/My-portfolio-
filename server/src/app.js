@@ -22,6 +22,7 @@ const servicesRouter = require("./routes/services");
 const settingsRouter = require("./routes/settings");
 const certificatesRouter = require("./routes/certificates");
 const analyticsRouter = require("./routes/analytics");
+const postsRouter = require("./routes/posts");
 const authRouter = require("./routes/auth");
 const adminRouter = require("./routes/admin");
 
@@ -48,6 +49,8 @@ app.use(cors({ origin: process.env.CLIENT_ORIGIN || "http://localhost:5173" }));
 app.use("/api/admin/cv", express.json({ limit: "6mb" }));
 // Same for certificate pictures (max 2 MB, ~2.7 MB once base64-encoded).
 app.use("/api/admin/certificates", express.json({ limit: "4mb" }));
+// Blog posts: long Markdown texts in two languages + cover pictures (max 2 MB).
+app.use("/api/admin/posts", express.json({ limit: "4mb" }));
 // Reads JSON request bodies into req.body (max 100 KB by default — plenty for every form).
 app.use(express.json());
 
@@ -68,6 +71,7 @@ app.use("/api/services", servicesRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/certificates", certificatesRouter);
 app.use("/api/analytics", analyticsRouter);
+app.use("/api/posts", postsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 
@@ -78,6 +82,11 @@ app.use((err, req, res, next) => {
   console.error(err);
   // A Mongoose validation failure (e.g. a text that is too long) is the client's mistake, not a server crash.
   // A malformed id in the URL (CastError) is too — e.g. PUT /api/admin/services/not-an-id.
+  // A duplicate of a unique field (MongoDB error 11000, e.g. two blog posts with the same link
+  // name) is a conflict the user can fix, so say so clearly.
+  if (err.code === 11000) {
+    return res.status(409).json({ error: `That ${Object.keys(err.keyValue || {})[0] || "value"} is already used — please choose another one` });
+  }
   const status = err.status || (err.name === "ValidationError" || err.name === "CastError" ? 400 : 500);
   res.status(status).json({ error: err.message || "Internal server error" });
 });
