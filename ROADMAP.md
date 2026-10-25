@@ -34,7 +34,7 @@ Standing rules that apply to **every** future task.
 | Language | Bilingual (EN/AR) throughout data and UI. |
 | Deployment | **Live (2026-10-19).** Frontend: `https://salemsalehtech.github.io/My-portfolio-/`, served from the **`gh-pages` branch** (Pages source = "Deploy from a branch"). The Actions workflow `deploy-pages.yml` is blocked — GitHub account billing lock ("job was not started because your account is locked due to a billing issue", support ticket opened); until it clears, deploy by hand: `cd client && npm run build`, then push `client/dist` (+ `.nojekyll`) to `gh-pages`. Backend: Render free web service `https://salem-portfolio-server.onrender.com` (auto-deploys on push to `main`; sleeps after 15 min idle, first request ~1 min), database on MongoDB Atlas (M0, network access `0.0.0.0/0`). Production env vars live in Render, never in git (`.env.*` is git-ignored except `.env.example`/`.env.production`). |
 | Known issues | Contact notification email is not delivered — Render's free tier blocks outbound SMTP (587) and `SMTP_USER`/`SMTP_PASS` are placeholders; messages are still saved and readable in `/admin` → Messages. Plan: switch to an HTTP email API (e.g. Resend). |
-| Known gap | Hero name/tagline/rotating titles and the Contact/Footer social links are still hardcoded (`translations.js`, `Contact.jsx`, `Footer.jsx`) — violates rule 1. The About section is now fully dashboard-managed. |
+| Known gap | None for content: every displayed text and link is now edited from the dashboard (Profile & Links covers the Hero, links, location, footer and YouTube channel). Only UI labels (buttons, section titles) live in `translations.js`, by design. |
 | Theme | Light theme by default; dark theme is neutral gray (`#141414`). The visitor's choice is remembered in `localStorage`. |
 | Brand | Dark navy background `#07111E`; gold accents `#E8A020` / `#C8900A`. Fonts: Outfit (headings), DM Sans (body), Tajawal (Arabic). |
 
@@ -57,13 +57,14 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 1. ~~Manual QA for 1.1~~ — done.
 2. ~~2.4 Deploy backend~~ — done 2026-10-19.
 3. **Rotate leaked secrets** — Atlas DB password, Render `JWT_SECRET`, admin password (all were pasted in chat); delete `server/.env.render` and `server/.env.atlas`. *Owner decided (2026-10-19) to postpone this until the site grows — keep reminding before big releases.*
-4. **Unlock GitHub Actions** (billing lock) so deploys are automatic again; then set Pages source back to "GitHub Actions" and delete the `gh-pages` branch.
-5. ~~1.3 SEO + Open Graph~~ — done (a landscape 1200×630 share image is still to make).
-6. **Finish Wave A:** USP + case studies, "About me" video.
-7. **Contact notification email** via an HTTP email API (Resend) — also notifies new pending testimonials.
-8. **2.1 + 2.2 Backend comments.**
-9. **1.2 + 2.5 PDFs** — write after the code they document is stable.
-10. **2.6** whenever a custom domain is bought.
+4. **Unlock GitHub Actions** (billing lock) — *owner action, GitHub account settings* so deploys are automatic again; then set Pages source back to "GitHub Actions" and delete the `gh-pages` branch.
+5. ~~1.3 SEO + Open Graph~~ — done, incl. the 1200×630 share image `client/public/og-image.jpg` (2026-10-25).
+6. ~~Finish Wave A~~ — done 2026-10-25 (Profile & Links + USP, case studies, About video).
+7. **Contact notification email** via Resend — *postponed by the owner (2026-10-25)*. Code is ready on branch `feat/email-resend` (needs `RESEND_API_KEY` + `SITE_URL` in Render).
+8. ~~2.1 + 2.2 Backend comments~~ — done 2026-10-25 (comment-only diff, verified).
+9. ~~1.2 + 2.5 PDFs~~ — done 2026-10-25: `docs/guides/frontend-guide.pdf`, `docs/guides/backend-guide.pdf` (Arabic; rebuild with `bash docs/guides/build-pdfs.sh`).
+10. **Wave B** (blog, certificates, newsletter 🔒, course section, visitor analytics, chat 🔒).
+11. **2.6** whenever a custom domain is bought.
 
 ---
 
@@ -74,7 +75,7 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 - [x] **1.1 Reorganize/simplify `client/src`** for readability (beginner-friendly comments, split oversized files) **without** changing visual design or behavior. Done — see [FRONTEND_CLEANUP_NOTES.md](FRONTEND_CLEANUP_NOTES.md). Manual QA done 2026-10-19 (found + fixed: section headers/tabs stuck invisible — missing `useReveal` refs in Skills/Projects/YouTube/Contact).
   - *Deliverable:* commented code + `FRONTEND_CLEANUP_NOTES.md`.
   - *Learn:* Components / Props / State, React Router basics, component vs. hook, Git branch/commit.
-- [ ] **1.2 Frontend PDF** — beginner-friendly PDF documenting every file and component.
+- [x] **1.2 Frontend PDF** *(done 2026-10-25 — `docs/guides/frontend-guide.pdf`)* — beginner-friendly PDF documenting every file and component.
   - *Deliverable:* reference PDF to return to while learning or adding features.
   - *Learn:* reading technical docs and mapping them line-by-line to real code.
 - [x] **1.3 Basic SEO + Open Graph** *(done 2026-10-19)* — meta title/description + OG tags in `client/index.html`.
@@ -85,10 +86,10 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 
 **Goal:** live site fully working end-to-end; understand how backend and database fit together.
 
-- [ ] **2.1 Explain backend security middleware** — add clear comments above `helmet()` (`app.js`) and both rate limiters (`routes/auth.js`, `routes/contact.js`) explaining what each does and why it exists. **Do not disable them** (rule 6). JWT auth unchanged.
+- [x] **2.1 Explain backend security middleware** *(done 2026-10-25)* — add clear comments above `helmet()` (`app.js`) and both rate limiters (`routes/auth.js`, `routes/contact.js`) explaining what each does and why it exists. **Do not disable them** (rule 6). JWT auth unchanged.
   - *Deliverable:* security layer readable by a beginner, protection still on.
   - *Learn:* Express middleware; authentication vs. rate limiting vs. security headers.
-- [ ] **2.2 Comment every file in `server/src`** — explanation above every route and Mongoose model.
+- [x] **2.2 Comment every file in `server/src`** *(done 2026-10-25)* — explanation above every route and Mongoose model.
   - *Deliverable:* fully documented `server/src`.
   - *Learn:* REST API concepts; the routes / models / middleware pattern.
 - [x] **2.3 Database decision: MongoDB** — done, no action needed.
@@ -96,7 +97,7 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 - [x] **2.4 Deploy backend to Render** *(done 2026-10-19)* — owner creates Render + MongoDB Atlas accounts; set environment variables together; update `VITE_API_URL` in `client/.env.production`; full Manual QA on the live site.
   - *Deliverable:* live site fully working — data display, Contact form, admin login.
   - *Learn:* environment variables, how frontend talks to backend over an API, deployment basics.
-- [ ] **2.5 Backend PDF** — same idea as 1.2, for backend + database.
+- [x] **2.5 Backend PDF** *(done 2026-10-25 — `docs/guides/backend-guide.pdf`)* — same idea as 1.2, for backend + database.
   - *Deliverable:* reference PDF for the backend.
   - *Learn:* connecting API docs to real usage from the frontend.
 - [ ] **2.6 Custom domain** *(later, once purchased)* — DNS records, enable domain in GitHub Pages, set `base` in `vite.config.js` back to `"/"`, update `CLIENT_ORIGIN`.
@@ -116,10 +117,11 @@ Every item follows rule 1 (dashboard-managed). Waves are ordered by proximity an
 - [x] **Testimonials** — `/admin/testimonials` (rating, visible/hidden, order). *Done 2026-10-19.*
 - [x] **Client feedback form** 🔒 — links `/#/feedback/en` and `/#/feedback/ar` (copy them from Admin → Testimonials); submissions arrive hidden + "Pending" and go live on "Approve". Rate limited (5 successful/hour/IP), honeypot. *Done 2026-10-19.*
 - [x] **Offered Services section** — `/admin/services` (built-in icons, EN/AR, visible/order); section "What I Offer" after About. *Done 2026-10-20.*
-- [ ] **USP statement + case studies** — one differentiating line; projects presented as problem → solution → result.
+- [x] **USP statement + case studies** — USP line in Admin → Profile & Links (shown under the Hero tagline); per-project problem → solution → result in Admin → Projects, shown in the project popup. *Done 2026-10-25.*
+- [x] **Profile & Links** — Hero greeting/name/rotating titles/tagline, email, GitHub/LinkedIn/YouTube links (http(s) only), location, footer role, YouTube channel text: `/admin/settings`. *Done 2026-10-25.*
 - [x] **Filter projects by tag** — buttons built from the projects' own tags (replaced the hardcoded category buttons). *Done 2026-10-19.*
 - [x] **CV download button** — PDF uploaded at `/admin/cv`, stored in MongoDB; button shown only when a CV exists. *Done 2026-10-19.*
-- [ ] **"About me" video** — in About; video link set from the dashboard.
+- [x] **"About me" video** — YouTube link in Admin → About (YouTube links only), embedded via youtube-nocookie. *Done 2026-10-25.*
 
 ### Wave B — medium (needs external integrations) · ~1–2 months after Wave A
 
