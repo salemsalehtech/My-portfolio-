@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>دليل الفرونت إند — بورتفوليو سالم صالح</title>
+<link rel="stylesheet" href="guide.css">
+</head>
+<body>
+
+<!-- ======================= COVER ======================= -->
+<section class="cover">
+  <div class="badge">SS</div>
+  <div>
+    <div class="kicker">FRONTEND GUIDE · REACT + VITE</div>
+    <h1>دليل الفرونت إند<br>بورتفوليو سالم صالح</h1>
+    <p class="lead">شرح مبسّط لكل جزء في واجهة الموقع: إزاي متقسّمة، وإزاي البيانات بتوصل من لوحة التحكم للزائر، والمفاهيم الأساسية في React بأمثلة من كودك انت — عشان تقدر تفهم أي ملف وتضيف ميزة جديدة بنفسك.</p>
+    <ol class="toc">
+      <li>الصورة الكبيرة</li>
+      <li>تشغيل المشروع على جهازك</li>
+      <li>خريطة الملفات</li>
+      <li>مفاهيم React من كودك</li>
+      <li>رحلة البيانات من الداشبورد للزائر</li>
+      <li>اللغتين والثيم</li>
+      <li>الأقسام واحد واحد</li>
+      <li>لوحة التحكم (Admin)</li>
+      <li>الحركة عند النزول (useReveal)</li>
+      <li>إضافة ميزة جديدة</li>
+      <li>النشر</li>
+      <li>مشاكل حصلت واتعلمنا منها</li>
+      <li>قاموس المصطلحات</li>
+    </ol>
+  </div>
+  <div class="meta"><span>المشروع: My-portfolio- · مجلد <code>client/</code></span><span>أكتوبر 2026</span></div>
+</section>
+
+<!-- ======================= 1 ======================= -->
+<h1><span class="num">1</span>الصورة الكبيرة</h1>
+<p>الموقع عبارة عن <strong>تطبيق React واحد</strong> (Single Page Application) فيه جزئين:</p>
+<ul>
+  <li><strong>الموقع العام</strong> على الرابط <code>/</code> — اللي الزوار بيشوفوه: Hero، About، الخدمات، المهارات، المشاريع، الآراء، يوتيوب، التواصل.</li>
+  <li><strong>لوحة التحكم</strong> على الرابط <code>/#/admin</code> — اللي انت بس بتدخلها بالإيميل والباسورد وبتعدّل منها كل محتوى الموقع.</li>
+</ul>
+<p>الواجهة نفسها <strong>ملفات ثابتة</strong> (HTML + CSS + JavaScript) متنشورة على <strong>GitHub Pages</strong>. أما البيانات (المشاريع، المهارات، الآراء…) فمش جوه الكود — بتيجي من <strong>السيرفر (API)</strong> على Render، واللي بيقرا ويكتب في قاعدة البيانات <strong>MongoDB Atlas</strong>.</p>
+
+<div class="flow">
+  <div class="box"><b>المتصفح</b>الزائر بيفتح الموقع</div>
+  <div class="arrow">←</div>
+  <div class="box"><b>GitHub Pages</b>بيبعت ملفات الواجهة (React)</div>
+  <div class="arrow">←</div>
+  <div class="box"><b>API على Render</b>الواجهة تطلب البيانات <code>/api/...</code></div>
+  <div class="arrow">←</div>
+  <div class="box"><b>MongoDB Atlas</b>مكان تخزين البيانات</div>
+</div>
+
+<div class="tip"><b>القاعدة الأهم في المشروع</b>أي محتوى بيظهر للزائر لازم يتعدّل من لوحة التحكم — مش من الكود. عشان كده كل قسم بيجيب بياناته من الـ API، ولو مفيش بيانات بيرجع لقيم افتراضية أو بيختفي.</div>
+
+<h2>الأدوات المستخدمة</h2>
+<table>
+  <tr><th>الأداة</th><th>دورها</th></tr>
+  <tr><td><strong>React 18</strong></td><td>مكتبة بناء الواجهة من "مكوّنات" (Components) صغيرة.</td></tr>
+  <tr><td><strong>Vite</strong></td><td>أداة التشغيل والبناء: <code>npm run dev</code> للتطوير، و<code>npm run build</code> لإنتاج ملفات النشر في <code>dist/</code>.</td></tr>
+  <tr><td><strong>React Router</strong> (HashRouter)</td><td>التنقل بين الصفحات (<code>/</code> و<code>/admin/...</code>) من غير ما الصفحة تعيد التحميل.</td></tr>
+  <tr><td><strong>CSS عادي</strong></td><td>كل الستايل في ملف واحد <code>src/index.css</code> بمتغيرات ألوان للثيمين.</td></tr>
+</table>
+
+<!-- ======================= 2 ======================= -->
+<h1><span class="num">2</span>تشغيل المشروع على جهازك</h1>
+<p>المشروع جزئين بيشتغلوا مع بعض، فمحتاج <strong>اتنين Terminal</strong>:</p>
+<pre><span class="c"># Terminal 1 — السيرفر (لازم MongoDB يكون شغّال على جهازك)</span>
+cd "D:\Work\Web applications\My-portfolio-\My-portfolio-\server"
+npm install      <span class="c"># أول مرة بس</span>
+npm run dev      <span class="c"># API on http://localhost:4000</span>
+
+<span class="c"># Terminal 2 — الواجهة</span>
+cd "D:\Work\Web applications\My-portfolio-\My-portfolio-\client"
+npm install      <span class="c"># أول مرة بس</span>
+npm run dev      <span class="c"># افتح http://localhost:5173</span></pre>
+<p>وقت التطوير، أي طلب من الواجهة لـ <code>/api/...</code> بيتحوّل تلقائيًا للسيرفر على بورت 4000 — ده إعداد اسمه <strong>proxy</strong> موجود في <code>client/vite.config.js</code>. وفي النسخة المنشورة، الواجهة بتكلم السيرفر على Render من خلال الرابط المكتوب في <code>client/.env.production</code>.</p>
+<div class="tip"><b>نصيحة</b>لو شغّلت السيرفر وطلع خطأ <code>EADDRINUSE :::4000</code> يبقى فيه نسخة تانية من السيرفر شغّالة على نفس البورت — اقفلها الأول.</div>
+
+<!-- ======================= 3 ======================= -->
+<h1><span class="num">3</span>خريطة الملفات</h1>
+<div class="tree">client/
+├── index.html            <span class="note">← الصفحة الوحيدة: فيها SEO وصورة المشاركة والثيم الافتراضي</span>
+├── vite.config.js        <span class="note">← base = /My-portfolio-/ + الـ proxy للسيرفر</span>
+├── .env.production       <span class="note">← VITE_API_URL: رابط السيرفر على Render</span>
+├── public/               <span class="note">← ملفات بتتنسخ زي ما هي (صورتك، og-image.jpg)</span>
+└── src/
+    ├── main.jsx          <span class="note">← نقطة البداية: بيركّب App جوه الصفحة</span>
+    ├── App.jsx           <span class="note">← كل الروابط (Routes) + الـ Providers</span>
+    ├── index.css         <span class="note">← كل الستايل وألوان الثيمين</span>
+    ├── pages/
+    │   ├── Portfolio.jsx <span class="note">← الموقع العام: بيرتّب الأقسام</span>
+    │   ├── FeedbackForm.jsx <span class="note">← فورم رأي العميل /#/feedback/ar|en</span>
+    │   └── admin/        <span class="note">← صفحات لوحة التحكم + FormParts.jsx</span>
+    ├── components/       <span class="note">← الأقسام: Hero, About, Services, Skills, Projects, ...</span>
+    ├── hooks/            <span class="note">← منطق قابل لإعادة الاستخدام: useCollection, useReveal, ...</span>
+    ├── context/          <span class="note">← حالة عامة: SiteContext (لغة/ثيم), AdminContext (الدخول)</span>
+    ├── lib/              <span class="note">← أدوات JavaScript عادية: api.js, apiCache.js, pick.js, ...</span>
+    └── i18n/translations.js <span class="note">← نصوص الواجهة الثابتة بالعربي والإنجليزي</span></div>
+
+<h2>الفرق بين <code>hooks/</code> و <code>lib/</code> و <code>components/</code></h2>
+<table>
+  <tr><th>المجلد</th><th>فيه إيه</th><th>مثال</th></tr>
+  <tr><td><code>components/</code></td><td>حاجات بتترسم على الشاشة (بترجع JSX)</td><td><code>Hero.jsx</code> بيرسم أول جزء في الصفحة</td></tr>
+  <tr><td><code>hooks/</code></td><td>دوال React بتبدأ بـ <code>use</code> وبتستخدم state أو effects</td><td><code>useCollection("/projects")</code> بيجيب المشاريع</td></tr>
+  <tr><td><code>lib/</code></td><td>JavaScript عادي من غير React</td><td><code>api.js</code> لكل طلبات السيرفر، <code>pick.js</code> لاختيار اللغة</td></tr>
+  <tr><td><code>context/</code></td><td>بيانات محتاجها الموقع كله</td><td><code>useSite()</code> بيدّيك اللغة والثيم والترجمة</td></tr>
+</table>
+
+<!-- ======================= 4 ======================= -->
+<h1><span class="num">4</span>مفاهيم React من كودك</h1>
+
+<h2>1) المكوّن (Component) و JSX</h2>
+<p>المكوّن = دالة بترجع شكل جزء من الصفحة. الشكل ده مكتوب بـ <strong>JSX</strong> — شبه HTML جوه JavaScript. مثال حقيقي مبسّط من <code>Footer.jsx</code>:</p>
+<span class="file">client/src/components/Footer.jsx</span>
+<pre><span class="k">export default function</span> Footer({ settings }) {
+  <span class="k">const</span> { t, lang } = useSite();
+  <span class="k">return</span> (
+    &lt;footer&gt;
+      &lt;div className=<span class="s">"footer-name"</span>&gt;{pick(lang, settings.nameEn, settings.nameAr)}&lt;/div&gt;
+      &lt;div className=<span class="s">"footer-copy"</span>&gt;{t.footer.rights}&lt;/div&gt;
+    &lt;/footer&gt;
+  );
+}</pre>
+<p>لاحظ: <code>className</code> بدل <code>class</code>، وأي قيمة JavaScript بتتحط بين <code>{ }</code>.</p>
+
+<h2>2) الـ Props — بيانات داخلة للمكوّن</h2>
+<p>الـ props هي "المعطيات" اللي المكوّن الأب بيبعتها للابن. في <code>Portfolio.jsx</code> بنجيب إعدادات الموقع مرة واحدة ونوزّعها:</p>
+<pre>&lt;Hero settings={settings} /&gt;
+&lt;Contact settings={settings} /&gt;
+&lt;Footer settings={settings} /&gt;</pre>
+
+<h2>3) الـ State — بيانات بتتغير وبتعيد الرسم</h2>
+<p><code>useState</code> بيحفظ قيمة جوه المكوّن، ولما تتغير React يعيد رسم المكوّن. مثال من فورم التواصل:</p>
+<span class="file">client/src/components/Contact.jsx</span>
+<pre><span class="k">const</span> [status, setStatus] = useState(<span class="s">"idle"</span>); <span class="c">// idle | sending | success | error</span>
+<span class="c">// ...</span>
+setStatus(<span class="s">"sending"</span>);
+<span class="k">await</span> api.post(<span class="s">"/contact"</span>, formData);
+setStatus(<span class="s">"success"</span>);   <span class="c">// الشاشة تتحدّث لوحدها وتظهر رسالة النجاح</span></pre>
+
+<h2>4) الـ Effect — حاجة تحصل بعد الرسم</h2>
+<p><code>useEffect</code> للحاجات اللي "برّه" الرسم: طلب بيانات من السيرفر، تايمر، الاستماع للـ scroll. مثال: تبديل المسميات في الـ Hero كل 3.2 ثانية:</p>
+<pre>useEffect(() =&gt; {
+  <span class="k">if</span> (count &lt; 2) <span class="k">return</span>;                 <span class="c">// مفيش حاجة تتبدّل</span>
+  <span class="k">const</span> cycle = setInterval(() =&gt; { <span class="c">/* المسمى اللي بعده */</span> }, 3200);
+  <span class="k">return</span> () =&gt; clearInterval(cycle);       <span class="c">// تنضيف لما المكوّن يختفي</span>
+}, [count]);                                 <span class="c">// يتعاد لو عدد المسميات اتغير</span></pre>
+
+<h2>5) Custom Hook — منطق بتعيد استخدامه</h2>
+<p>لو نفس المنطق متكرر في أكتر من مكوّن، بنحطه في دالة اسمها يبدأ بـ <code>use</code>. أشهر مثال في المشروع <code>useCollection</code>: بيجيب قايمة من السيرفر ويرجّع <code>{ data, loading }</code>:</p>
+<pre><span class="k">const</span> { data: projects } = useCollection(<span class="s">"/projects"</span>);</pre>
+
+<h2>6) Context — بيانات للموقع كله</h2>
+<p>بدل ما نبعت اللغة والثيم كـ props لكل مكوّن، <code>SiteContext</code> بيخزّنهم مرة واحدة فوق كل حاجة (في <code>App.jsx</code>)، وأي مكوّن يقدر يقراهم بـ:</p>
+<pre><span class="k">const</span> { t, lang, theme, toggleLang, toggleTheme } = useSite();</pre>
+
+<h2>7) العرض المشروط والقوايم</h2>
+<pre><span class="c">// لو مفيش خدمات، القسم كله ما يترسمش</span>
+<span class="k">if</span> (loading || items.length === 0) <span class="k">return null</span>;
+
+<span class="c">// قايمة: لازم key فريد لكل عنصر</span>
+{items.map((item) =&gt; &lt;div className=<span class="s">"service-card"</span> key={item.id}&gt;...&lt;/div&gt;)}</pre>
+
+<!-- ======================= 5 ======================= -->
+<h1><span class="num">5</span>رحلة البيانات من الداشبورد للزائر</h1>
+<p>خلينا نتابع "إضافة خدمة جديدة" من أولها لآخرها:</p>
+<ol class="steps">
+  <li><strong>انت في الداشبورد</strong> (<code>AdminServices.jsx</code>) تضغط Save → <code>api.post("/admin/services", ...)</code>.</li>
+  <li><strong><code>lib/api.js</code></strong> بيضيف التوكن بتاعك (<code>Authorization: Bearer ...</code>) ويبعت الطلب للسيرفر.</li>
+  <li><strong>السيرفر</strong> يتأكد إنك الأدمن، ويتحقق من البيانات، ويحفظها في MongoDB.</li>
+  <li><strong>زائر يفتح الموقع:</strong> <code>Portfolio.jsx</code> بينادي <code>useCollection("/services")</code> → طلب <code>GET /api/services</code>.</li>
+  <li><strong>القسم</strong> <code>Services.jsx</code> بياخد القايمة ويرسم الكروت.</li>
+</ol>
+
+<h2>lib/api.js — باب واحد لكل الطلبات</h2>
+<p>أي كلام مع السيرفر لازم يعدّي من <code>api.get / post / put / patch / del</code> — مش <code>fetch</code> مباشرة. الملف ده بيعمل 3 حاجات مرة واحدة: يحدد رابط السيرفر، يضيف التوكن لو انت مسجّل دخول، ويرمي خطأ واضح لو السيرفر رد بغلط.</p>
+
+<h2>الكاش — المحتوى يظهر فورًا للزائر الراجع</h2>
+<p>السيرفر المجاني على Render ممكن ينام، وأول طلب بعدها ياخد وقت. عشان كده <code>lib/apiCache.js</code> بيحفظ آخر رد في متصفح الزائر (localStorage). الزيارة الجاية: المحفوظ يظهر <strong>فورًا</strong>، وبعدين يتحدّث بالجديد من السيرفر.</p>
+<div class="flow">
+  <div class="box"><b>1. فتح الموقع</b>عرض المحفوظ فورًا</div>
+  <div class="arrow">←</div>
+  <div class="box"><b>2. طلب للسيرفر</b>في الخلفية</div>
+  <div class="arrow">←</div>
+  <div class="box"><b>3. وصل الرد</b>تحديث الشاشة + حفظ نسخة جديدة</div>
+</div>
+<p class="small">لوحة التحكم ما بتستخدمش الكاش — لازم تشوف البيانات الحقيقية دايمًا.</p>
+
+<!-- ======================= 6 ======================= -->
+<h1><span class="num">6</span>اللغتين والثيم</h1>
+<h2>نوعين من النصوص</h2>
+<table>
+  <tr><th>النوع</th><th>مكانه</th><th>مثال</th></tr>
+  <tr><td><strong>نصوص الواجهة</strong> (ثابتة)</td><td><code>i18n/translations.js</code> → <code>t.contact.send</code></td><td>"Send Message" / "إرسال"</td></tr>
+  <tr><td><strong>نصوص المحتوى</strong> (من الداشبورد)</td><td>كل حقل له نسختين في الداتا: <code>titleEn</code> و <code>titleAr</code></td><td>عنوان مشروع، نبذة About</td></tr>
+</table>
+<p>لاختيار النسخة المناسبة من المحتوى بنستخدم <code>pick</code> من <code>lib/pick.js</code>:</p>
+<pre>pick(lang, item.titleEn, item.titleAr)
+<span class="c">// عربي؟ → titleAr، ولو فاضي يرجع titleEn (والعكس) — عمره ما يظهر فاضي</span></pre>
+<p>ولما اللغة عربي، <code>SiteContext</code> بيضيف class اسمه <code>ar</code> على <code>&lt;body&gt;</code>، والـ CSS بيقلب الاتجاه (RTL) ويغيّر الخط لـ Tajawal.</p>
+<div class="tip"><b>قاعدة</b>أي نص ثابت جديد في الواجهة: ضيفه في <code>T.en</code> و<code>T.ar</code> بنفس المفتاح. أي حقل محتوى جديد: نسختين En و Ar.</div>
+
+<h2>الثيم (فاتح / داكن)</h2>
+<ul>
+  <li>الألوان كلها متغيرات في أول <code>index.css</code>: <code>:root</code> للداكن (رمادي غامق <code>#141414</code>) و<code>:root.light</code> للفاتح.</li>
+  <li>الافتراضي <strong>فاتح</strong>: <code>&lt;html class="light"&gt;</code> في <code>index.html</code>.</li>
+  <li>اختيار الزائر بيتحفظ في <code>localStorage</code>، وسكريبت صغير في <code>index.html</code> بيطبّقه قبل ما React يشتغل — عشان الصفحة ما "تومضش" بالثيم الغلط.</li>
+</ul>
+
+<!-- ======================= 7 ======================= -->
+<h1><span class="num">7</span>الأقسام واحد واحد</h1>
+<table>
+  <tr><th>القسم</th><th>الملف</th><th>البيانات منين</th><th>بتتعدّل من</th></tr>
+  <tr><td>Hero</td><td><code>Hero.jsx</code></td><td><code>GET /settings</code></td><td>Profile &amp; Links</td></tr>
+  <tr><td>About + فيديو</td><td><code>About.jsx</code></td><td><code>GET /about</code> + <code>/cv/info</code></td><td>About + CV</td></tr>
+  <tr><td>الخدمات</td><td><code>Services.jsx</code></td><td><code>GET /services</code></td><td>Services</td></tr>
+  <tr><td>المهارات</td><td><code>Skills.jsx</code></td><td><code>GET /skills</code></td><td>Skills</td></tr>
+  <tr><td>المشاريع + دراسة الحالة</td><td><code>Projects.jsx</code> + <code>ProjectModal.jsx</code></td><td><code>GET /projects</code></td><td>Projects</td></tr>
+  <tr><td>آراء العملاء</td><td><code>Testimonials.jsx</code></td><td><code>GET /testimonials</code></td><td>Testimonials</td></tr>
+  <tr><td>يوتيوب</td><td><code>YouTube.jsx</code></td><td><code>GET /youtube</code> + settings</td><td>YouTube + Profile &amp; Links</td></tr>
+  <tr><td>التواصل</td><td><code>Contact.jsx</code></td><td>settings (روابط) + <code>POST /contact</code></td><td>Profile &amp; Links / Messages</td></tr>
+  <tr><td>الفوتر</td><td><code>Footer.jsx</code></td><td>settings</td><td>Profile &amp; Links</td></tr>
+</table>
+<h2>تفاصيل تستاهل تعرفها</h2>
+<ul>
+  <li><strong>الأقسام الاختيارية</strong> (الخدمات، الآراء) بتختفي لو فاضية — وروابطها في الـ Navbar كمان. عشان كده <code>Portfolio.jsx</code> هو اللي بيجيب بياناتها ويديها للقسم وللـ Navbar.</li>
+  <li><strong>فلتر المشاريع</strong> أزراره مش مكتوبة في الكود: بتتبني من حقل Tags في المشاريع نفسها، الأكتر استخدامًا الأول.</li>
+  <li><strong>نافذة المشروع</strong> بتعرض "المشكلة ← الحل ← النتيجة" لو موجودين، وأزرار Demo/Code بتظهر بس لو الرابط حقيقي (يبدأ بـ http).</li>
+  <li><strong>الصور والملفات</strong> في <code>public/</code> لازم رابطها يتبني بـ <code>import.meta.env.BASE_URL</code> عشان الموقع شغّال تحت <code>/My-portfolio-/</code>.</li>
+</ul>
+
+<!-- ======================= 8 ======================= -->
+<h1><span class="num">8</span>لوحة التحكم (Admin)</h1>
+<h2>تسجيل الدخول خطوة بخطوة</h2>
+<ol class="steps">
+  <li>تفتح <code>/#/admin/login</code> وتكتب الإيميل والباسورد (<code>AdminLogin.jsx</code>).</li>
+  <li><code>AdminContext.jsx</code> يبعت <code>POST /auth/login</code> — ولو صح يرجع <strong>توكن</strong> (JWT) صالح 7 أيام.</li>
+  <li>التوكن بيتحفظ في <code>localStorage</code> باسم <code>adminToken</code> — فالـ Refresh ما بيخرّجكش.</li>
+  <li><code>api.js</code> بيضيف التوكن لكل طلب، والسيرفر يرفض أي طلب أدمن من غيره.</li>
+  <li><code>AdminLayout.jsx</code> هو "الحارس": لو مفيش توكن يحوّلك لصفحة الدخول.</li>
+</ol>
+<h2>نمط صفحات الأدمن</h2>
+<p>أغلب الصفحات (Projects, Skills, Services, Testimonials, YouTube) نفس الشكل: <strong>جدول</strong> + <strong>نافذة فورم</strong> للإضافة والتعديل. الـ state المهم:</p>
+<pre><span class="k">const</span> [editing, setEditing] = useState(<span class="k">null</span>); <span class="c">// null = مقفول | "new" = إضافة | id = تعديل</span>
+<span class="k">const</span> [form, setForm] = useState(EMPTY);       <span class="c">// قيم الفورم الحالية</span>
+<span class="k">const</span> load = () =&gt; api.get(<span class="s">"/admin/services"</span>).then(setItems); <span class="c">// إعادة تحميل بعد أي تعديل</span></pre>
+<p>والصفحات اللي بتعدّل "مستند واحد كبير" (About و Profile &amp; Links) بتستخدم مكوّنات مشتركة من <code>pages/admin/FormParts.jsx</code>: <code>Field</code> (حقل نص) و<code>ListEditor</code> (قايمة بإضافة/حذف/ترتيب).</p>
+
+<!-- ======================= 9 ======================= -->
+<h1><span class="num">9</span>الحركة عند النزول (useReveal)</h1>
+<p>العناصر اللي عليها <code>data-ao</code> بتبدأ <strong>شفافة</strong> (CSS: <code>opacity: 0</code>)، ولما توصل لها وانت نازل بتاخد class <code>visible</code> وتظهر بحركة.</p>
+<pre><span class="k">const</span> [headerRef, headerVisible] = useReveal();
+&lt;div ref={headerRef} className={<span class="s">`section-header ${headerVisible ? "visible" : ""}`</span>} data-ao&gt;</pre>
+<p>جوه <code>useReveal</code> بيستخدم <code>IntersectionObserver</code> — خاصية في المتصفح بتقول "العنصر ده بقى ظاهر في الشاشة".</p>
+<div class="lesson"><b>درس اتعلمناه</b>قبل كده كان <code>useReveal</code> بيراقب العنصر <em>مرة واحدة وقت التحميل</em>. فلو العنصر ظهر بعدين (مثلًا بعد ما البيانات وصلت) ما حدش كان بيراقبه، فيفضل شفاف للأبد — وده اللي خلّى قسم About "يختفي" مرة. الحل: <code>ref</code> بقى "callback ref" محفوظ في state، فأي عنصر يظهر في أي وقت بيتراقب.</div>
+<div class="warn"><b>تحذير</b>أي عنصر بتحط عليه <code>data-ao</code> لازم يكون معاه <code>ref</code> من <code>useReveal</code> ويتغيّر له class <code>visible</code> — وإلا هيفضل مخفي.</div>
+
+<!-- ======================= 10 ======================= -->
+<h1><span class="num">10</span>إضافة ميزة جديدة</h1>
+<p>كل ميزة في الموقع بتتبني بنفس الخمس خطوات (قاعدة "كل حاجة من الداشبورد"). مثال: قسم "الشهادات":</p>
+<ol class="steps">
+  <li><strong>الموديل</strong> في السيرفر: <code>server/src/lib/mongo.js</code> (الحقول بنسختين En/Ar).</li>
+  <li><strong>API عام</strong> للقراءة: <code>server/src/routes/certificates.js</code> + سطر في <code>app.js</code>.</li>
+  <li><strong>API للأدمن</strong> (إضافة/تعديل/حذف): قسم جديد في <code>routes/admin.js</code>.</li>
+  <li><strong>صفحة أدمن</strong>: <code>pages/admin/AdminCertificates.jsx</code> (انسخ نمط <code>AdminServices.jsx</code>) + Route في <code>App.jsx</code> + رابط في <code>AdminLayout.jsx</code>.</li>
+  <li><strong>قسم العرض</strong>: <code>components/Certificates.jsx</code> + إضافته في <code>Portfolio.jsx</code> + العنوانين في <code>translations.js</code> + الستايل في <code>index.css</code>.</li>
+</ol>
+<div class="tip"><b>قبل ما تبدأ</b>اعمل branch جديد (<code>git checkout -b feat/certificates</code>). ولما تخلص: جرّب على جهازك → <code>npm run build</code> لازم ينجح → وبعدين انشر.</div>
+
+<!-- ======================= 11 ======================= -->
+<h1><span class="num">11</span>النشر</h1>
+<h2>بناء النسخة النهائية</h2>
+<pre>cd client
+npm run build     <span class="c"># يطلّع ملفات الموقع في client/dist</span></pre>
+<p>Vite بيقرا <code>VITE_API_URL</code> من <code>.env.production</code> ويحطه جوه الكود، وبيظبط كل الروابط على <code>/My-portfolio-/</code> (من <code>vite.config.js</code>).</p>
+
+<h2>النشر على GitHub Pages — الطريقة الحالية</h2>
+<p>GitHub Actions متوقف حاليًا (مشكلة في الفوترة على الحساب)، فالموقع بيتنشر من branch اسمه <code>gh-pages</code> فيه محتوى <code>dist/</code> بس:</p>
+<pre>npm run build
+<span class="c"># انسخ محتوى client/dist لمجلد مؤقت فيه نسخة من branch gh-pages</span>
+<span class="c"># + ملف فاضي اسمه .nojekyll، وبعدين:</span>
+git add -A &amp;&amp; git commit -m <span class="s">"deploy"</span> &amp;&amp; git push origin gh-pages</pre>
+<p>لما Actions يرجع يشتغل: Settings ← Pages ← Source = <strong>GitHub Actions</strong>، وساعتها أي push على <code>main</code> بينشر لوحده (<code>.github/workflows/deploy-pages.yml</code>).</p>
+<div class="tip"><b>بعد النشر</b>افتح الموقع بـ <code>Ctrl+Shift+R</code> أو نافذة Incognito — المتصفح بيحتفظ بالنسخة القديمة حوالي 10 دقايق.</div>
+
+<!-- ======================= 12 ======================= -->
+<h1><span class="num">12</span>مشاكل حصلت واتعلمنا منها</h1>
+<table>
+  <tr><th>المشكلة</th><th>السبب</th><th>الحل / الدرس</th></tr>
+  <tr><td>عناوين الأقسام مش ظاهرة وفراغ مكانها</td><td><code>data-ao</code> من غير ما حد يضيف <code>visible</code></td><td>كل عنصر <code>data-ao</code> لازم يكون له <code>useReveal</code></td></tr>
+  <tr><td>قسم About اختفى بعد ما بقى من الداشبورد</td><td><code>useReveal</code> بيراقب وقت التحميل بس، والمحتوى ظهر بعدين</td><td>callback ref — يراقب العنصر وقت ما يظهر</td></tr>
+  <tr><td>الصورة الشخصية مش ظاهرة على الموقع المنشور</td><td>الرابط <code>/uploads/...</code> من جذر الدومين، والموقع تحت <code>/My-portfolio-/</code></td><td>استخدم <code>import.meta.env.BASE_URL</code></td></tr>
+  <tr><td>المحتوى بياخد دقيقة عشان يظهر</td><td>السيرفر المجاني بينام بعد 15 دقيقة</td><td>كاش في المتصفح + السيرفر يزور نفسه كل 10 دقايق</td></tr>
+  <tr><td>الموقع ما بيبنيش بعد تعديل لينك</td><td>اللصق في VS Code قطّع الأيقونة على أسطر</td><td>غيّر النص جوه علامات التنصيص بس، وجرّب <code>npm run build</code> قبل النشر</td></tr>
+  <tr><td>الموقع المنشور بيعرض README</td><td>Pages كان متظبط "من branch" بـ Jekyll</td><td>Pages Source الصح + ملف <code>.nojekyll</code></td></tr>
+</table>
+
+<!-- ======================= 13 ======================= -->
+<h1><span class="num">13</span>قاموس المصطلحات</h1>
+<table>
+  <tr><th>المصطلح</th><th>معناه ببساطة</th></tr>
+  <tr><td>Component</td><td>دالة بترجع جزء من الصفحة (JSX).</td></tr>
+  <tr><td>JSX</td><td>كتابة شبه HTML جوه JavaScript.</td></tr>
+  <tr><td>Props</td><td>بيانات داخلة لمكوّن من المكوّن اللي فوقه.</td></tr>
+  <tr><td>State</td><td>بيانات جوه المكوّن، لما تتغير الشاشة تتحدّث.</td></tr>
+  <tr><td>Hook</td><td>دالة React بتبدأ بـ use (useState, useEffect, useCollection...).</td></tr>
+  <tr><td>Effect</td><td>كود بيشتغل بعد الرسم (طلبات، تايمرات).</td></tr>
+  <tr><td>Context</td><td>مخزن بيانات عام لكل الموقع من غير props.</td></tr>
+  <tr><td>Router / Route</td><td>اختيار الصفحة اللي تظهر حسب الرابط.</td></tr>
+  <tr><td>API</td><td>عنوان على السيرفر بتطلب منه أو تبعتله بيانات.</td></tr>
+  <tr><td>JWT / Token</td><td>"تصريح دخول" موقّع بيثبت إنك الأدمن.</td></tr>
+  <tr><td>localStorage</td><td>تخزين صغير جوه متصفح الزائر بيفضل بعد قفل الصفحة.</td></tr>
+  <tr><td>Build</td><td>تحويل الكود لملفات جاهزة للنشر (<code>dist/</code>).</td></tr>
+  <tr><td>RTL</td><td>الكتابة من اليمين للشمال (العربي).</td></tr>
+  <tr><td>Cache</td><td>نسخة محفوظة من بيانات عشان تظهر أسرع.</td></tr>
+</table>
+<p class="small">الدليل ده بيوصف الكود في أكتوبر 2026. لو المشروع اتغيّر، الملف المصدر <code>docs/guides/frontend-guide.html</code> وتقدر تعدّله وتعيد طباعته بـ <code>docs/guides/build-pdfs.sh</code>.</p>
+</body>
+</html>

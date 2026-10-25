@@ -1,0 +1,67 @@
+/* guide.css — shared print styles for the PDF guides in this folder.
+   Build the PDFs with:  bash docs/guides/build-pdfs.sh   (prints each .html with Edge/Chrome). */
+@import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap");
+
+@page { size: A4; margin: 18mm 16mm 20mm; }
+@page { @bottom-center { content: counter(page); font-family: Tajawal, "Segoe UI", sans-serif; font-size: 9pt; color: #999; } }
+@page :first { @bottom-center { content: none; } }
+
+:root { --gold: #C8900A; --gold-soft: #FFF6E0; --ink: #1A1A1A; --muted: #5A5A5A; --line: #E6E1D6; --code-bg: #1E1E1E; }
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font-family: "Tajawal", "Segoe UI", Tahoma, sans-serif; font-size: 11.5pt; line-height: 1.85; color: var(--ink); direction: rtl; text-align: right; }
+
+/* ---------- cover ---------- */
+.cover { height: 257mm; display: flex; flex-direction: column; justify-content: space-between; padding: 14mm 4mm; page-break-after: always; border-top: 6px solid var(--gold); }
+.cover .badge { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #E8A020, #F5C040); color: #161616; font-weight: 800; font-size: 22px; display: flex; align-items: center; justify-content: center; direction: ltr; }
+.cover .kicker { color: var(--gold); font-weight: 800; letter-spacing: 3px; font-size: 11pt; direction: ltr; text-align: right; }
+.cover h1 { font-size: 34pt; line-height: 1.3; margin: 8px 0 12px; border: none; padding: 0; page-break-before: avoid; }
+.cover .lead { font-size: 13.5pt; color: var(--muted); max-width: 150mm; }
+.cover .meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 10pt; border-top: 1px solid var(--line); padding-top: 10px; }
+.cover .toc { margin-top: 18px; font-size: 11pt; columns: 2; column-gap: 12mm; }
+.cover .toc li { margin-bottom: 2px; }
+
+/* ---------- headings ---------- */
+h1 { font-size: 20pt; margin: 0 0 12px; padding-bottom: 6px; border-bottom: 3px solid var(--gold); page-break-before: always; page-break-after: avoid; }
+h1 .num { color: var(--gold); margin-left: 8px; }
+h2 { font-size: 14.5pt; margin: 22px 0 6px; color: #111; page-break-after: avoid; }
+h3 { font-size: 12pt; margin: 16px 0 4px; color: var(--gold); page-break-after: avoid; }
+p { margin: 6px 0 10px; }
+ul, ol { margin: 4px 0 12px; padding-right: 22px; padding-left: 0; }
+li { margin-bottom: 3px; }
+strong { color: #000; }
+
+/* ---------- code ---------- */
+code { font-family: "JetBrains Mono", Consolas, monospace; font-size: 9.5pt; background: #F3F0E8; border-radius: 4px; padding: 1px 5px; direction: ltr; unicode-bidi: embed; }
+pre { direction: ltr; text-align: left; background: var(--code-bg); color: #EDEDED; border-radius: 8px; padding: 10px 14px; font-family: "JetBrains Mono", Consolas, monospace; font-size: 9pt; line-height: 1.6; white-space: pre-wrap; word-break: break-word; page-break-inside: avoid; margin: 8px 0 14px; border-left: 4px solid #E8A020; }
+pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+pre .c { color: #9A9A9A; font-family: "Tajawal", "Segoe UI", sans-serif; unicode-bidi: plaintext; }   /* comment: Arabic font, own direction */
+pre .k { color: #F5C040; }   /* keyword-ish highlight */
+pre .s { color: #9CD39C; }   /* string */
+.file { display: inline-block; direction: ltr; font-family: "JetBrains Mono", Consolas, monospace; font-size: 8.5pt; color: var(--muted); margin-bottom: -4px; }
+
+/* ---------- tables ---------- */
+table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 10pt; page-break-inside: avoid; }
+th { background: #2A2A2A; color: #fff; font-weight: 700; text-align: right; padding: 7px 9px; }
+td { border-bottom: 1px solid var(--line); padding: 6px 9px; vertical-align: top; }
+tr:nth-child(even) td { background: #FBFAF7; }
+td code, th code { font-size: 8.8pt; }
+
+/* ---------- callouts ---------- */
+.tip, .warn, .lesson { border-radius: 8px; padding: 10px 14px; margin: 10px 0 14px; page-break-inside: avoid; }
+.tip { background: var(--gold-soft); border-right: 4px solid var(--gold); }
+.warn { background: #FDECEA; border-right: 4px solid #D9534F; }
+.lesson { background: #EEF6EE; border-right: 4px solid #4C9A4C; }
+.tip b:first-child, .warn b:first-child, .lesson b:first-child { display: block; margin-bottom: 2px; }
+
+/* ---------- flow diagram (boxes + arrows) ---------- */
+.flow { display: flex; align-items: stretch; gap: 6px; margin: 12px 0 16px; page-break-inside: avoid; direction: rtl; }
+.flow .box { flex: 1; border: 2px solid var(--gold); border-radius: 10px; padding: 8px 10px; text-align: center; font-size: 9.5pt; line-height: 1.5; background: #FFFDF7; direction: rtl; }
+.flow .box b { display: block; font-size: 10.5pt; }
+.flow .arrow { align-self: center; color: var(--gold); font-weight: 800; font-size: 16pt; }
+.steps { counter-reset: step; list-style: none; padding: 0; }
+.steps > li { counter-increment: step; position: relative; padding-right: 38px; margin-bottom: 10px; page-break-inside: avoid; }
+.steps > li::before { content: counter(step); position: absolute; right: 0; top: 2px; width: 26px; height: 26px; border-radius: 50%; background: var(--gold); color: #fff; font-weight: 800; text-align: center; line-height: 26px; font-size: 10pt; }
+.tree { direction: ltr; text-align: left; font-family: "JetBrains Mono", Consolas, monospace; font-size: 8.8pt; line-height: 1.55; background: #FBFAF7; border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; white-space: pre; page-break-inside: avoid; }
+.tree .note { font-family: "Tajawal", "Segoe UI", sans-serif; color: var(--muted); direction: rtl; unicode-bidi: isolate; }
+.small { font-size: 9.5pt; color: var(--muted); }

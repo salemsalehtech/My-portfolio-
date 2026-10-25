@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>دليل الباك إند — بورتفوليو سالم صالح</title>
+<link rel="stylesheet" href="guide.css">
+</head>
+<body>
+
+<!-- ======================= COVER ======================= -->
+<section class="cover">
+  <div class="badge">SS</div>
+  <div>
+    <div class="kicker">BACKEND GUIDE · NODE + EXPRESS + MONGODB</div>
+    <h1>دليل الباك إند<br>بورتفوليو سالم صالح</h1>
+    <p class="lead">شرح مبسّط للسيرفر اللي وراه الموقع: إزاي الطلب بيوصل ويترد عليه، وإزاي البيانات بتتخزن في MongoDB، وإزاي لوحة التحكم محمية، وكل حماية موجودة وسبب وجودها — وإزاي تضيف مورد جديد خطوة بخطوة.</p>
+    <ol class="toc">
+      <li>الصورة الكبيرة</li>
+      <li>التشغيل والإعدادات (<code>.env</code>)</li>
+      <li>خريطة الملفات</li>
+      <li>أساسيات HTTP و REST</li>
+      <li>رحلة الطلب في app.js</li>
+      <li>قاعدة البيانات (Mongoose)</li>
+      <li>تسجيل الدخول (JWT)</li>
+      <li>الحماية وأسبابها</li>
+      <li>كل عناوين الـ API</li>
+      <li>الإيميل وإبقاء السيرفر صاحي</li>
+      <li>النشر على Render و Atlas</li>
+      <li>إضافة مورد جديد</li>
+      <li>مشاكل حصلت واتعلمنا منها</li>
+      <li>قاموس المصطلحات</li>
+    </ol>
+  </div>
+  <div class="meta"><span>المشروع: My-portfolio- · مجلد <code>server/</code></span><span>أكتوبر 2026</span></div>
+</section>
+
+<!-- ======================= 1 ======================= -->
+<h1><span class="num">1</span>الصورة الكبيرة</h1>
+<p>السيرفر برنامج <strong>Node.js</strong> مكتوب بـ <strong>Express</strong>، شغّال على <strong>Render</strong>. شغلته يستقبل طلبات من الواجهة، ويقرا أو يكتب في قاعدة البيانات <strong>MongoDB Atlas</strong>، ويرد بـ <strong>JSON</strong>. هو مش بيعرض صفحات — الصفحات كلها في الواجهة (React).</p>
+<div class="flow">
+  <div class="box"><b>الواجهة</b>بتطلب <code>GET /api/projects</code></div>
+  <div class="arrow">←</div>
+  <div class="box"><b>Express (app.js)</b>helmet ← cors ← قراءة JSON ← الـ router</div>
+  <div class="arrow">←</div>
+  <div class="box"><b>Mongoose</b><code>Project.find()</code></div>
+  <div class="arrow">←</div>
+  <div class="box"><b>MongoDB Atlas</b>بيرجّع المستندات</div>
+</div>
+<p>والرد بيرجع بنفس الطريق بالعكس: JSON فيه قايمة المشاريع.</p>
+<h2>الأدوات</h2>
+<table>
+  <tr><th>الحزمة</th><th>دورها</th></tr>
+  <tr><td><code>express</code></td><td>إطار السيرفر: الراوتس والـ middleware.</td></tr>
+  <tr><td><code>mongoose</code></td><td>التعامل مع MongoDB بـ schemas و models.</td></tr>
+  <tr><td><code>jsonwebtoken</code> + <code>bcryptjs</code></td><td>تسجيل دخول الأدمن (توكن + تشفير الباسورد).</td></tr>
+  <tr><td><code>helmet</code>, <code>cors</code>, <code>express-rate-limit</code></td><td>الحماية (هيتشرحوا في الفصل 8).</td></tr>
+  <tr><td><code>express-async-errors</code></td><td>أي خطأ في دالة async يروح لمعالج الأخطاء لوحده.</td></tr>
+  <tr><td><code>nodemailer</code></td><td>إرسال إيميلات الإشعار (SMTP).</td></tr>
+  <tr><td><code>dotenv</code></td><td>قراءة الإعدادات من ملف <code>.env</code>.</td></tr>
+</table>
+
+<!-- ======================= 2 ======================= -->
+<h1><span class="num">2</span>التشغيل والإعدادات (<code>.env</code>)</h1>
+<pre>cd server
+npm install
+npm run dev      <span class="c"># بـ nodemon: بيعيد التشغيل لوحده مع أي تعديل</span>
+npm start        <span class="c"># تشغيل عادي (ده اللي Render بيستخدمه)</span>
+npm run seed     <span class="c"># يملا قاعدة بيانات فاضية ببيانات تجريبية + حساب الأدمن</span></pre>
+<div class="warn"><b>تحذير مهم عن seed</b><code>npm run seed</code> <strong>بيمسح</strong> كل المشاريع والمهارات والفيديوهات قبل ما يضيف التجريبية. استخدمه على قاعدة بيانات جديدة بس — مش على اللي فيها محتواك.</div>
+<h2>متغيرات البيئة</h2>
+<p>الإعدادات السرية أو اللي بتختلف بين جهازك والسيرفر الحقيقي ما بتتكتبش في الكود. على جهازك في <code>server/.env</code> (متجاهَل في git)، وعلى Render في صفحة Environment.</p>
+<table>
+  <tr><th>المتغير</th><th>معناه</th></tr>
+  <tr><td><code>MONGODB_URI</code></td><td>عنوان قاعدة البيانات (محلي على جهازك، Atlas على Render). <strong>إجباري.</strong></td></tr>
+  <tr><td><code>JWT_SECRET</code></td><td>السر اللي بيوقّع توكنات الدخول. <strong>إجباري</strong> ولازم يكون طويل وعشوائي.</td></tr>
+  <tr><td><code>PORT</code></td><td>البورت (4000 محليًا؛ Render بيحدده لوحده).</td></tr>
+  <tr><td><code>CLIENT_ORIGIN</code></td><td>الموقع الوحيد المسموح له يكلم السيرفر (CORS): <code>https://salemsalehtech.github.io</code></td></tr>
+  <tr><td><code>ADMIN_EMAIL</code> / <code>ADMIN_PASSWORD</code></td><td>بيستخدمهم <code>seed</code> عشان يعمل حساب الأدمن.</td></tr>
+  <tr><td><code>NOTIFY_EMAIL</code> + <code>SMTP_*</code></td><td>إيميلات الإشعار (الفصل 10).</td></tr>
+  <tr><td><code>RENDER_EXTERNAL_URL</code></td><td>Render بيحطه لوحده — بيستخدمه الـ keep-alive.</td></tr>
+</table>
+<p>لو <code>MONGODB_URI</code> أو <code>JWT_SECRET</code> ناقصين، <code>server.js</code> بيوقف فورًا برسالة واضحة — أحسن من سيرفر "شغّال نص شغل".</p>
+
+<!-- ======================= 3 ======================= -->
+<h1><span class="num">3</span>خريطة الملفات</h1>
+<div class="tree">server/
+├── package.json          <span class="note">← الحزم والأوامر (dev, start, seed)</span>
+├── .env.example          <span class="note">← نموذج للإعدادات (من غير أسرار)</span>
+├── prisma/seed.js        <span class="note">← بيانات تجريبية + حساب الأدمن (الاسم قديم)</span>
+└── src/
+    ├── server.js         <span class="note">← نقطة البداية: إعدادات ← MongoDB ← تشغيل</span>
+    ├── app.js            <span class="note">← الـ middleware وتوصيل كل الراوتس</span>
+    ├── middleware/auth.js <span class="note">← requireAuth: التأكد من توكن الأدمن</span>
+    ├── lib/
+    │   ├── mongo.js      <span class="note">← الاتصال + كل الـ models</span>
+    │   ├── mailer.js     <span class="note">← إيميلات الإشعار</span>
+    │   └── keepAlive.js  <span class="note">← السيرفر يزور نفسه كل 10 دقايق</span>
+    └── routes/
+        ├── projects.js, skills.js, youtube.js <span class="note">← قراءة عامة</span>
+        ├── services.js, testimonials.js       <span class="note">← قراءة عامة (+ فورم رأي العميل)</span>
+        ├── about.js, settings.js, cv.js       <span class="note">← قراءة عامة لمستند واحد</span>
+        ├── contact.js    <span class="note">← فورم التواصل العام</span>
+        ├── auth.js       <span class="note">← تسجيل الدخول</span>
+        └── admin.js      <span class="note">← كل عمليات التعديل (محمية بالتوكن)</span></div>
+<div class="tip"><b>كل ملف فيه شرح</b>فتحت أي ملف في <code>server/src</code> هتلاقي فوقه تعليق بيشرح هو بيعمل إيه ومين بيستخدمه — اقراه الأول قبل الكود.</div>
+
+<!-- ======================= 4 ======================= -->
+<h1><span class="num">4</span>أساسيات HTTP و REST</h1>
+<p>كل كلام بين الواجهة والسيرفر "طلب" (Request) و"رد" (Response). الطلب له <strong>method</strong> بيقول عايز تعمل إيه، و<strong>عنوان</strong> بيقول على إيه:</p>
+<table>
+  <tr><th>Method</th><th>معناه</th><th>مثال من المشروع</th></tr>
+  <tr><td><code>GET</code></td><td>هات بيانات</td><td><code>GET /api/projects</code></td></tr>
+  <tr><td><code>POST</code></td><td>أضف جديد</td><td><code>POST /api/admin/services</code></td></tr>
+  <tr><td><code>PUT</code></td><td>عدّل/استبدل</td><td><code>PUT /api/admin/services/:id</code></td></tr>
+  <tr><td><code>PATCH</code></td><td>عدّل جزء صغير</td><td><code>PATCH /api/admin/messages/:id</code> (مقروءة/مش مقروءة)</td></tr>
+  <tr><td><code>DELETE</code></td><td>امسح</td><td><code>DELETE /api/admin/services/:id</code></td></tr>
+</table>
+<p>والرد بيرجع معاه <strong>رقم حالة</strong> (status code):</p>
+<table>
+  <tr><th>الكود</th><th>معناه</th><th>إمتى بيحصل عندنا</th></tr>
+  <tr><td><code>200</code></td><td>تمام</td><td>قراءة أو تعديل ناجح</td></tr>
+  <tr><td><code>201</code></td><td>اتعمل جديد</td><td>إضافة ناجحة، رسالة Contact اتبعتت</td></tr>
+  <tr><td><code>204</code></td><td>تمام ومفيش محتوى</td><td>بعد الحذف</td></tr>
+  <tr><td><code>400</code></td><td>الطلب غلط</td><td>حقل ناقص، نص طويل، رابط مش http</td></tr>
+  <tr><td><code>401</code></td><td>مش مسموح</td><td>من غير توكن، أو باسورد غلط</td></tr>
+  <tr><td><code>404</code></td><td>مش موجود</td><td>طلب CV ومفيش CV مرفوع</td></tr>
+  <tr><td><code>429</code></td><td>طلبات كتير</td><td>تخطّي حد الـ rate limit</td></tr>
+  <tr><td><code>500</code></td><td>مشكلة في السيرفر</td><td>خطأ غير متوقع (بيتسجّل في الـ logs)</td></tr>
+</table>
+<p><strong>REST</strong> = طريقة منظمة لتسمية العناوين: كل "مورد" (resource) ليه عنوان (<code>/services</code>) والـ method بيحدد العملية. عشان كده كل موارد الأدمن نفس الشكل بالظبط (الفصل 9).</p>
+
+<!-- ======================= 5 ======================= -->
+<h1><span class="num">5</span>رحلة الطلب في app.js</h1>
+<p>الـ <strong>middleware</strong> = دالة بيعدّي عليها الطلب قبل ما يوصل للراوت. في <code>app.js</code> الترتيب كده:</p>
+<ol class="steps">
+  <li><code>app.set("trust proxy", 1)</code> — Render فيه وسيط (proxy) قدام السيرفر؛ ده بيخلّي السيرفر يشوف IP الزائر الحقيقي.</li>
+  <li><code>helmet()</code> — يضيف headers أمان لكل رد.</li>
+  <li><code>cors(...)</code> — يسمح لموقعك بس إنه يكلم السيرفر من المتصفح.</li>
+  <li><code>express.json()</code> — يحوّل جسم الطلب (JSON) لـ <code>req.body</code>. (رفع الـ CV له حد أكبر: 6MB.)</li>
+  <li><strong>الراوترات</strong> — أول واحد عنوانه مطابق بيرد.</li>
+  <li><strong>معالج الأخطاء</strong> في الآخر — أي خطأ يتسجّل ويرجع <code>{ error }</code> بكود مناسب (خطأ تحقق = 400).</li>
+</ol>
+<span class="file">server/src/routes/services.js — راوت كامل صغير</span>
+<pre>router.get(<span class="s">"/"</span>, <span class="k">async</span> (req, res) =&gt; {
+  res.json(<span class="k">await</span> Service.find({ visible: <span class="k">true</span> }).sort({ order: 1, createdAt: 1 }));
+});</pre>
+<p>مفيش <code>try/catch</code> — <code>express-async-errors</code> بيبعت أي خطأ لمعالج الأخطاء لوحده.</p>
+
+<!-- ======================= 6 ======================= -->
+<h1><span class="num">6</span>قاعدة البيانات (Mongoose)</h1>
+<p>MongoDB بتخزن <strong>مستندات</strong> (شبه كائنات JSON) جوه <strong>collections</strong>. Mongoose بيخلّينا نحدد شكل كل مستند بـ <strong>Schema</strong>، ونتعامل معاه بـ <strong>Model</strong>:</p>
+<span class="file">server/src/lib/mongo.js — مختصر</span>
+<pre><span class="k">const</span> serviceSchema = <span class="k">new</span> mongoose.Schema({
+  titleEn: { type: String, default: <span class="s">""</span>, maxlength: 120 },
+  titleAr: { type: String, default: <span class="s">""</span>, maxlength: 120 },
+  icon:    { type: String, enum: SERVICE_ICONS, default: <span class="s">"web"</span> },
+  visible: { type: Boolean, default: <span class="k">true</span> },
+  order:   { type: Number, default: 0 },
+}, { timestamps: <span class="k">true</span> });            <span class="c">// createdAt / updatedAt لوحدهم</span>
+
+<span class="k">const</span> Service = mongoose.model(<span class="s">"Service"</span>, serviceSchema);
+<span class="k">await</span> Service.find();  Service.create({...});  Service.findByIdAndDelete(id);</pre>
+<h2>الـ collections الموجودة</h2>
+<table>
+  <tr><th>Model</th><th>فيه إيه</th></tr>
+  <tr><td><code>Project</code></td><td>المشاريع + دراسة الحالة (مشكلة/حل/نتيجة) + tags</td></tr>
+  <tr><td><code>Skill</code></td><td>المهارات (نسبة، مجموعة، لون)</td></tr>
+  <tr><td><code>YoutubeVideo</code></td><td>فيديوهات قسم يوتيوب</td></tr>
+  <tr><td><code>Service</code></td><td>الخدمات (أيقونة، ظاهر/مخفي)</td></tr>
+  <tr><td><code>Testimonial</code></td><td>آراء العملاء (تقييم، ظاهر، <code>pending</code> للي مستني موافقتك)</td></tr>
+  <tr><td><code>About</code></td><td>مستند واحد: نصوص قسم About + رابط الفيديو</td></tr>
+  <tr><td><code>SiteSettings</code></td><td>مستند واحد: Hero + الروابط + المكان + الفوتر</td></tr>
+  <tr><td><code>CvFile</code></td><td>ملف الـ CV نفسه (Buffer) — لأن قرص Render بيتمسح مع كل نشر</td></tr>
+  <tr><td><code>ContactMessage</code></td><td>رسايل فورم التواصل</td></tr>
+  <tr><td><code>AdminUser</code></td><td>حساب الأدمن (الباسورد مشفّر)</td></tr>
+</table>
+<h2>قواعد في كل الموديلات</h2>
+<ul>
+  <li><strong>نسختين لكل نص ظاهر:</strong> <code>...En</code> و <code>...Ar</code>.</li>
+  <li><strong>التحقق جوه الـ Schema</strong> (<code>maxlength</code>, <code>enum</code>, <code>validate</code>) — والتعديلات بتستخدم <code>runValidators: true</code> عشان تتحقق هي كمان.</li>
+  <li><strong><code>_id</code> بيتحول لـ <code>id</code></strong> قبل الإرسال (transform في آخر <code>mongo.js</code>).</li>
+</ul>
+
+<!-- ======================= 7 ======================= -->
+<h1><span class="num">7</span>تسجيل الدخول (JWT)</h1>
+<ol class="steps">
+  <li>الداشبورد يبعت <code>POST /api/auth/login</code> بالإيميل والباسورد.</li>
+  <li><code>routes/auth.js</code> يدوّر على الأدمن بالإيميل، ويقارن الباسورد بالنسخة المشفّرة بـ <code>bcrypt.compare</code>.</li>
+  <li>لو صح: يعمل <strong>توكن JWT</strong> موقّع بـ <code>JWT_SECRET</code> وصالح 7 أيام، ويرجّعه.</li>
+  <li>الداشبورد يبعت التوكن مع كل طلب: <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+  <li><code>middleware/auth.js</code> (<code>requireAuth</code>) يتأكد من التوقيع. ولإن <code>admin.js</code> فيه <code>router.use(requireAuth)</code> في أوله، <strong>ولا راوت أدمن</strong> يتوصل له من غير توكن سليم.</li>
+</ol>
+<div class="tip"><b>ليه الباسورد مش متخزن؟</b>بيتخزن <strong>hash</strong> بس (نتيجة تشفير باتجاه واحد). حتى لو حد شاف قاعدة البيانات، ما يقدرش يعرف الباسورد منه.</div>
+<div class="tip"><b>ليه نفس رسالة الخطأ؟</b>لو الإيميل غلط أو الباسورد غلط، الرد واحد: "Invalid credentials" — عشان ما نقولش لحد مين الإيميلات اللي موجودة.</div>
+
+<!-- ======================= 8 ======================= -->
+<h1><span class="num">8</span>الحماية وأسبابها</h1>
+<table>
+  <tr><th>الحماية</th><th>بتعمل إيه</th><th>ليه</th></tr>
+  <tr><td><code>helmet()</code></td><td>headers أمان على كل رد</td><td>يمنع حيل في المتصفح (iframe، تخمين نوع الملف…) ويخبّي إن السيرفر Express</td></tr>
+  <tr><td>CORS</td><td>موقعك بس يقدر يطلب من المتصفح</td><td>أي موقع تاني ما يقدرش يستخدم الـ API بتاعك من صفحات زواره</td></tr>
+  <tr><td>Rate limit — الدخول</td><td>10 محاولات / 15 دقيقة / IP</td><td>يمنع تجربة آلاف الباسوردات (brute force)</td></tr>
+  <tr><td>Rate limit — Contact</td><td>10 رسايل / 15 دقيقة / IP</td><td>يمنع إغراقك بالسبام</td></tr>
+  <tr><td>Rate limit — فورم الآراء</td><td>5 إرسالات <strong>ناجحة</strong> / ساعة / IP</td><td>العميل اللي بيغلط في الكتابة ما يتحظرش</td></tr>
+  <tr><td>Honeypot</td><td>حقل مخفي في فورم الآراء</td><td>البوتات بتملاه، فبنتجاهلها بهدوء</td></tr>
+  <tr><td>قايمة حقول مسموحة</td><td>نسخ الحقول المعروفة بس من <code>req.body</code></td><td>محدش يقدر يكتب حقول غريبة في قاعدة البيانات</td></tr>
+  <tr><td>التحقق من الروابط</td><td>لازم تبدأ بـ <code>http(s)://</code></td><td>يمنع روابط <code>javascript:</code> اللي ممكن تنفّذ كود في الصفحة</td></tr>
+  <tr><td>رفع الـ CV</td><td>PDF حقيقي (أول بايتات <code>%PDF-</code>) وأقل من 4MB</td><td>ما نثقش في امتداد الملف أو كلام المتصفح</td></tr>
+  <tr><td><code>trust proxy</code></td><td>IP الزائر الحقيقي</td><td>من غيره كل الزوار "IP واحد" والحدود تتحسب عليهم مع بعض</td></tr>
+</table>
+<div class="lesson"><b>قرار اتاخد</b>الخطة الأصلية كانت توقيف helmet والـ rate limiting مؤقتًا لتبسيط الكود. اتلغى القرار ده: فورم التواصل وتسجيل الدخول كانوا منشورين للناس فعلًا، وتوقيفهم كان هيكشف الموقع. بدل كده، اتشرحوا بتعليقات في الكود.</div>
+
+<!-- ======================= 9 ======================= -->
+<h1><span class="num">9</span>كل عناوين الـ API</h1>
+<h2>عامة (من غير دخول)</h2>
+<table>
+  <tr><th>الطلب</th><th>بيعمل إيه</th></tr>
+  <tr><td><code>GET /api/health</code></td><td>"أنا شغّال" — بيستخدمه Render والـ keep-alive</td></tr>
+  <tr><td><code>GET /api/projects</code> · <code>/skills</code> · <code>/youtube</code></td><td>القوايم مرتبة بـ <code>order</code></td></tr>
+  <tr><td><code>GET /api/services</code> · <code>/testimonials</code></td><td>الظاهر بس (<code>visible: true</code>)</td></tr>
+  <tr><td><code>GET /api/about</code> · <code>/settings</code></td><td>المستند المحفوظ أو <code>{ exists: false }</code></td></tr>
+  <tr><td><code>GET /api/cv/info</code> · <code>GET /api/cv</code></td><td>هل فيه CV؟ / تحميل الملف</td></tr>
+  <tr><td><code>POST /api/contact</code></td><td>رسالة من فورم التواصل</td></tr>
+  <tr><td><code>POST /api/testimonials/submit</code></td><td>رأي عميل من اللينك (بيتحفظ Pending)</td></tr>
+  <tr><td><code>POST /api/auth/login</code></td><td>تسجيل الدخول ← توكن</td></tr>
+</table>
+<h2>الأدمن (لازم توكن) — تحت <code>/api/admin</code></h2>
+<table>
+  <tr><th>المورد</th><th>العمليات</th></tr>
+  <tr><td><code>/projects</code> · <code>/skills</code> · <code>/youtube</code> · <code>/services</code> · <code>/testimonials</code></td><td><code>GET</code> الكل · <code>POST</code> إضافة · <code>PUT /:id</code> تعديل · <code>DELETE /:id</code> حذف</td></tr>
+  <tr><td><code>/about</code> · <code>/settings</code></td><td><code>GET</code> · <code>PUT</code> حفظ المستند · <code>DELETE</code> رجوع للأصلي</td></tr>
+  <tr><td><code>/cv</code></td><td><code>PUT</code> رفع/استبدال PDF (base64) · <code>DELETE</code></td></tr>
+  <tr><td><code>/messages</code></td><td><code>GET</code> · <code>PATCH /:id</code> مقروءة · <code>DELETE /:id</code></td></tr>
+</table>
+<div class="tip"><b>جرّب بنفسك</b>افتح في المتصفح <code>https://salem-portfolio-server.onrender.com/api/projects</code> — هتشوف الـ JSON اللي الموقع بيستخدمه.</div>
+
+<!-- ======================= 10 ======================= -->
+<h1><span class="num">10</span>الإيميل وإبقاء السيرفر صاحي</h1>
+<h2>إيميلات الإشعار (<code>lib/mailer.js</code>)</h2>
+<p>لما حد يبعت رسالة، السيرفر <strong>يرد على الزائر الأول</strong> وبعدين يبعت الإيميل في الخلفية — فلو الإيميل اتأخر أو فشل، الزائر ما يستناش والرسالة متخزنة في الداشبورد على أي حال.</p>
+<div class="warn"><b>حالة الإيميل حاليًا</b>خطة Render المجانية بتقفل بورتات SMTP، فالإشعار ما بيوصلش من السيرفر المنشور. الحل جاهز (خدمة Resend عبر HTTP) على branch اسمه <code>feat/email-resend</code>، ومؤجّل بقرارك. الرسايل والآراء بتوصل في الداشبورد عادي.</div>
+<h2>Keep-alive (<code>lib/keepAlive.js</code>)</h2>
+<p>Render المجاني بينيّم السيرفر بعد 15 دقيقة من غير زيارات، وأول زيارة بعدها تستنى حوالي دقيقة. الحل: السيرفر يزور <code>/api/health</code> بتاعه هو كل <strong>10 دقايق</strong>، فما يوصلش لـ 15 دقيقة أبدًا.</p>
+<ul>
+  <li>بيشتغل على Render بس (بيعرف عنوانه من <code>RENDER_EXTERNAL_URL</code>)، ومش بيشتغل على جهازك.</li>
+  <li>للإيقاف: متغير <code>KEEP_ALIVE=off</code> على Render.</li>
+  <li>سيرفر صاحي طول الشهر بياخد ~744 ساعة من 750 ساعة مجانية.</li>
+</ul>
+
+<!-- ======================= 11 ======================= -->
+<h1><span class="num">11</span>النشر على Render و Atlas</h1>
+<h2>Render (السيرفر)</h2>
+<ul>
+  <li>Web Service مربوط بالريبو، <strong>Root Directory</strong> = <code>server</code>، Build = <code>npm install</code>، Start = <code>npm start</code>.</li>
+  <li><strong>أي push على <code>main</code></strong> = Render يبني وينشر لوحده (2–3 دقايق).</li>
+  <li>الإعدادات السرية في <strong>Environment</strong> (مش في git أبدًا).</li>
+  <li>لو حاجة باظت: <strong>Logs</strong> فيها كل <code>console.log</code> و <code>console.error</code>.</li>
+</ul>
+<h2>MongoDB Atlas (قاعدة البيانات)</h2>
+<ul>
+  <li>Cluster مجاني M0، ومستخدم قاعدة بيانات بباسورد.</li>
+  <li><strong>Network Access</strong> لازم فيه <code>0.0.0.0/0</code> — لأن عنوان Render بيتغير.</li>
+  <li>رابط الاتصال: <code>mongodb+srv://USER:PASSWORD@cluster0.xxxx.mongodb.net/salem_portfolio</code> — اسم القاعدة قبل <code>?</code>.</li>
+</ul>
+<div class="warn"><b>مؤجّل بقرارك</b>باسورد Atlas و <code>JWT_SECRET</code> وباسورد الأدمن اتكتبوا في محادثة قبل كده. المفروض يتغيروا قبل أي إطلاق كبير (الخطوات في <code>ROADMAP.md</code>).</div>
+
+<!-- ======================= 12 ======================= -->
+<h1><span class="num">12</span>إضافة مورد جديد</h1>
+<p>مثال: "الشهادات" (Certificates). الجزء الخاص بالسيرفر:</p>
+<ol class="steps">
+  <li><strong>Schema + Model</strong> في <code>lib/mongo.js</code> وضيفه في <code>models</code>:
+<pre><span class="k">const</span> certificateSchema = <span class="k">new</span> mongoose.Schema({
+  titleEn: { type: String, default: <span class="s">""</span>, maxlength: 160 },
+  titleAr: { type: String, default: <span class="s">""</span>, maxlength: 160 },
+  issuer:  { type: String, default: <span class="s">""</span>, maxlength: 120 },
+  url:     { type: String, default: <span class="s">""</span>, maxlength: 300 },
+  order:   { type: Number, default: 0 },
+}, { timestamps: <span class="k">true</span> });</pre></li>
+  <li><strong>راوت عام</strong> <code>routes/certificates.js</code> (انسخ <code>services.js</code>) + سطرين في <code>app.js</code> (<code>require</code> و <code>app.use("/api/certificates", ...)</code>).</li>
+  <li><strong>راوتس الأدمن</strong> في <code>admin.js</code> (انسخ قسم Services): قايمة حقول مسموحة + GET/POST/PUT/DELETE.</li>
+  <li><strong>جرّب بـ curl أو من الداشبورد</strong> على جهازك، وتأكد إن البيانات الغلط بترجع 400.</li>
+  <li>بعدها الجزء الخاص بالواجهة (موجود في دليل الفرونت إند، الفصل 10).</li>
+</ol>
+
+<!-- ======================= 13 ======================= -->
+<h1><span class="num">13</span>مشاكل حصلت واتعلمنا منها</h1>
+<table>
+  <tr><th>المشكلة</th><th>السبب</th><th>الحل / الدرس</th></tr>
+  <tr><td>Deploy فشل على Render</td><td>Atlas كان سامح لـ IP جهازك بس</td><td><code>0.0.0.0/0</code> في Network Access</td></tr>
+  <tr><td>الموقع ما يقدرش يكلم السيرفر</td><td><code>CLIENT_ORIGIN</code> على اسم الحساب القديم (solx4)</td><td>لازم يطابق رابط GitHub Pages بالظبط</td></tr>
+  <tr><td>فورم التواصل بيحمّل للأبد</td><td>السيرفر بيستنى الإيميل، وبورت SMTP مقفول على Render</td><td>الرد للزائر الأول، والإيميل في الخلفية بمهلة 10 ثواني</td></tr>
+  <tr><td>حدود الـ rate limit على كل الزوار مع بعض</td><td>من غير <code>trust proxy</code> كل الطلبات من IP الوسيط</td><td><code>app.set("trust proxy", 1)</code></td></tr>
+  <tr><td>عميل غلط 5 مرات فاتحظر</td><td>الحد كان بيحسب الطلبات المرفوضة</td><td><code>skipFailedRequests: true</code></td></tr>
+  <tr><td>خطأ تحقق بيرجع 500</td><td>معالج الأخطاء ما كانش بيفرّق</td><td><code>ValidationError</code> ← 400</td></tr>
+  <tr><td>"Invalid credentials" بالبيانات الصح</td><td>الـ <code>.env</code> اتغير بعد الـ seed</td><td>تغيير بيانات الأدمن لازم يتحدّث في قاعدة البيانات كمان</td></tr>
+</table>
+
+<!-- ======================= 14 ======================= -->
+<h1><span class="num">14</span>قاموس المصطلحات</h1>
+<table>
+  <tr><th>المصطلح</th><th>معناه ببساطة</th></tr>
+  <tr><td>API</td><td>مجموعة عناوين على السيرفر الواجهة بتكلمها.</td></tr>
+  <tr><td>Endpoint / Route</td><td>عنوان واحد + method، زي <code>GET /api/projects</code>.</td></tr>
+  <tr><td>Middleware</td><td>دالة بيعدّي عليها الطلب قبل الراوت.</td></tr>
+  <tr><td>JSON</td><td>شكل نصي للبيانات بيتبادلوا بيه الواجهة والسيرفر.</td></tr>
+  <tr><td>Schema / Model</td><td>شكل المستند وقواعده / الأداة اللي بتقرا وتكتب بيها.</td></tr>
+  <tr><td>Collection</td><td>مجموعة مستندات من نوع واحد (زي جدول).</td></tr>
+  <tr><td>JWT</td><td>توكن موقّع بيثبت إنك الأدمن.</td></tr>
+  <tr><td>Hash (bcrypt)</td><td>تشفير باتجاه واحد للباسورد.</td></tr>
+  <tr><td>Rate limit</td><td>حد لعدد الطلبات من نفس الجهاز في فترة.</td></tr>
+  <tr><td>CORS</td><td>قاعدة في المتصفح: مين مسموح له يطلب من السيرفر.</td></tr>
+  <tr><td>Environment variable</td><td>إعداد خارج الكود (أسرار، عناوين).</td></tr>
+  <tr><td>Deploy</td><td>نشر نسخة جديدة على السيرفر الحقيقي.</td></tr>
+  <tr><td>Proxy</td><td>وسيط بين الزائر والسيرفر.</td></tr>
+  <tr><td>Cold start</td><td>صحيان السيرفر بعد ما نام.</td></tr>
+</table>
+<p class="small">الدليل ده بيوصف الكود في أكتوبر 2026. الملف المصدر <code>docs/guides/backend-guide.html</code> — عدّله وأعد الطباعة بـ <code>docs/guides/build-pdfs.sh</code>.</p>
+</body>
+</html>
