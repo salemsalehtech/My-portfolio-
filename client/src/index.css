@@ -9,6 +9,7 @@
   --shadow: 0 8px 40px rgba(0,0,0,0.5); --shadow-gold: 0 0 40px rgba(232,160,32,0.2);
   --nav-h: 68px;
   --hero-glow: rgba(255,255,255,0.05);
+  --chart-bar: #BC870F; --chart-grid: #333333;   /* chart colours, validated for the dark surface */
 }
 :root.light {
   --bg: #F0F5FC; --surface: #FFFFFF; --card: #FFFFFF;
@@ -17,6 +18,7 @@
   --gold: #C8900A; --gold-light: #E8A020; --gold-dim: rgba(200,144,10,0.09);
   --shadow: 0 8px 40px rgba(0,0,0,0.08); --shadow-gold: 0 0 40px rgba(184,133,31,0.15);
   --hero-glow: rgba(30,58,95,0.18);
+  --chart-bar: #C8900A; --chart-grid: #E6E6E6;   /* chart colours for the light surface */
 }
 
 /* ============ RESET ============ */
@@ -434,3 +436,34 @@ body.ar .cert-title { font-family: var(--font-ar); }
 .cert-link:hover { text-decoration: underline; }
 .admin-thumb-cell { width: 76px; text-align: center; }
 .admin-thumb { width: 64px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--card-border); display: block; }
+
+/* ============ ADMIN ANALYTICS ============ */
+.an-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.an-note { font-size: 13px; color: var(--text-secondary); margin-bottom: 18px; }
+.an-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.an-tile { padding: 14px 16px; border: 1px solid var(--card-border); border-radius: 12px; background: var(--card); display: flex; flex-direction: column; gap: 4px; }
+.an-tile span { font-size: 12.5px; color: var(--text-secondary); }
+.an-tile strong { font-size: 24px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.an-card { padding: 16px 18px; border: 1px solid var(--card-border); border-radius: 12px; background: var(--card); margin-bottom: 18px; }
+.an-card h2 { font-size: 15px; margin-bottom: 10px; }
+.an-chart { position: relative; }
+.an-chart svg { width: 100%; height: auto; display: block; overflow: visible; }
+.an-grid { stroke: var(--chart-grid); stroke-width: 1; }
+.an-axis { fill: var(--text-secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
+.an-bar { fill: var(--chart-bar); transition: filter .15s; }
+.an-bar.is-hover { filter: brightness(1.15); }
+.an-hit { fill: transparent; cursor: default; outline: none; }
+.an-hit:focus-visible { stroke: var(--text-primary); stroke-width: 1; stroke-dasharray: 3 3; }
+.an-tooltip { position: absolute; top: 0; transform: translate(-50%, -100%); pointer-events: none; background: var(--surface); border: 1px solid var(--card-border); box-shadow: var(--shadow); border-radius: 8px; padding: 6px 10px; display: flex; flex-direction: column; align-items: center; white-space: nowrap; font-size: 12px; }
+.an-tooltip strong { font-size: 14px; color: var(--text-primary); }
+.an-tooltip span { color: var(--text-secondary); }
+.an-details { margin-top: 12px; }
+.an-details summary { cursor: pointer; font-size: 13px; color: var(--text-secondary); }
+.an-details table { margin-top: 8px; max-width: 320px; }
+.an-grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.an-grid-3 .an-card { margin-bottom: 0; }
+.an-top td { padding-top: 6px; padding-bottom: 6px; }
+.an-num { text-align: right; font-variant-numeric: tabular-nums; width: 1%; white-space: nowrap; }
+.an-bar-cell { width: 30%; min-width: 60px; }
+.an-inline-bar { height: 6px; border-radius: 3px; background: var(--chart-grid); overflow: hidden; }
+.an-inline-bar span { display: block; height: 100%; background: var(--chart-bar); border-radius: 3px; }

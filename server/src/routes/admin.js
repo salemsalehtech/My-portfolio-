@@ -7,7 +7,7 @@
 // Single-document resources (about, settings, cv) use PUT / DELETE without an :id.
 // The public site reads the same data through the read-only routers (routes/projects.js, …).
 const express = require("express");
-const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate } = require("../lib/mongo");
+const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, DailyStat } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -261,6 +261,51 @@ router.delete("/certificates/:id/image", async (req, res) => {
   const cert = await Certificate.findByIdAndUpdate(req.params.id, { image: { contentType: "", size: 0 } }, { new: true });
   if (!cert) return res.status(404).json({ error: "Certificate not found" });
   res.json(cert);
+});
+
+// ---- Visitor analytics (read-only) ----
+// GET /api/admin/analytics?days=7|30|90 — sums the daily counters written by routes/analytics.js
+// into: one row per day (for the chart), totals, and the top sections / projects / referrers.
+const ANALYTICS_RANGES = [7, 30, 90];
+const cairoDate = (date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo" }).format(date);
+const fromKey = (key) => key.replace(/．/g, "."); // undo the full-width dot used in map keys
+
+// Adds every { key: count } of `map` into `total`.
+function addCounts(total, map) {
+  for (const [key, count] of Object.entries(map || {})) total[key] = (total[key] || 0) + count;
+}
+const topList = (counts, limit = 10) =>
+  Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, limit);
+
+router.get("/analytics", async (req, res) => {
+  const days = ANALYTICS_RANGES.includes(Number(req.query.days)) ? Number(req.query.days) : 30;
+  const dates = [];
+  for (let i = days - 1; i >= 0; i--) dates.push(cairoDate(new Date(Date.now() - i * 24 * 60 * 60 * 1000)));
+  const docs = await DailyStat.find({ date: { $in: dates } }).lean();
+  const byDate = Object.fromEntries(docs.map((d) => [d.date, d]));
+
+  const totals = { visits: 0, mobile: 0, desktop: 0, langEn: 0, langAr: 0, cvDownloads: 0 };
+  const sections = {}, projects = {}, referrers = {};
+  for (const doc of docs) {
+    for (const field of Object.keys(totals)) totals[field] += doc[field] || 0;
+    addCounts(sections, doc.sections);
+    addCounts(projects, doc.projects);
+    addCounts(referrers, doc.referrers);
+  }
+
+  // Project ids -> current titles (a deleted project shows as "(deleted project)").
+  const topProjects = topList(projects);
+  const found = await Project.find({ _id: { $in: topProjects.map(([id]) => id) } }).select("titleEn titleAr").lean();
+  const titles = Object.fromEntries(found.map((p) => [String(p._id), p.titleEn || p.titleAr]));
+
+  res.json({
+    days,
+    daily: dates.map((date) => ({ date, visits: (byDate[date] && byDate[date].visits) || 0 })),
+    totals,
+    sections: topList(sections).map(([name, count]) => ({ name, count })),
+    projects: topProjects.map(([id, count]) => ({ id, title: titles[id] || "(deleted project)", count })),
+    referrers: topList(referrers).map(([key, count]) => ({ host: fromKey(key), count })),
+  });
 });
 
 // ---- Contact messages ----

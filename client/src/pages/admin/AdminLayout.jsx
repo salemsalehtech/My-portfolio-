@@ -13,6 +13,7 @@ const LINKS = [
   { to: "/admin/skills", label: "Skills" },
   { to: "/admin/youtube", label: "YouTube" },
   { to: "/admin/messages", label: "Messages" },
+  { to: "/admin/analytics", label: "Analytics" },
   { to: "/admin/services", label: "Services" },
   { to: "/admin/certificates", label: "Certificates" },
   { to: "/admin/testimonials", label: "Testimonials" },

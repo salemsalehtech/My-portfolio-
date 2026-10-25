@@ -173,6 +173,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>SiteSettings</code></td><td>مستند واحد: Hero + الروابط + المكان + الفوتر</td></tr>
   <tr><td><code>CvFile</code></td><td>ملف الـ CV نفسه (Buffer) — لأن قرص Render بيتمسح مع كل نشر</td></tr>
   <tr><td><code>ContactMessage</code></td><td>رسايل فورم التواصل</td></tr>
+  <tr><td><code>DailyStat</code></td><td>إحصائيات الزوار: مستند واحد لكل يوم فيه <strong>عدّادات بس</strong> (من غير IP ولا كوكيز)</td></tr>
   <tr><td><code>AdminUser</code></td><td>حساب الأدمن (الباسورد مشفّر)</td></tr>
 </table>
 <h2>قواعد في كل الموديلات</h2>
@@ -207,6 +208,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td>قايمة حقول مسموحة</td><td>نسخ الحقول المعروفة بس من <code>req.body</code></td><td>محدش يقدر يكتب حقول غريبة في قاعدة البيانات</td></tr>
   <tr><td>التحقق من الروابط</td><td>لازم تبدأ بـ <code>http(s)://</code></td><td>يمنع روابط <code>javascript:</code> اللي ممكن تنفّذ كود في الصفحة</td></tr>
   <tr><td>رفع الـ CV</td><td>PDF حقيقي (أول بايتات <code>%PDF-</code>) وأقل من 4MB</td><td>ما نثقش في امتداد الملف أو كلام المتصفح</td></tr>
+  <tr><td>إحصائيات بخصوصية</td><td>عدّادات يومية بس، وقيم من قايمة مسموحة، وحد 120 حدث / 10 دقايق، وحد 50 مصدر في اليوم</td><td>تعرف الموقع بيتزار إزاي من غير ما تجمع بيانات شخصية</td></tr>
   <tr><td><code>trust proxy</code></td><td>IP الزائر الحقيقي</td><td>من غيره كل الزوار "IP واحد" والحدود تتحسب عليهم مع بعض</td></tr>
 </table>
 <div class="lesson"><b>قرار اتاخد</b>الخطة الأصلية كانت توقيف helmet والـ rate limiting مؤقتًا لتبسيط الكود. اتلغى القرار ده: فورم التواصل وتسجيل الدخول كانوا منشورين للناس فعلًا، وتوقيفهم كان هيكشف الموقع. بدل كده، اتشرحوا بتعليقات في الكود.</div>
@@ -224,6 +226,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>GET /api/certificates</code> · <code>GET /api/certificates/:id/image</code></td><td>الشهادات الظاهرة / صورة شهادة (مسموح تتعرض على دومين الموقع)</td></tr>
   <tr><td><code>POST /api/contact</code></td><td>رسالة من فورم التواصل</td></tr>
   <tr><td><code>POST /api/testimonials/submit</code></td><td>رأي عميل من اللينك (بيتحفظ Pending)</td></tr>
+  <tr><td><code>POST /api/analytics/event</code></td><td>حدث مجهول (زيارة، قسم، مشروع، تحميل CV) ← +1 في عدّاد اليوم</td></tr>
   <tr><td><code>POST /api/auth/login</code></td><td>تسجيل الدخول ← توكن</td></tr>
 </table>
 <h2>الأدمن (لازم توكن) — تحت <code>/api/admin</code></h2>
@@ -234,6 +237,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>/cv</code></td><td><code>PUT</code> رفع/استبدال PDF (base64) · <code>DELETE</code></td></tr>
   <tr><td><code>/certificates/:id/image</code></td><td><code>PUT</code> رفع صورة (PNG/JPEG/WebP، أقصى 2MB، بيتأكد من نوعها الحقيقي) · <code>DELETE</code></td></tr>
   <tr><td><code>/messages</code></td><td><code>GET</code> · <code>PATCH /:id</code> مقروءة · <code>DELETE /:id</code></td></tr>
+  <tr><td><code>/analytics?days=7|30|90</code></td><td><code>GET</code> ملخص الإحصائيات (يومي + إجماليات + الأكتر)</td></tr>
 </table>
 <div class="tip"><b>جرّب بنفسك</b>افتح في المتصفح <code>https://salem-portfolio-server.onrender.com/api/projects</code> — هتشوف الـ JSON اللي الموقع بيستخدمه.</div>
 

@@ -262,6 +262,26 @@ const certificateSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+// Visitor analytics — ONE document per day holding counters only (no IPs, no cookies, no
+// per-visitor records). The public site sends small events (routes/analytics.js) and the server
+// adds +1 to the matching counter with $inc. `date` is the day in Cairo time, "YYYY-MM-DD".
+// Map keys are section ids, project ids and referrer hosts (dots stored as "．", see analytics.js).
+const dailyStatSchema = new mongoose.Schema(
+  {
+    date: { type: String, required: true, unique: true },
+    visits: { type: Number, default: 0 },
+    mobile: { type: Number, default: 0 },
+    desktop: { type: Number, default: 0 },
+    langEn: { type: Number, default: 0 },
+    langAr: { type: Number, default: 0 },
+    cvDownloads: { type: Number, default: 0 },
+    sections: { type: Map, of: Number, default: {} },
+    projects: { type: Map, of: Number, default: {} },
+    referrers: { type: Map, of: Number, default: {} },
+  },
+  { timestamps: true }
+);
+
 certificateSchema.pre("validate", function () {
   if (!this.titleEn && !this.titleAr) this.invalidate("titleEn", "A certificate title is required");
 });
@@ -280,6 +300,7 @@ const models = {
   Service: mongoose.models.Service || mongoose.model("Service", serviceSchema),
   SiteSettings: mongoose.models.SiteSettings || mongoose.model("SiteSettings", siteSettingsSchema),
   Certificate: mongoose.models.Certificate || mongoose.model("Certificate", certificateSchema),
+  DailyStat: mongoose.models.DailyStat || mongoose.model("DailyStat", dailyStatSchema),
 };
 
 // When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and

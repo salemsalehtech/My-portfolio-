@@ -247,6 +247,7 @@ setStatus(<span class="s">"success"</span>);   <span class="c">// الشاشة �
 <pre><span class="k">const</span> [editing, setEditing] = useState(<span class="k">null</span>); <span class="c">// null = مقفول | "new" = إضافة | id = تعديل</span>
 <span class="k">const</span> [form, setForm] = useState(EMPTY);       <span class="c">// قيم الفورم الحالية</span>
 <span class="k">const</span> load = () =&gt; api.get(<span class="s">"/admin/services"</span>).then(setItems); <span class="c">// إعادة تحميل بعد أي تعديل</span></pre>
+<p><strong>Analytics</strong> صفحة قراءة بس: أرقام ملخصة ورسم بياني SVG للزيارات اليومية (مع tooltip بالماوس والكيبورد وجدول بنفس الأرقام). البيانات بتوصل من <code>lib/analytics.js</code> في الموقع العام: زيارة واحدة لكل جلسة، ومش بيبعت حاجة لو انت مسجّل دخول كأدمن أو المتصفح طالب Do Not Track.</p>
 <p>والصفحات اللي بتعدّل "مستند واحد كبير" (About و Profile &amp; Links) بتستخدم مكوّنات مشتركة من <code>pages/admin/FormParts.jsx</code>: <code>Field</code> (حقل نص) و<code>ListEditor</code> (قايمة بإضافة/حذف/ترتيب).</p>
 
 <!-- ======================= 9 ======================= -->

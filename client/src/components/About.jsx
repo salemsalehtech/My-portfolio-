@@ -16,6 +16,7 @@ import { api, API_BASE } from "../lib/api";
 import { aboutDefaults } from "../lib/aboutDefaults";
 import { readCache, writeCache } from "../lib/apiCache";
 import { youtubeId, youtubeEmbedUrl } from "../lib/youtube";
+import { track } from "../lib/analytics";
 
 // Little icon next to each info row, chosen by the row's `icon` field.
 const svgProps = { width: 15, height: 15, viewBox: "0 0 24 24", fill: "none", stroke: "var(--gold)", strokeWidth: 2 };
@@ -122,7 +123,7 @@ function AboutContent({ content, cv }) {
                 </>
               )}
               {showCv && (
-                <a href={`${API_BASE}/cv`} download className="btn-download">
+                <a href={`${API_BASE}/cv`} download className="btn-download" onClick={() => track("cv")}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></svg>
                   {t.about.downloadCV}
                 </a>

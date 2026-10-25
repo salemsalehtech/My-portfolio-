@@ -21,9 +21,17 @@ import ScrollTop from "../components/ScrollTop";
 import { useScrollTracking } from "../hooks/useScrollTracking";
 import { useCollection } from "../hooks/useCollection";
 import { useSiteSettings } from "../hooks/useSiteSettings";
+import { useEffect } from "react";
+import { useSite } from "../context/SiteContext";
+import { track, trackVisit } from "../lib/analytics";
 
 export default function Portfolio() {
   const { scrolled, activeSection, showScrollTop } = useScrollTracking();
+  const { lang } = useSite();
+  // Anonymous analytics (lib/analytics.js): one visit per session, and each section once when
+  // it first comes into view.
+  useEffect(() => { trackVisit(lang); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { track("section", activeSection); }, [activeSection]);
   // Site-wide profile content (Hero texts, links, location…) — used by several sections.
   const settings = useSiteSettings();
   const services = useCollection("/services");

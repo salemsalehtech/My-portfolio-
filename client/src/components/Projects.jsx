@@ -10,6 +10,7 @@ import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";
 import ProjectModal from "./ProjectModal";
+import { track } from "../lib/analytics";
 
 // "React", "react " and "REACT" count as the same tag.
 const tagKey = (tag) => String(tag).trim().toLowerCase();
@@ -75,7 +76,7 @@ export default function Projects() {
             const desc = lang === "ar" ? project.descAr : project.descEn;
             const cat = lang === "ar" ? project.catLabelAr : project.catLabelEn;
             return (
-              <div className="project-card" key={project.id} onClick={() => setSelected(project)}>
+              <div className="project-card" key={project.id} onClick={() => { setSelected(project); track("project", project.id); }}>
                 <div className="project-thumb" style={{ background: project.gradient }}>
                   <div className="project-tags">
                     {project.tags.map((tag) => (

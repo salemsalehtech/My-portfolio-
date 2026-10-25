@@ -31,6 +31,7 @@ import FeedbackForm from "./pages/FeedbackForm";
 import AdminServices from "./pages/admin/AdminServices";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminCertificates from "./pages/admin/AdminCertificates";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import { Navigate } from "react-router-dom";
 
 export default function App() {
@@ -52,6 +53,7 @@ export default function App() {
               <Route path="settings" element={<AdminSettings />} />
               <Route path="services" element={<AdminServices />} />
               <Route path="certificates" element={<AdminCertificates />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="about" element={<AdminAbout />} />
               <Route path="cv" element={<AdminCV />} />
