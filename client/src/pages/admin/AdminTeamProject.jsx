@@ -278,7 +278,7 @@ function ProjectSettings({ project, allMembers, onSaved, onDeleted }) {
       <h2 style={{ marginTop: 10 }}>{t("Members")}</h2>
       {allMembers.length === 0 && <p className="admin-empty">{t("No members yet — add them in Team → Members.")}</p>}
       <div className="tm-member-picks">
-        {allMembers.map((m) => (
+        {allMembers.filter((m) => !m.pending).map((m) => (
           <label key={m.id} className={`admin-check tm-pick ${form.members.includes(m.id) ? "is-on" : ""}`}>
             <input type="checkbox" checked={form.members.includes(m.id)} onChange={() => toggleMember(m.id)} />
             {m.name}{m.specialty ? <span className="tm-muted"> · {m.specialty}</span> : null}{!m.active ? <span className="tm-muted"> ({t("disabled")})</span> : null}

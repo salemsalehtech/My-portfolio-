@@ -3,14 +3,15 @@
 //   Overview — tasks waiting for review (approve / send back with a note), progress of every
 //              project, each member's open / overdue / done-this-week tasks, recent activity.
 //   Projects — the project list + "New project"; a project opens AdminTeamProject.jsx.
-//   Members  — accounts: create (temporary password), edit, disable, reset password, delete,
-//              and the portal link to send them (/#/team).
+//   Members  — invite links (people sign up themselves, then wait for approval), approving
+//              those accounts, and the owner's own tools: create (temporary password), edit,
+//              disable, reset password, delete, and the portal link to send them (/#/team).
 //   Standups — each member's daily standup (yesterday / today / blockers) for a chosen day,
 //              and who hasn't posted yet.
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../lib/api";
-import { initials, portalLink, formatDue } from "../../lib/team";
+import { initials, portalLink, joinLink, formatDue } from "../../lib/team";
 import { useAdminT } from "../../lib/adminI18n";
 
 const ACTIONS = {
@@ -67,6 +68,12 @@ function Overview() {
   const su = data.standups;
   return (
     <div className="tm-admin">
+      {data.pending > 0 && (
+        <Link className="tm-standup-strip is-blocked" to="/admin/team?tab=members">
+          <strong>{t("{n} new account(s) waiting for your approval", { n: data.pending })}</strong>
+          <span className="tm-muted tm-strip-arrow" aria-hidden="true">›</span>
+        </Link>
+      )}
       {su && su.expected > 0 && (
         <Link className={`tm-standup-strip ${su.blocked ? "is-blocked" : ""}`} to="/admin/team?tab=standups">
           <strong>{t("Today's standups")}</strong>
@@ -233,6 +240,12 @@ function Members() {
     setCreated({ name: m.name, username: m.username, password });
     load();
   };
+  const approve = async (m) => { await api.post(`/admin/team/members/${m.id}/approve`); load(); };
+  const reject = async (m) => {
+    if (!confirm(t("Reject {name}'s sign-up? The account will be deleted.", { name: m.name }))) return;
+    await api.del(`/admin/team/members/${m.id}`);
+    load();
+  };
   const remove = async (m) => {
     if (!confirm(t("Delete {name}? Their tasks stay, without an assignee.", { name: m.name }))) return;
     await api.del(`/admin/team/members/${m.id}`);
@@ -253,6 +266,8 @@ function Members() {
         </div>
       </div>
 
+      <Invites />
+
       {created && (
         <div className="admin-notice">
           <strong>{t("Login for {name}", { name: created.name })}</strong> — {t("Username")} <code>{created.username}</code>, {t("Temporary password")} <code>{created.password}</code>.{" "}
@@ -270,16 +285,23 @@ function Members() {
         <tbody>
           {members.length === 0 && <tr><td colSpan={5} className="admin-empty">{t("No members yet.")}</td></tr>}
           {members.map((m) => (
-            <tr key={m.id} className={m.active ? "" : "tm-inactive"}>
+            <tr key={m.id} className={m.pending ? "tm-pending" : m.active ? "" : "tm-inactive"}>
               <td><span className="tm-avatar">{initials(m.name)}</span> {m.name}</td>
               <td><code>{m.username}</code></td>
               <td>{m.specialty || "—"}</td>
-              <td>{!m.active ? t("Disabled") : m.mustChangePassword ? t("Waiting for first login") : m.lastLoginAt ? t("Active · last login {date}", { date: new Date(m.lastLoginAt).toLocaleDateString("en-GB") }) : t("Active")}</td>
+              <td>{m.pending ? <span className="tm-pill">{t("Waiting for your approval")}</span> : !m.active ? t("Disabled") : m.mustChangePassword ? t("Waiting for first login") : m.lastLoginAt ? t("Active · last login {date}", { date: new Date(m.lastLoginAt).toLocaleDateString("en-GB") }) : t("Active")}</td>
               <td className="actions">
+                {m.pending ? (
+                  <>
+                    <button className="admin-btn admin-btn-primary" onClick={() => approve(m)}>{t("Approve ✓")}</button>
+                    <button className="admin-btn admin-btn-danger" onClick={() => reject(m)}>{t("Reject")}</button>
+                  </>
+                ) : (<>
                 <button className="admin-btn" onClick={() => edit(m)}>{t("Edit")}</button>
                 <button className="admin-btn" onClick={() => reset(m)}>{t("Reset password")}</button>
                 <button className="admin-btn" onClick={() => toggle(m)}>{m.active ? t("Disable") : t("Enable")}</button>
                 <button className="admin-btn admin-btn-danger" onClick={() => remove(m)}>{t("Delete")}</button>
+                </>)}
               </td>
             </tr>
           ))}
@@ -360,5 +382,100 @@ function Standups() {
         <p className="tm-muted">{t("Not posted yet:")} {data.missing.map((m) => m.name).join(lang === "ar" ? "، " : ", ")}</p>
       )}
     </div>
+  );
+}
+
+// ---- Invite links ----
+// The owner makes a link (for one person, or a few), sends it, and whoever opens it creates their
+// own account at /#/team/join/<token>. Those accounts wait for approval in the members table.
+// The link is shown only once, right after it's made — the server keeps just a hash of it.
+const STATE_LABEL = { active: "Active", used: "Used up", expired: "Expired", revoked: "Stopped" };
+
+function Invites() {
+  const { t, lang } = useAdminT();
+  const [invites, setInvites] = useState([]);
+  const [form, setForm] = useState(null); // null | { label, maxUses, days }
+  const [fresh, setFresh] = useState(null); // { link, label } shown once
+  const [copied, setCopied] = useState(false);
+  const [error, setError] = useState("");
+  const load = () => api.get("/admin/team/invites").then(setInvites).catch((err) => setError(err.message));
+  useEffect(() => { load(); }, []);
+
+  const create = async (e) => {
+    e.preventDefault();
+    setError("");
+    try {
+      const { invite, token } = await api.post("/admin/team/invites", form);
+      setFresh({ link: joinLink(token), label: invite.label });
+      setForm(null);
+      load();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+  const stop = async (invite) => {
+    if (!confirm(t("Stop this invite link? Nobody will be able to use it any more."))) return;
+    await api.del(`/admin/team/invites/${invite.id}`);
+    load();
+  };
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(fresh.link); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { window.prompt(t("Copy:"), fresh.link); }
+  };
+  const date = (iso) => new Date(iso).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB", { day: "numeric", month: "short" });
+
+  return (
+    <section className="admin-linkbox tm-invites">
+      <div className="tm-invites-head">
+        <div>
+          <h2 className="tm-admin-h">{t("Invite links")}</h2>
+          <p className="admin-sub">{t("Send a link — people create their own account, then you approve it.")}</p>
+        </div>
+        {!form && <button className="admin-btn admin-btn-primary" onClick={() => { setFresh(null); setForm({ label: "", maxUses: 1, days: 7 }); }}>{t("+ Invite link")}</button>}
+      </div>
+
+      {form && (
+        <form className="admin-form tm-invite-form" onSubmit={create}>
+          <div className="admin-form-row">
+            <label>{t("Note (only you see it)")}<input className="form-input" dir="auto" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} maxLength={80} placeholder={t("e.g. For Mona")} /></label>
+            <label>{t("How many people can use it")}<input className="form-input" type="number" min={1} max={50} value={form.maxUses} onChange={(e) => setForm({ ...form, maxUses: e.target.value })} /></label>
+            <label>{t("Works for (days)")}<input className="form-input" type="number" min={1} max={30} value={form.days} onChange={(e) => setForm({ ...form, days: e.target.value })} /></label>
+          </div>
+          {error && <p className="admin-error">{error}</p>}
+          <div className="admin-form-actions">
+            <button type="button" className="admin-btn" onClick={() => setForm(null)}>{t("Cancel")}</button>
+            <button type="submit" className="admin-btn admin-btn-primary">{t("Create link")}</button>
+          </div>
+        </form>
+      )}
+
+      {fresh && (
+        <div className="admin-notice">
+          <strong>{t("Your invite link{label}", { label: fresh.label ? ` — ${fresh.label}` : "" })}</strong>
+          <div className="admin-linkrow">
+            <input className="form-input" dir="ltr" readOnly value={fresh.link} onFocus={(e) => e.target.select()} />
+            <button className="admin-btn admin-btn-primary" onClick={copy}>{copied ? t("Copied ✓") : t("Copy")}</button>
+          </div>
+          <p className="admin-sub">{t("Copy it now — for safety it is shown only once.")}</p>
+        </div>
+      )}
+
+      {invites.length > 0 && (
+        <table className="admin-table tm-invite-table">
+          <thead><tr><th>{t("Note")}</th><th>{t("Status")}</th><th>{t("Used")}</th><th>{t("Ends")}</th><th>{t("Joined")}</th><th></th></tr></thead>
+          <tbody>
+            {invites.map((i) => (
+              <tr key={i.id} className={i.state === "active" ? "" : "tm-inactive"}>
+                <td dir="auto">{i.label || "—"}</td>
+                <td><span className={`tm-pill ${i.state === "active" ? "" : "is-off"}`}>{t(STATE_LABEL[i.state])}</span></td>
+                <td className="tm-num">{i.uses}/{i.maxUses}</td>
+                <td>{date(i.expiresAt)}</td>
+                <td>{i.members.join(lang === "ar" ? "، " : ", ") || "—"}</td>
+                <td className="actions">{i.state === "active" && <button className="admin-btn admin-btn-danger" onClick={() => stop(i)}>{t("Stop")}</button>}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
   );
 }

@@ -1,5 +1,6 @@
 // teamCopy.js — every text of the member portal (/#/team), in English and Arabic.
 // Status and priority names live in lib/team.js (shared with the owner's dashboard).
+// SERVER_AR translates the server's error messages a member can meet (login / sign-up).
 export const TEAM_COPY = {
   en: {
     portal: "Team workspace",
@@ -29,6 +30,13 @@ export const TEAM_COPY = {
     backTodo: "Back to To do", withdraw: "Withdraw from review",
     inReview: "Sent for review.", approved: "Approved ✓", readOnly: "This task belongs to a teammate.",
     close: "Close", loading: "Loading…", error: "Something went wrong. Please try again.",
+    join: "Join the team", joinIntro: "Create your account. Once Salem approves it, you can sign in.",
+    fullName: "Full name", specialty: "Specialty", usernameHint: "3–30 characters: a-z, 0-9 and . _ -",
+    create: "Create account", creating: "Creating…", haveAccount: "Already have an account?",
+    joinedTitle: "Account created ✓", toLogin: "Go to sign in",
+    joinedText: (name) => `Thanks, ${name}! Your account is waiting for approval — you can sign in as soon as it's approved.`,
+    badInvite: "This invite link is no longer valid. Ask for a new one.",
+    pendingNote: "Your account is waiting for approval. You'll be able to sign in once it's approved.",
   },
   ar: {
     portal: "مساحة عمل الفريق",
@@ -58,5 +66,24 @@ export const TEAM_COPY = {
     backTodo: "إرجاع إلى لم يبدأ", withdraw: "سحب من المراجعة",
     inReview: "أُرسلت للمراجعة.", approved: "تمت الموافقة ✓", readOnly: "هذه المهمة تخص زميلًا لك.",
     close: "إغلاق", loading: "جارٍ التحميل…", error: "حدث خطأ ما. حاول مرة أخرى.",
+    join: "انضم إلى الفريق", joinIntro: "أنشئ حسابك. بعد موافقة سالم تقدر تسجّل الدخول.",
+    fullName: "الاسم بالكامل", specialty: "التخصص", usernameHint: "من 3 إلى 30 حرفًا: a-z و0-9 و . _ -",
+    create: "إنشاء الحساب", creating: "جارٍ الإنشاء…", haveAccount: "عندك حساب بالفعل؟",
+    joinedTitle: "تم إنشاء الحساب ✓", toLogin: "الذهاب لتسجيل الدخول",
+    joinedText: (name) => `شكرًا يا ${name}! حسابك بانتظار الموافقة — تقدر تسجّل الدخول أول ما تتم الموافقة عليه.`,
+    badInvite: "رابط الدعوة هذا لم يعد صالحًا. اطلب رابطًا جديدًا.",
+    pendingNote: "حسابك بانتظار الموافقة. تقدر تسجّل الدخول بعد الموافقة عليه.",
   },
+};
+
+export const SERVER_AR = {
+  "Invalid username or password": "اسم المستخدم أو كلمة المرور غير صحيحة",
+  "Too many login attempts. Please try again later.": "محاولات كثيرة. حاول مرة أخرى لاحقًا.",
+  "Too many attempts. Please try again later.": "محاولات كثيرة. حاول مرة أخرى لاحقًا.",
+  "Your account is waiting for approval": "حسابك بانتظار الموافقة",
+  "This username is taken — choose another one": "اسم المستخدم هذا مستخدَم — اختر اسمًا آخر",
+  "This invite link is no longer valid. Ask for a new one.": "رابط الدعوة هذا لم يعد صالحًا. اطلب رابطًا جديدًا.",
+  "The password must be 8 to 100 characters": "كلمة المرور يجب أن تكون من 8 إلى 100 حرف",
+  "Write your name (up to 80 characters)": "اكتب اسمك (حتى 80 حرفًا)",
+  "Username: 3–30 characters, a-z, 0-9, dot, dash or underscore": "اسم المستخدم: من 3 إلى 30 حرفًا، a-z و0-9 والنقطة والشرطة والشرطة السفلية",
 };

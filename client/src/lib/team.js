@@ -34,6 +34,8 @@ export const stepsDone = (task) => `${task.steps.filter((s) => s.done).length}/$
 
 // The public address of the member portal, to send to new members.
 export const portalLink = () => `${window.location.origin}${window.location.pathname}#/team`;
+// The sign-up address of an invite link (the token is only known right after creating it).
+export const joinLink = (token) => `${portalLink()}/join/${token}`;
 
 // Which status changes a member may make on their own task (same rule as routes/team.js).
 export const MEMBER_MOVES = { todo: ["doing", "review"], doing: ["todo", "review"], review: ["doing"], done: [] };
@@ -67,6 +69,7 @@ export const SHARED_COPY = {
       submitted: (a, d) => `${a} sent “${d}” for review`,
       comment: (a, d) => `${a} commented on “${d}”`,
       blocker: (a, d) => `${a} is blocked: ${d}`,
+      signup: (a) => `${a} signed up with an invite — approve the account`,
     },
     standup: "Daily standup", standupIntro: "Three quick lines for the team — takes a minute.",
     yesterday: "What did you do yesterday?", todayQ: "What will you do today?", blockers: "Anything blocking you?",
@@ -89,6 +92,7 @@ export const SHARED_COPY = {
       submitted: (a, d) => `${a} أرسل «${d}» للمراجعة`,
       comment: (a, d) => `${a} علّق على «${d}»`,
       blocker: (a, d) => `${a} لديه عائق: ${d}`,
+      signup: (a) => `${a} أنشأ حسابًا برابط دعوة — وافق على الحساب`,
     },
     standup: "الاجتماع اليومي", standupIntro: "ثلاثة أسطر سريعة للفريق — دقيقة واحدة.",
     yesterday: "ماذا أنجزت أمس؟", todayQ: "ماذا ستعمل اليوم؟", blockers: "هل يعطّلك شيء؟",

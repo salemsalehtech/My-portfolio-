@@ -7,11 +7,12 @@
 //     with a note
 //   - overview: the review queue, progress per project and per member, recent activity
 //   - comments on tasks, the owner's notifications 🔔, and every member's daily standups
+//   - invite links for self sign-up, and approving the accounts made with them
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
-const { TeamMember, TeamProject, TeamTask, TeamActivity, TeamComment, TeamNotification, TeamStandup } = require("../lib/mongo");
-const { todayCairo, isOverdue, logActivity, notify, bellFor, withCommentCounts, MEMBER_PUBLIC } = require("../lib/team");
+const { TeamMember, TeamProject, TeamTask, TeamActivity, TeamComment, TeamNotification, TeamStandup, TeamInvite } = require("../lib/mongo");
+const { todayCairo, isOverdue, logActivity, notify, bellFor, withCommentCounts, newInviteToken, hashInviteToken, MEMBER_PUBLIC } = require("../lib/team");
 
 const router = express.Router();
 
@@ -56,9 +57,10 @@ router.get("/overview", async (req, res) => {
       };
     }),
     activity,
+    pending: members.filter((m) => m.pending).length,
     standups: {
       done: standups.length,
-      expected: members.filter((m) => m.active).length,
+      expected: members.filter((m) => m.active && !m.pending).length,
       blocked: standups.filter((s) => s.blockers).length,
     },
   });
@@ -89,6 +91,13 @@ router.put("/members/:id", async (req, res) => {
   if (!member) return res.status(404).json({ error: "Member not found" });
   res.json(member);
 });
+// POST /members/:id/approve — lets a member who signed up with an invite log in.
+// (Rejecting = deleting the account with DELETE /members/:id.)
+router.post("/members/:id/approve", async (req, res) => {
+  const member = await TeamMember.findByIdAndUpdate(req.params.id, { pending: false }, { new: true });
+  if (!member) return res.status(404).json({ error: "Member not found" });
+  res.json(member);
+});
 // POST /members/:id/password { password } — a new temporary password; the member must change it.
 router.post("/members/:id/password", async (req, res) => {
   const password = String(req.body?.password ?? "");
@@ -109,6 +118,39 @@ router.delete("/members/:id", async (req, res) => {
   await TeamProject.updateMany({}, { $pull: { members: req.params.id } });
   await TeamNotification.deleteMany({ recipient: req.params.id });
   await TeamStandup.deleteMany({ member: req.params.id });
+  res.status(204).end();
+});
+
+// ---- Invite links ----
+// GET /invites → every invite with its state (the links themselves are never shown again).
+router.get("/invites", async (req, res) => {
+  const [invites, joined] = await Promise.all([
+    TeamInvite.find().sort({ createdAt: -1 }).limit(50),
+    TeamMember.find({ invite: { $ne: null } }).select("name invite"),
+  ]);
+  const now = new Date();
+  res.json(invites.map((i) => ({
+    ...i.toJSON(),
+    state: i.revoked ? "revoked" : i.uses >= i.maxUses ? "used" : i.expiresAt <= now ? "expired" : "active",
+    members: joined.filter((m) => String(m.invite) === i.id).map((m) => m.name),
+  })));
+});
+// POST /invites { label, maxUses (1–50), days (1–30) } → { invite, token } — the token only now.
+router.post("/invites", async (req, res) => {
+  const maxUses = Math.min(50, Math.max(1, parseInt(req.body?.maxUses, 10) || 1));
+  const days = Math.min(30, Math.max(1, parseInt(req.body?.days, 10) || 7));
+  const token = newInviteToken();
+  const invite = await TeamInvite.create({
+    tokenHash: hashInviteToken(token),
+    label: req.body?.label,
+    maxUses,
+    expiresAt: new Date(Date.now() + days * 24 * 60 * 60 * 1000),
+  });
+  res.status(201).json({ invite: { ...invite.toJSON(), tokenHash: undefined, state: "active", members: [] }, token });
+});
+// DELETE /invites/:id — stops the link from working (kept in the list as "revoked").
+router.delete("/invites/:id", async (req, res) => {
+  if (mongoose.isValidObjectId(req.params.id)) await TeamInvite.updateOne({ _id: req.params.id }, { revoked: true });
   res.status(204).end();
 });
 
@@ -283,7 +325,7 @@ router.get("/standups", async (req, res) => {
   const date = /^\d{4}-\d{2}-\d{2}$/.test(String(req.query.date)) ? String(req.query.date) : today;
   const [entries, members] = await Promise.all([
     TeamStandup.find({ date }).populate("member", MEMBER_PUBLIC).sort({ updatedAt: -1 }),
-    TeamMember.find({ active: true }).select(MEMBER_PUBLIC).sort({ name: 1 }),
+    TeamMember.find({ active: true, pending: { $ne: true } }).select(MEMBER_PUBLIC).sort({ name: 1 }),
   ]);
   const wrote = new Set(entries.filter((e) => e.member).map((e) => e.member.id));
   res.json({ date, today, entries: entries.filter((e) => e.member), missing: members.filter((m) => !wrote.has(m.id)) });

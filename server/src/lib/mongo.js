@@ -419,7 +419,8 @@ formSchema.pre("validate", function () {
 // A team member account, created by the owner. Members log in with username + password at
 // /#/team (routes/team.js) — a login completely separate from the admin's. A new account (or a
 // reset password) must choose a new password on first login. `active: false` blocks the login
-// without deleting anything.
+// without deleting anything. Members can also sign up themselves through an invite link
+// (TeamInvite); such an account is `pending` — it can't log in until the owner approves it.
 const teamMemberSchema = new mongoose.Schema(
   {
     username: {
@@ -435,7 +436,24 @@ const teamMemberSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true, select: false },
     mustChangePassword: { type: Boolean, default: true },
     active: { type: Boolean, default: true },
+    pending: { type: Boolean, default: false }, // signed up with an invite, waiting for the owner's approval
+    invite: { type: mongoose.Schema.Types.ObjectId, ref: "TeamInvite", default: null }, // which invite they used
     lastLoginAt: { type: Date, default: null },
+  },
+  { timestamps: true }
+);
+
+// An invite link the owner sends to future members (/#/team/join/<token>). Only a SHA-256 hash of
+// the token is stored — the link itself is shown to the owner once, when it is created.
+// It works until it expires, is revoked, or has been used `maxUses` times.
+const teamInviteSchema = new mongoose.Schema(
+  {
+    tokenHash: { type: String, required: true, unique: true, select: false },
+    label: { type: String, default: "", trim: true, maxlength: 80 }, // a note for the owner, e.g. "For Mona"
+    maxUses: { type: Number, default: 1, min: 1, max: 50 },
+    uses: { type: Number, default: 0 },
+    expiresAt: { type: Date, required: true },
+    revoked: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -576,6 +594,7 @@ const models = {
   TeamProject: mongoose.models.TeamProject || mongoose.model("TeamProject", teamProjectSchema),
   TeamTask: mongoose.models.TeamTask || mongoose.model("TeamTask", teamTaskSchema),
   TeamActivity: mongoose.models.TeamActivity || mongoose.model("TeamActivity", teamActivitySchema),
+  TeamInvite: mongoose.models.TeamInvite || mongoose.model("TeamInvite", teamInviteSchema),
   TeamComment: mongoose.models.TeamComment || mongoose.model("TeamComment", teamCommentSchema),
   TeamNotification: mongoose.models.TeamNotification || mongoose.model("TeamNotification", teamNotificationSchema),
   TeamStandup: mongoose.models.TeamStandup || mongoose.model("TeamStandup", teamStandupSchema),

@@ -1034,3 +1034,17 @@ body.ar .cert-title { font-family: var(--font-ar); }
   .tm-filters .fp-input:not(.tm-search) { flex: 1 1 40%; }
   .tm-comment-form { flex-direction: column; align-items: stretch; }
 }
+
+/* ---- Team sign-up with invite links ---- */
+.tm-invites { margin-bottom: 18px; }
+.tm-invites-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; }
+.tm-invites-head .tm-admin-h { margin-bottom: 2px; }
+.tm-invite-form { margin: 6px 0 12px; }
+.tm-invites .admin-notice { margin: 10px 0; }
+.tm-invites .admin-linkrow { margin: 8px 0 4px; }
+.tm-invite-table { margin-top: 10px; }
+.tm-pill.is-off { background: var(--card-border); color: var(--text-muted); }
+.tm-pending td { background: var(--gold-dim); }
+.tm-join-form { display: flex; flex-direction: column; gap: 14px; }
+.tm-join-form .tm-field small { font-weight: 400; font-size: 12.5px; }
+.tm-auth-card code { padding: 1px 6px; border-radius: 6px; background: var(--card-border); }

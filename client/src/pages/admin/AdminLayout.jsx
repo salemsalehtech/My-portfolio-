@@ -15,9 +15,12 @@ import { COMPANY } from "../../lib/brand";
 import { NAV_ICONS } from "../../components/admin/navIcons";
 import Bell from "../../components/team/Bell";
 
-// Where a click on a notification 🔔 leads: the task in its project, or today's standups.
+// Where a click on a notification 🔔 leads: the task in its project, today's standups, or the
+// members list (a new sign-up to approve).
 const bellLink = ({ project, task, kind }) =>
-  kind === "blocker" ? "/admin/team?tab=standups" : project && task ? `/admin/team/projects/${project}?task=${task}` : null;
+  kind === "blocker" ? "/admin/team?tab=standups"
+    : kind === "signup" ? "/admin/team?tab=members"
+    : project && task ? `/admin/team/projects/${project}?task=${task}` : null;
 
 const GROUPS = [
   { title: "Insights", links: [{ to: "/admin/analytics", label: "Analytics", icon: "analytics" }] },

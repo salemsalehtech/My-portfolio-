@@ -7,19 +7,21 @@
 // Then:
 //   /team               → TeamHome: what needs attention, my tasks, my projects
 //   /team/projects/:id  → TeamProject: the project's board, docs and team (?task=<id> opens a task)
+//   /team/join/:token   → TeamJoin: sign up with an invite link (works without logging in)
 // The top bar has the notification bell 🔔 (components/team/Bell.jsx).
 // The portal speaks English and Arabic (remembered in localStorage) and follows the site's
 // light / dark theme; both switches are in the top bar.
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { Link, Route, Routes } from "react-router-dom";
+import { Link, Route, Routes, useMatch } from "react-router-dom";
 import { api } from "../../lib/api";
 import { COMPANY } from "../../lib/brand";
 import { initials } from "../../lib/team";
 import { useSite } from "../../context/SiteContext";
 import { SunIcon, MoonIcon, GlobeIcon, KeyIcon, LogoutIcon, ExternalIcon, CheckCircleIcon } from "../../components/team/icons";
-import { TEAM_COPY } from "./teamCopy";
+import { TEAM_COPY, SERVER_AR } from "./teamCopy";
 import TeamHome from "./TeamHome";
 import TeamProject from "./TeamProject";
+import TeamJoin from "./TeamJoin";
 import Bell from "../../components/team/Bell";
 
 const TeamContext = createContext(null);
@@ -33,6 +35,9 @@ export default function TeamPortal() {
   const [status, setStatus] = useState(() => (localStorage.getItem("teamToken") ? "checking" : "out")); // checking | out | in
   const [expired, setExpired] = useState(false);
   const t = TEAM_COPY[lang];
+  const join = useMatch("/team/join/:token");
+  // A server message in the portal's language (English messages pass through).
+  const msg = (text) => (lang === "ar" ? SERVER_AR[text] || text : text);
 
   const setLang = (next) => { setLangState(next); try { localStorage.setItem("teamLang", next); } catch { /* private mode */ } };
 
@@ -59,9 +64,10 @@ export default function TeamPortal() {
   };
   const logout = () => { localStorage.removeItem("teamToken"); setMember(null); setStatus("out"); };
 
-  const value = { lang, setLang, t, member, setMember, logout };
+  const value = { lang, setLang, t, msg, member, setMember, logout };
   let page;
-  if (status === "checking") page = <p className="tm-loading">{t.loading}</p>;
+  if (join) page = <TeamJoin token={join.params.token} />;
+  else if (status === "checking") page = <p className="tm-loading">{t.loading}</p>;
   else if (status === "out") page = <TeamLogin onSignedIn={signedIn} expired={expired} />;
   else if (member.mustChangePassword) page = <AuthLayout><PasswordForm forced /></AuthLayout>;
   else page = (
@@ -173,7 +179,7 @@ function TeamFooter() {
 }
 
 // Login / first password: a brand panel beside the form (stacked on phones).
-function AuthLayout({ children }) {
+export function AuthLayout({ children }) {
   const { t } = useTeam();
   return (
     <div className="tm-authwrap">
@@ -194,7 +200,7 @@ function AuthLayout({ children }) {
 }
 
 function TeamLogin({ onSignedIn, expired }) {
-  const { t } = useTeam();
+  const { t, msg } = useTeam();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -220,7 +226,7 @@ function TeamLogin({ onSignedIn, expired }) {
         <h2>{t.signIn}</h2>
         <p className="tm-muted">{t.loginIntro}</p>
         {expired && !error && <p className="tm-note">{t.expired}</p>}
-        {error && <p className="tm-error" role="alert">{error}</p>}
+        {error && <p className={error === "Your account is waiting for approval" ? "tm-note" : "tm-error"} role="alert">{error === "Your account is waiting for approval" ? t.pendingNote : msg(error)}</p>}
         <label className="tm-field"><span>{t.username}</span>
           <input className="fp-input" dir="ltr" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoCapitalize="none" required />
         </label>

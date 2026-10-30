@@ -9,13 +9,15 @@
 //   - comment on any task of their projects (and delete their own comments),
 //   - read their notifications 🔔 (plus live due-date reminders) and fill in the daily standup.
 // Creating tasks, assigning them and editing projects is the owner's job (routes/adminTeam.js).
+// New members either get an account from the owner, or sign up themselves with an invite link
+// (GET /invites/:token + POST /signup) and then wait for the owner's approval.
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
-const { TeamMember, TeamProject, TeamTask, TeamComment, TeamNotification, TeamStandup } = require("../lib/mongo");
+const { TeamMember, TeamProject, TeamTask, TeamComment, TeamNotification, TeamStandup, TeamInvite } = require("../lib/mongo");
 const { requireMember, signMemberToken } = require("../middleware/teamAuth");
-const { todayCairo, logActivity, notify, bellFor, withCommentCounts, MEMBER_PUBLIC } = require("../lib/team");
+const { todayCairo, logActivity, notify, bellFor, withCommentCounts, hashInviteToken, usableInvite, MEMBER_PUBLIC } = require("../lib/team");
 
 const router = express.Router();
 
@@ -39,9 +41,62 @@ router.post("/login", loginLimiter, async (req, res) => {
   if (!member || !member.active || !(await bcrypt.compare(password, member.passwordHash))) {
     return res.status(401).json({ error: "Invalid username or password" });
   }
+  // Only said after the right password, so it never reveals which usernames exist.
+  if (member.pending) return res.status(403).json({ error: "Your account is waiting for approval", pending: true });
   member.lastLoginAt = new Date();
   await member.save();
   res.json({ token: signMemberToken(member), member });
+});
+
+// ---- Sign up with an invite link ----
+// Same limit as the login: 10 tries per 15 minutes per visitor (also stops guessing tokens).
+const signupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Too many attempts. Please try again later." },
+});
+
+// GET /api/team/invites/:token → { valid } — lets the sign-up page say early that a link is dead.
+router.get("/invites/:token", signupLimiter, async (req, res) => {
+  const invite = await TeamInvite.findOne({ tokenHash: hashInviteToken(req.params.token), ...usableInvite() });
+  res.json({ valid: Boolean(invite) });
+});
+
+// POST /api/team/signup { token, name, specialty, username, password } → the new (pending) account.
+router.post("/signup", signupLimiter, async (req, res) => {
+  const password = String(req.body?.password ?? "");
+  if (password.length < 8 || password.length > 100) return res.status(400).json({ error: "The password must be 8 to 100 characters" });
+  const username = String(req.body?.username ?? "").trim().toLowerCase();
+  const name = String(req.body?.name ?? "").trim();
+  if (!name || name.length > 80) return res.status(400).json({ error: "Write your name (up to 80 characters)" });
+  if (!/^[a-z0-9._-]{3,30}$/.test(username)) return res.status(400).json({ error: "Username: 3–30 characters, a-z, 0-9, dot, dash or underscore" });
+  if (await TeamMember.exists({ username })) return res.status(400).json({ error: "This username is taken — choose another one" });
+
+  // Use up one place on the invite in a single step, so two people can't take the last one.
+  const invite = await TeamInvite.findOneAndUpdate(
+    { tokenHash: hashInviteToken(req.body?.token), ...usableInvite() },
+    { $inc: { uses: 1 } },
+    { new: true }
+  );
+  if (!invite) return res.status(400).json({ error: "This invite link is no longer valid. Ask for a new one." });
+  try {
+    const member = await TeamMember.create({
+      username,
+      name,
+      specialty: req.body?.specialty,
+      passwordHash: await bcrypt.hash(password, 10),
+      mustChangePassword: false, // they chose this password themselves
+      pending: true,
+      invite: invite._id,
+    });
+    notify({ kind: "signup", actor: member.name, detail: member.specialty || member.username });
+    res.status(201).json({ member: { name: member.name, username: member.username }, pending: true });
+  } catch (err) {
+    await TeamInvite.updateOne({ _id: invite._id }, { $inc: { uses: -1 } }); // give the place back
+    throw err;
+  }
 });
 
 // Everything below needs a valid member token.

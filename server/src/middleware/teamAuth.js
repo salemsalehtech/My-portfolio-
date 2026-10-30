@@ -24,7 +24,7 @@ async function requireMember(req, res, next) {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
   const member = await TeamMember.findById(payload.sub);
-  if (!member || !member.active) return res.status(401).json({ error: "This account is disabled" });
+  if (!member || !member.active || member.pending) return res.status(401).json({ error: "This account is disabled" });
   req.member = member;
   next();
 }
