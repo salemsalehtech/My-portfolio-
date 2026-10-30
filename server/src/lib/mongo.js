@@ -360,6 +360,71 @@ courseSchema.pre("validate", function () {
   if (!this.titleEn && !this.titleAr) this.invalidate("titleEn", "A course title is required");
 });
 
+// A custom form built in /admin/forms (Form Builder). Anyone with the link /#/form/<slug> can
+// fill it in while `open` is true; each submission is saved as a FormResponse (below) and shown
+// in the dashboard as a sheet that can be downloaded as an Excel file.
+// Every field has a stable `key` (made by the dashboard when the field is added) — answers are
+// stored under that key, so renaming a field's label never loses its answers.
+const FORM_FIELD_TYPES = ["text", "email", "phone", "number", "textarea", "select", "date"];
+const formFieldSchema = new mongoose.Schema(
+  {
+    key: { type: String, required: true, match: [/^[a-z0-9_-]{1,40}$/, "Invalid field key"] },
+    type: { type: String, enum: FORM_FIELD_TYPES, default: "text" },
+    labelEn: { type: String, default: "", maxlength: 200 },
+    labelAr: { type: String, default: "", maxlength: 200 },
+    required: { type: Boolean, default: false },
+    // Choices for a "select" field. Each choice is one text shown in both languages.
+    options: {
+      type: [String],
+      default: [],
+      validate: { validator: (o) => o.length <= 30 && o.every((t) => t.length <= 100), message: "Up to 30 choices, 100 characters each" },
+    },
+  },
+  { _id: false }
+);
+const formSchema = new mongoose.Schema(
+  {
+    slug: {
+      type: String,
+      required: [true, "A link name (slug) is required"],
+      unique: true,
+      maxlength: 80,
+      match: [/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "The link name may only use a-z, 0-9 and single dashes"],
+    },
+    titleEn: { type: String, default: "", maxlength: 200 },
+    titleAr: { type: String, default: "", maxlength: 200 },
+    descEn: { type: String, default: "", maxlength: 1000 },
+    descAr: { type: String, default: "", maxlength: 1000 },
+    fields: {
+      type: [formFieldSchema],
+      default: [],
+      validate: [
+        { validator: (f) => f.length <= 30, message: "A form can have up to 30 fields" },
+        { validator: (f) => new Set(f.map((x) => x.key)).size === f.length, message: "Two fields have the same key" },
+      ],
+    },
+    open: { type: Boolean, default: true }, // false = the link shows "this form is closed"
+  },
+  { timestamps: true }
+);
+formSchema.pre("validate", function () {
+  if (!this.titleEn && !this.titleAr) this.invalidate("titleEn", "A form title is required");
+  this.fields.forEach((f, i) => {
+    if (!f.labelEn && !f.labelAr) this.invalidate(`fields.${i}.labelEn`, `Field ${i + 1} needs a label`);
+    if (f.type === "select" && f.options.length === 0) this.invalidate(`fields.${i}.options`, `Field ${i + 1} (a list) needs at least one choice`);
+  });
+});
+
+// One submission of a Form: `answers` maps each field key to the text the person typed.
+const formResponseSchema = new mongoose.Schema(
+  {
+    form: { type: mongoose.Schema.Types.ObjectId, ref: "Form", required: true, index: true },
+    answers: { type: Map, of: String, default: {} },
+    lang: { type: String, enum: ["en", "ar"], default: "en" }, // the language the form was filled in
+  },
+  { timestamps: true }
+);
+
 // Turn each schema into a model. `mongoose.models.X ||` reuses an existing model instead of
 // redefining it if this file is loaded twice (which would throw an error).
 const models = {
@@ -377,6 +442,8 @@ const models = {
   DailyStat: mongoose.models.DailyStat || mongoose.model("DailyStat", dailyStatSchema),
   Post: mongoose.models.Post || mongoose.model("Post", postSchema),
   Course: mongoose.models.Course || mongoose.model("Course", courseSchema),
+  Form: mongoose.models.Form || mongoose.model("Form", formSchema),
+  FormResponse: mongoose.models.FormResponse || mongoose.model("FormResponse", formResponseSchema),
 };
 
 // When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and

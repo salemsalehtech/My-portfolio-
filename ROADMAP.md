@@ -137,6 +137,7 @@ Every item follows rule 1 (dashboard-managed). Waves are ordered by proximity an
 
 - **Digital products store** 🔒 — purchase + download; needs payments and secure file storage.
 - **Online booking / calendar** 🔒 — clients book a call directly.
-- **Project intake form** 🔒 — captures requirements; may merge with booking later.
+- **Project intake form** 🔒 — captures requirements; may merge with booking later. *Partly covered by the Form Builder (2026-10-30): build a "Project request" form in /admin/forms; still missing an email alert on new answers (needs the email).*
+- [x] **Form Builder** — `/admin/forms`: custom forms (EN/AR title + description, up to 30 fields: short text, paragraph, email, phone, number, list, date; required flag), open/closed, public link `/#/form/<slug>[/en|ar]`; answers shown as a sheet + **Download Excel** (.xlsx, lazy-loaded `write-excel-file`). Server re-validates every answer, honeypot, 10 submissions/hour per visitor. *Done 2026-10-30.*
 - **Services + pricing page** — idea not finalized yet.
 - **Additional product listings** — details decided after the first store is stable.

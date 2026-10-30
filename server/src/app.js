@@ -24,6 +24,7 @@ const certificatesRouter = require("./routes/certificates");
 const analyticsRouter = require("./routes/analytics");
 const postsRouter = require("./routes/posts");
 const coursesRouter = require("./routes/courses");
+const formsRouter = require("./routes/forms");
 const authRouter = require("./routes/auth");
 const adminRouter = require("./routes/admin");
 
@@ -61,9 +62,9 @@ app.use(express.json());
 // Health check: Render (and the keep-alive in lib/keepAlive.js) call this to see the app is up.
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
-// One router per resource. The public routers are read-only (plus the two public forms:
-// contact and the client feedback form); everything that changes data lives under /api/admin,
-// where routes/admin.js requires a valid login token for every request.
+// One router per resource. The public routers are read-only (plus the public forms: contact,
+// the client feedback form and the Form Builder forms); everything that changes data lives under
+// /api/admin, where routes/admin.js requires a valid login token for every request.
 app.use("/api/projects", projectsRouter);
 app.use("/api/skills", skillsRouter);
 app.use("/api/youtube", youtubeRouter);
@@ -77,6 +78,7 @@ app.use("/api/certificates", certificatesRouter);
 app.use("/api/analytics", analyticsRouter);
 app.use("/api/posts", postsRouter);
 app.use("/api/courses", coursesRouter);
+app.use("/api/forms", formsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/admin", adminRouter);
 

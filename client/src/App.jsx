@@ -28,12 +28,16 @@ import AdminCV from "./pages/admin/AdminCV";
 import AdminAbout from "./pages/admin/AdminAbout";
 import AdminTestimonials from "./pages/admin/AdminTestimonials";
 import FeedbackForm from "./pages/FeedbackForm";
+import PublicForm from "./pages/PublicForm";
 import AdminServices from "./pages/admin/AdminServices";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminCertificates from "./pages/admin/AdminCertificates";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminPosts from "./pages/admin/AdminPosts";
 import AdminCourses from "./pages/admin/AdminCourses";
+import AdminForms from "./pages/admin/AdminForms";
+import AdminFormEditor from "./pages/admin/AdminFormEditor";
+import AdminFormResponses from "./pages/admin/AdminFormResponses";
 import BlogList from "./pages/BlogList";
 import { Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
@@ -56,6 +60,8 @@ export default function App() {
             <Route path="/blog/:slug" element={<Suspense fallback={loading}><BlogPost /></Suspense>} />
             <Route path="/feedback" element={<Navigate to="/feedback/en" replace />} />
             <Route path="/feedback/:lang" element={<FeedbackForm />} />
+            <Route path="/form/:slug" element={<PublicForm />} />
+            <Route path="/form/:slug/:lang" element={<PublicForm />} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="/admin/projects" replace />} />
@@ -69,6 +75,9 @@ export default function App() {
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="posts" element={<AdminPosts />} />
               <Route path="courses" element={<AdminCourses />} />
+              <Route path="forms" element={<AdminForms />} />
+              <Route path="forms/:id" element={<AdminFormEditor />} />
+              <Route path="forms/:id/responses" element={<AdminFormResponses />} />
               <Route path="posts/:id" element={<Suspense fallback={loading}><AdminPostEditor /></Suspense>} />
               <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="about" element={<AdminAbout />} />

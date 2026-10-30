@@ -13,11 +13,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../../lib/api";
 import { renderMarkdown, readingMinutes } from "../../lib/markdown";
 import { Field } from "./FormParts";
+import { slugify } from "../../lib/slug";
 
 const EMPTY = { slug: "", titleEn: "", titleAr: "", excerptEn: "", excerptAr: "", bodyEn: "", bodyAr: "", tags: [], published: false };
 
-// "My First Post: React & Node!" -> "my-first-post-react-node"
-const slugify = (text) => String(text).toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 
 export default function AdminPostEditor() {
   const { id } = useParams(); // "new" or a post id

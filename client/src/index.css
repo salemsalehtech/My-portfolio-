@@ -545,3 +545,21 @@ body.ar .cert-title { font-family: var(--font-ar); }
 .project-thumb-img { transition: transform .4s; }
 .project-card:hover .project-thumb-img { transform: scale(1.04); }
 .modal-header.has-image { height: auto; aspect-ratio: 16 / 9; }
+
+/* ============ FORM BUILDER (Admin → Forms, public page /#/form/:slug) ============ */
+.admin-form-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.admin-status { display: inline-block; margin-inline-start: 10px; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--surface); color: var(--text-secondary); border: 1px solid var(--card-border); }
+.admin-status.is-open { background: var(--gold-dim); color: var(--gold); }
+.admin-field-card { padding: 14px 16px; border: 1px solid var(--card-border); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 10px; }
+.admin-field-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.admin-sheet-wrap { overflow-x: auto; border: 1px solid var(--card-border); border-radius: 12px; }
+.admin-sheet { margin: 0; min-width: 100%; }
+.admin-sheet th, .admin-sheet td { white-space: nowrap; vertical-align: top; }
+.admin-sheet td.admin-sheet-long { white-space: pre-wrap; min-width: 260px; max-width: 420px; }
+.admin-sheet-num, .admin-sheet-date { color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+.form-req { color: var(--gold); font-style: normal; }
+.form-lang-switch { margin-inline-start: auto; font-size: 13px; font-weight: 700; color: var(--gold); padding: 4px 12px; border: 1px solid var(--card-border); border-radius: 999px; }
+.feedback-field select.form-input { appearance: auto; }
+.admin-field-row { grid-template-columns: minmax(150px, 200px) 1fr 1fr; }
+.admin-form label.admin-check { flex-direction: row; align-items: center; gap: 8px; font-size: 13px; }
+@media (max-width: 700px) { .admin-field-row { grid-template-columns: 1fr; } }

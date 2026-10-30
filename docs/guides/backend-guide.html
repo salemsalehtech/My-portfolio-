@@ -173,6 +173,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>SiteSettings</code></td><td>مستند واحد: Hero + الروابط + المكان + الفوتر</td></tr>
   <tr><td><code>CvFile</code></td><td>ملف الـ CV نفسه (Buffer) — لأن قرص Render بيتمسح مع كل نشر</td></tr>
   <tr><td><code>ContactMessage</code></td><td>رسايل فورم التواصل</td></tr>
+  <tr><td><code>Form</code> · <code>FormResponse</code></td><td>الفورمات اللي بتبنيها من الداشبورد (عنوان، حقول، مفتوح/مقفول) + الإجابات (كل إجابة متخزنة بمفتاح الحقل)</td></tr>
   <tr><td><code>Course</code></td><td>الكورسات والمحتوى: عنوان ووصف وتفاصيل بلغتين، المنصة، لينك، صورة غلاف (زي الشهادات)</td></tr>
   <tr><td><code>Post</code></td><td>مقالات المدونة: عنوان وملخص ونص Markdown بلغتين، رابط (slug) فريد، مسودة/منشور، صورة غلاف</td></tr>
   <tr><td><code>DailyStat</code></td><td>إحصائيات الزوار: مستند واحد لكل يوم فيه <strong>عدّادات بس</strong> (من غير IP ولا كوكيز)</td></tr>
@@ -226,6 +227,7 @@ npm run seed     <span class="c"># يملا قاعدة بيانات فاضية �
   <tr><td><code>GET /api/about</code> · <code>/settings</code></td><td>المستند المحفوظ أو <code>{ exists: false }</code></td></tr>
   <tr><td><code>GET /api/cv/info</code> · <code>GET /api/cv</code></td><td>هل فيه CV؟ / تحميل الملف</td></tr>
   <tr><td><code>GET /api/certificates</code> · <code>GET /api/certificates/:id/image</code></td><td>الشهادات الظاهرة / صورة شهادة (مسموح تتعرض على دومين الموقع)</td></tr>
+  <tr><td><code>GET /api/forms/:slug</code> · <code>POST /api/forms/:slug/submit</code></td><td>عرض فورم / إرسال إجابة (السيرفر بيراجع كل حقل حسب نوعه، 10 إرسالات في الساعة)</td></tr>
   <tr><td><code>GET /api/courses</code> · <code>GET /api/courses/:id/image</code></td><td>الكورسات الظاهرة / صورة الكورس</td></tr>
   <tr><td><code>POST /api/contact</code></td><td>رسالة من فورم التواصل</td></tr>
   <tr><td><code>POST /api/testimonials/submit</code></td><td>رأي عميل من اللينك (بيتحفظ Pending)</td></tr>

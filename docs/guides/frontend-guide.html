@@ -229,6 +229,7 @@ setStatus(<span class="s">"success"</span>);   <span class="c">// الشاشة �
 <h2>تفاصيل تستاهل تعرفها</h2>
 <ul>
   <li><strong>الأقسام الاختيارية</strong> (الخدمات، الشهادات، الآراء، المدونة، الكورسات) بتختفي لو فاضية — وروابطها في الـ Navbar كمان. عشان كده <code>Portfolio.jsx</code> هو اللي بيجيب بياناتها ويديها للقسم وللـ Navbar.</li>
+  <li><strong>صفحة الفورم</strong> <code>/#/form/:slug</code> (<code>PublicForm.jsx</code>): بتعرض أي فورم معمول من Admin ← Forms. والإجابات بتظهر في الداشبورد كجدول، وزرار Download Excel بيحمّل مكتبة الإكسيل بس لما تدوس عليه.</li>
   <li><strong>صفحات المدونة</strong> <code>/#/blog</code> و <code>/#/blog/:slug</code>: صفحة المقال بتحوّل الـ Markdown لـ HTML بـ <code>marked</code> وتنضّفه بـ <code>DOMPurify</code> (مفيش كود خطير يقدر يشتغل). والمكتبتين بيتحمّلوا <strong>بس</strong> لما حد يفتح مقال (React.lazy)، فالصفحة الرئيسية ما بتتقلش.</li>
   <li><strong>فلتر المشاريع</strong> أزراره مش مكتوبة في الكود: بتتبني من حقل Tags في المشاريع نفسها، الأكتر استخدامًا الأول.</li>
   <li><strong>نافذة المشروع</strong> بتعرض "المشكلة ← الحل ← النتيجة" لو موجودين، وأزرار Demo/Code بتظهر بس لو الرابط حقيقي (يبدأ بـ http).</li>

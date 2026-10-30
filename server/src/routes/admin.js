@@ -7,7 +7,7 @@
 // Single-document resources (about, settings, cv) use PUT / DELETE without an :id.
 // The public site reads the same data through the read-only routers (routes/projects.js, …).
 const express = require("express");
-const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, DailyStat, Post, Course } = require("../lib/mongo");
+const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, DailyStat, Post, Course, Form, FormResponse } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
@@ -424,6 +424,63 @@ router.delete("/posts/:id/cover", async (req, res) => {
   const post = await Post.findByIdAndUpdate(req.params.id, { cover: { contentType: "", size: 0 } }, { new: true });
   if (!post) return res.status(404).json({ error: "Post not found" });
   res.json(post);
+});
+
+// ---- Forms (Form Builder) ----
+// A form's fields are sent as one array from the editor; saving runs every schema check (slug
+// format, unique slug, field keys, labels, list choices). Deleting a form deletes its answers too.
+const FORM_FIELDS = ["slug", "titleEn", "titleAr", "descEn", "descAr", "fields", "open"];
+function pickForm(body = {}) {
+  const data = Object.fromEntries(FORM_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+  if ("slug" in data) data.slug = String(data.slug || "").trim().toLowerCase();
+  if ("open" in data) data.open = Boolean(data.open);
+  if ("fields" in data) {
+    data.fields = (Array.isArray(data.fields) ? data.fields : []).map((f = {}) => ({
+      key: String(f.key ?? ""),
+      type: f.type,
+      labelEn: String(f.labelEn ?? "").trim(),
+      labelAr: String(f.labelAr ?? "").trim(),
+      required: Boolean(f.required),
+      options: f.type === "select" ? (Array.isArray(f.options) ? f.options : []).map((o) => String(o).trim()).filter(Boolean) : [],
+    }));
+  }
+  return data;
+}
+
+// GET /api/admin/forms — every form, with how many answers it has received.
+router.get("/forms", async (req, res) => {
+  const forms = await Form.find().sort({ createdAt: -1 });
+  const counts = await FormResponse.aggregate([{ $group: { _id: "$form", count: { $sum: 1 } } }]);
+  const countOf = Object.fromEntries(counts.map((c) => [String(c._id), c.count]));
+  res.json(forms.map((f) => ({ ...f.toJSON(), responseCount: countOf[f.id] || 0 })));
+});
+router.get("/forms/:id", async (req, res) => {
+  const form = await Form.findById(req.params.id);
+  if (!form) return res.status(404).json({ error: "Form not found" });
+  res.json(form);
+});
+router.post("/forms", async (req, res) => {
+  res.status(201).json(await new Form(pickForm(req.body)).save());
+});
+router.put("/forms/:id", async (req, res) => {
+  const form = await Form.findById(req.params.id);
+  if (!form) return res.status(404).json({ error: "Form not found" });
+  form.set(pickForm(req.body));
+  res.json(await form.save());
+});
+router.delete("/forms/:id", async (req, res) => {
+  await Form.findByIdAndDelete(req.params.id);
+  await FormResponse.deleteMany({ form: req.params.id });
+  res.status(204).end();
+});
+
+// GET /api/admin/forms/:id/responses — the answers, newest first (shown as a sheet + Excel).
+router.get("/forms/:id/responses", async (req, res) => {
+  res.json(await FormResponse.find({ form: req.params.id }).sort({ createdAt: -1 }));
+});
+router.delete("/forms/:id/responses/:responseId", async (req, res) => {
+  await FormResponse.findOneAndDelete({ _id: req.params.responseId, form: req.params.id });
+  res.status(204).end();
 });
 
 // ---- Contact messages ----
