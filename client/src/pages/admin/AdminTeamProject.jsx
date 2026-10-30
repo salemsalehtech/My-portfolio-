@@ -6,12 +6,14 @@
 //              Cards can be dragged to any column (dropping on Done counts as approving);
 //              search and filters sit above the board.
 //   Docs     — the project's Markdown documentation (Write / Preview), shown to every member.
-//   Settings — name, summary, due date, status, members, links; delete the project.
+//   Settings — name, summary, due date, status, members, links; delete the project; "Publish as
+//              product" makes a draft product page from it (Admin → Products).
 // ?tab=settings and ?task=<id> in the address open that tab / task directly (used by AdminTeam).
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../../lib/api";
 import { STATUSES, STATUS_LABEL, PRIORITIES, PRIORITY_LABEL, SHARED_COPY } from "../../lib/team";
+import { productSlug, nameFields } from "../../lib/products";
 import Board from "../../components/team/Board";
 import MarkdownView from "../../components/team/MarkdownView";
 import Comments from "../../components/team/Comments";
@@ -258,6 +260,23 @@ function ProjectSettings({ project, allMembers, onSaved, onDeleted }) {
     await api.del(`/admin/team/projects/${project.id}`);
     onDeleted();
   };
+  const navigate = useNavigate();
+  // A draft product page with this project's name and summary; finished in the product editor.
+  const publishAsProduct = async () => {
+    if (!confirm(t("Make a product page for “{name}”? It starts as a draft you can edit.", { name: project.name }))) return;
+    try {
+      const arabic = "nameAr" in nameFields(project.name);
+      const product = await api.post("/admin/products", {
+        ...nameFields(project.name),
+        [arabic ? "summaryAr" : "summaryEn"]: project.summary,
+        slug: productSlug(project.name),
+        sourceProject: project.id,
+      });
+      navigate(`/admin/products/${product.id}`);
+    } catch (err) {
+      setMsg(err.message);
+    }
+  };
 
   return (
     <form className="admin-form" onSubmit={save}>
@@ -300,7 +319,8 @@ function ProjectSettings({ project, allMembers, onSaved, onDeleted }) {
         )}
       />
       <div className="admin-form-actions">
-        <button type="button" className="admin-btn admin-btn-danger" onClick={remove} style={{ marginInlineEnd: "auto" }}>{t("Delete project")}</button>
+        <button type="button" className="admin-btn admin-btn-danger" onClick={remove}>{t("Delete project")}</button>
+        <button type="button" className="admin-btn" onClick={publishAsProduct} style={{ marginInlineEnd: "auto" }}>{t("Publish as product")}</button>
         {msg && <span style={{ alignSelf: "center" }}>{msg}</span>}
         <button type="submit" className="admin-btn admin-btn-primary">{t("Save settings")}</button>
       </div>

@@ -41,6 +41,7 @@ const GROUPS = [
   {
     title: "Publishing",
     links: [
+      { to: "/admin/products", label: "Products", icon: "products" },
       { to: "/admin/posts", label: "Blog", icon: "posts" },
       { to: "/admin/testimonials", label: "Testimonials", icon: "testimonials" },
     ],

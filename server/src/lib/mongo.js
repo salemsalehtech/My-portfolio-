@@ -360,6 +360,100 @@ courseSchema.pre("validate", function () {
   if (!this.titleEn && !this.titleAr) this.invalidate("titleEn", "A course title is required");
 });
 
+// ---- Products (landing pages at /#/p/<slug>, ROADMAP.md → Wave D step 2) ----
+// A product the team built and sells as a monthly subscription. Its landing page is made of
+// `blocks` the owner arranges in Admin → Products. Every block uses the same shape: a title, a
+// Markdown body and a list of `items`; what an item's fields mean depends on the block type:
+//   text      — title + Markdown body (problem, solution, tech…)
+//   features  — items: title + short text
+//   gallery   — items: image (ProductImage id) + caption (title)
+//   video     — url (YouTube)
+//   pricing   — items: plan name (title), one feature per line (text), priceEgp / priceUsd per
+//               month, highlight = "most popular"
+//   faq       — items: question (title) + answer (text)
+//   reviews   — items: person (title), their role (subtitle), the review (text)
+// "Subscribe" buttons open a Form Builder form (`formSlug`) until real payments arrive.
+const PRODUCT_BLOCK_TYPES = ["text", "features", "gallery", "video", "pricing", "faq", "reviews"];
+const productItemSchema = new mongoose.Schema(
+  {
+    titleEn: { type: String, default: "", maxlength: 160 },
+    titleAr: { type: String, default: "", maxlength: 160 },
+    subtitleEn: { type: String, default: "", maxlength: 120 },
+    subtitleAr: { type: String, default: "", maxlength: 120 },
+    textEn: { type: String, default: "", maxlength: 1500 },
+    textAr: { type: String, default: "", maxlength: 1500 },
+    priceEgp: { type: Number, default: 0, min: 0, max: 10000000 },
+    priceUsd: { type: Number, default: 0, min: 0, max: 1000000 },
+    highlight: { type: Boolean, default: false },
+    image: { type: mongoose.Schema.Types.ObjectId, ref: "ProductImage", default: null },
+  },
+  { _id: false }
+);
+const productBlockSchema = new mongoose.Schema({
+  type: { type: String, enum: PRODUCT_BLOCK_TYPES, required: true },
+  titleEn: { type: String, default: "", maxlength: 160 },
+  titleAr: { type: String, default: "", maxlength: 160 },
+  bodyEn: { type: String, default: "", maxlength: 8000 }, // Markdown
+  bodyAr: { type: String, default: "", maxlength: 8000 },
+  url: httpUrl,
+  items: {
+    type: [productItemSchema],
+    default: [],
+    validate: { validator: (v) => v.length <= 24, message: "Up to 24 items per block" },
+  },
+});
+const productSchema = new mongoose.Schema(
+  {
+    slug: {
+      type: String,
+      required: [true, "A link name is required"],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [/^[a-z0-9]+(-[a-z0-9]+)*$/, "Link name: a-z, 0-9 and single dashes only"],
+      maxlength: 60,
+    },
+    published: { type: Boolean, default: false },
+    order: { type: Number, default: 0 },
+    accent: { type: String, default: "#D4A017", match: [/^#[0-9a-fA-F]{6}$/, "The colour must look like #D4A017"] },
+    nameEn: { type: String, default: "", trim: true, maxlength: 80 },
+    nameAr: { type: String, default: "", trim: true, maxlength: 80 },
+    taglineEn: { type: String, default: "", maxlength: 200 },
+    taglineAr: { type: String, default: "", maxlength: 200 },
+    summaryEn: { type: String, default: "", maxlength: 400 }, // the card on the home page
+    summaryAr: { type: String, default: "", maxlength: 400 },
+    demoUrl: httpUrl,
+    formSlug: { type: String, default: "", trim: true, maxlength: 80 }, // the "Subscribe" form
+    sourceProject: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", default: null },
+    image: {
+      data: { type: Buffer, select: false },
+      contentType: { type: String, default: "" },
+      size: { type: Number, default: 0 },
+    },
+    blocks: {
+      type: [productBlockSchema],
+      default: [],
+      validate: { validator: (v) => v.length <= 20, message: "Up to 20 blocks per page" },
+    },
+  },
+  { timestamps: true }
+);
+productSchema.pre("validate", function () {
+  if (!this.nameEn && !this.nameAr) this.invalidate("nameEn", "A product name is required");
+});
+
+// A picture used inside a product page (gallery block). Kept apart from the product so the
+// product document stays small; served by GET /api/products/images/:id.
+const productImageSchema = new mongoose.Schema(
+  {
+    product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true, index: true },
+    data: { type: Buffer, required: true },
+    contentType: { type: String, required: true },
+    size: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+
 // A custom form built in /admin/forms (Form Builder). Anyone with the link /#/form/<slug> can
 // fill it in while `open` is true; each submission is saved as a FormResponse (below) and shown
 // in the dashboard as a sheet that can be downloaded as an Excel file.
@@ -589,6 +683,8 @@ const models = {
   Post: mongoose.models.Post || mongoose.model("Post", postSchema),
   Course: mongoose.models.Course || mongoose.model("Course", courseSchema),
   Form: mongoose.models.Form || mongoose.model("Form", formSchema),
+  Product: mongoose.models.Product || mongoose.model("Product", productSchema),
+  ProductImage: mongoose.models.ProductImage || mongoose.model("ProductImage", productImageSchema),
   FormResponse: mongoose.models.FormResponse || mongoose.model("FormResponse", formResponseSchema),
   TeamMember: mongoose.models.TeamMember || mongoose.model("TeamMember", teamMemberSchema),
   TeamProject: mongoose.models.TeamProject || mongoose.model("TeamProject", teamProjectSchema),
@@ -613,9 +709,9 @@ for (const model of Object.values(models)) {
   });
 }
 
-// Projects, certificates and courses: same as above, plus never send the image itself in JSON —
+// Projects, certificates, courses and products: same as above, plus never send the image itself in JSON —
 // just `hasImage`. The picture is fetched separately from GET /api/<resource>/:id/image.
-for (const model of [models.Project, models.Certificate, models.Course]) {
+for (const model of [models.Project, models.Certificate, models.Course, models.Product]) {
   model.schema.set("toJSON", {
     transform: (_document, ret) => {
       ret.id = ret._id.toString();

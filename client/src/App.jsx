@@ -53,6 +53,10 @@ const AdminPostEditor = lazy(() => import("./pages/admin/AdminPostEditor"));
 const TeamPortal = lazy(() => import("./pages/team/TeamPortal"));
 const AdminTeam = lazy(() => import("./pages/admin/AdminTeam"));
 const AdminTeamProject = lazy(() => import("./pages/admin/AdminTeamProject"));
+// Product landing pages and their editor are separate files too (Markdown, many blocks).
+const ProductPage = lazy(() => import("./pages/ProductPage"));
+const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
+const AdminProductEditor = lazy(() => import("./pages/admin/AdminProductEditor"));
 const loading = <p style={{ padding: 40, textAlign: "center" }}>…</p>;
 
 export default function App() {
@@ -69,6 +73,7 @@ export default function App() {
             <Route path="/feedback/:lang" element={<FeedbackForm />} />
             <Route path="/form/:slug" element={<PublicForm />} />
             <Route path="/form/:slug/:lang" element={<PublicForm />} />
+            <Route path="/p/:slug" element={<Suspense fallback={loading}><ProductPage /></Suspense>} />
             <Route path="/team/*" element={<Suspense fallback={loading}><TeamPortal /></Suspense>} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
@@ -85,6 +90,8 @@ export default function App() {
               <Route path="courses" element={<AdminCourses />} />
               <Route path="team" element={<Suspense fallback={loading}><AdminTeam /></Suspense>} />
               <Route path="team/projects/:id" element={<Suspense fallback={loading}><AdminTeamProject /></Suspense>} />
+              <Route path="products" element={<Suspense fallback={loading}><AdminProducts /></Suspense>} />
+              <Route path="products/:id" element={<Suspense fallback={loading}><AdminProductEditor /></Suspense>} />
               <Route path="forms" element={<AdminForms />} />
               <Route path="forms/:id" element={<AdminFormEditor />} />
               <Route path="forms/:id/responses" element={<AdminFormResponses />} />
