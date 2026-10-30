@@ -3,6 +3,11 @@
 export const TEAM_COPY = {
   en: {
     portal: "Team workspace",
+    tagline: "Where our projects get planned, built and shipped.",
+    perks: ["All your tasks in one place, by priority and due date", "Clear docs and links for every project", "Send work for review and get feedback in context"],
+    visitSite: "Visit the website", themeDark: "Dark mode", themeLight: "Light mode", account: "Account",
+    focus: "Needs attention", focusEmpty: "Nothing urgent — nice work.", dueToday: "Due today", dueSoon: "Due soon",
+    viewProject: "Open project", recentlyDone: "Recently done",
     username: "Username", password: "Password", signIn: "Sign in", signingIn: "Signing in…",
     loginIntro: "Sign in with the username and password you received.",
     expired: "Your login has expired. Please sign in again.",
@@ -27,6 +32,11 @@ export const TEAM_COPY = {
   },
   ar: {
     portal: "مساحة عمل الفريق",
+    tagline: "هنا نخطط لمشاريعنا ونبنيها ونسلّمها.",
+    perks: ["كل مهامك في مكان واحد حسب الأولوية والموعد", "توثيق وروابط واضحة لكل مشروع", "أرسل عملك للمراجعة واستلم الملاحظات داخل المهمة"],
+    visitSite: "زيارة الموقع", themeDark: "الوضع الداكن", themeLight: "الوضع الفاتح", account: "الحساب",
+    focus: "يحتاج انتباهك", focusEmpty: "لا يوجد شيء عاجل — عمل رائع.", dueToday: "موعدها اليوم", dueSoon: "موعدها قريب",
+    viewProject: "فتح المشروع", recentlyDone: "أُنجزت مؤخرًا",
     username: "اسم المستخدم", password: "كلمة المرور", signIn: "تسجيل الدخول", signingIn: "جارٍ الدخول…",
     loginIntro: "سجّل الدخول باسم المستخدم وكلمة المرور اللذين وصلاك.",
     expired: "انتهت صلاحية تسجيل الدخول. من فضلك سجّل الدخول مرة أخرى.",

@@ -3,7 +3,9 @@
 //
 // Props: `settings` — the site-wide profile content from Admin → "Profile & Links" (loaded in
 // pages/Portfolio.jsx). The role and the links come from there; an empty link hides its icon.
-// Only the copyright text comes from translations (t.footer.rights).
+// Only the copyright text and the small "Team login" link (to the team workspace, /#/team)
+// come from translations (t.footer).
+import { Link } from "react-router-dom";
 import { useSite } from "../context/SiteContext";
 import { pick } from "../lib/pick";
 import { GithubIcon, LinkedinIcon, YoutubeIcon } from "../lib/socialIcons";
@@ -24,6 +26,7 @@ export default function Footer({ settings }) {
           <div>
             <div className="footer-name">{pick(lang, settings.nameEn, settings.nameAr)}</div>
             <div className="footer-role">{pick(lang, settings.roleEn, settings.roleAr)}</div>
+            <Link to="/team" className="footer-team">{t.footer.team}</Link>
           </div>
         </div>
         <div className="footer-copy">{t.footer.rights}</div>

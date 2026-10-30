@@ -35,7 +35,7 @@ export const T = {
     testimonials:{ title:'What Clients Say', subtitle:'Testimonials' },
     youtube:{ title:'YouTube Channel', subtitle:'Educational content', subscribe:'Subscribe Now', channelDesc:'Free programming courses in Arabic covering web development, Laravel, JavaScript, and more.' },
     contact:{ title:'Get In Touch', subtitle:"Let's work together", name:'Your Name', email:'Your Email', message:'Your Message', send:'Send Message', sending:'Sending…', success:"Message sent! I'll get back to you soon.", error:'Something went wrong. Please try again.', connectTitle:'Connect With Me', locationLabel:'Location' },
-    footer:{ rights:'© 2025 Salem Saleh · All rights reserved.' },
+    footer:{ rights:'© 2025 Salem Saleh · All rights reserved.', team:'Team login →' },
     interests:['Content Creation','UI/UX Design','Product Management','Teaching','Open Source'],
   },
   ar: {
@@ -60,7 +60,7 @@ export const T = {
     testimonials:{ title:'آراء العملاء', subtitle:'ماذا يقول عملائي' },
     youtube:{ title:'قناة يوتيوب', subtitle:'محتوى تعليمي', subscribe:'اشترك الآن', channelDesc:'دورات برمجة مجانية باللغة العربية تغطي تطوير الويب و Laravel و JavaScript والمزيد.' },
     contact:{ title:'تواصل معي', subtitle:'لنعمل معاً', name:'اسمك', email:'بريدك الإلكتروني', message:'رسالتك', send:'إرسال الرسالة', sending:'جارٍ الإرسال…', success:'تم الإرسال! سأرد قريباً.', error:'حدث خطأ ما. حاول مرة أخرى.', connectTitle:'تواصل معي', locationLabel:'الموقع' },
-    footer:{ rights:'© 2025 سالم صالح · جميع الحقوق محفوظة.' },
+    footer:{ rights:'© 2025 سالم صالح · جميع الحقوق محفوظة.', team:'دخول فريق العمل ←' },
     interests:['إنشاء المحتوى','تصميم UI/UX','إدارة المنتج','التعليم','المصدر المفتوح'],
   },
 };

@@ -1,15 +1,21 @@
-// TeamPortal.jsx — the member portal (/#/team/*), loaded on demand (React.lazy in App.jsx).
+// TeamPortal.jsx — the member portal (/#/team/*), loaded on demand (React.lazy in App.jsx),
+// branded as the company (lib/brand.js). The logo / company name always leads back to the website.
 //
 // A team member signs in with the username + password the owner created in Admin → Team. The
 // token is kept in localStorage under "teamToken" (lib/api.js sends it on /team/* calls); it is
 // a different login from the admin's. A new account must first replace its temporary password.
 // Then:
-//   /team               → TeamHome: my tasks + my projects
+//   /team               → TeamHome: what needs attention, my tasks, my projects
 //   /team/projects/:id  → TeamProject: the project's board, docs and team
-// The portal speaks English and Arabic (switch at the top, remembered in localStorage).
-import { createContext, useContext, useEffect, useState } from "react";
-import { Route, Routes } from "react-router-dom";
+// The portal speaks English and Arabic (remembered in localStorage) and follows the site's
+// light / dark theme; both switches are in the top bar.
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { Link, Route, Routes } from "react-router-dom";
 import { api } from "../../lib/api";
+import { COMPANY } from "../../lib/brand";
+import { initials } from "../../lib/team";
+import { useSite } from "../../context/SiteContext";
+import { SunIcon, MoonIcon, GlobeIcon, KeyIcon, LogoutIcon, ExternalIcon, CheckCircleIcon } from "../../components/team/icons";
 import { TEAM_COPY } from "./teamCopy";
 import TeamHome from "./TeamHome";
 import TeamProject from "./TeamProject";
@@ -41,7 +47,7 @@ export default function TeamPortal() {
     return () => window.removeEventListener("team-session-expired", onExpired);
   }, []);
 
-  useEffect(() => { document.title = `${t.portal} | Salem Saleh`; }, [t.portal]);
+  useEffect(() => { document.title = `${t.portal} · ${COMPANY}`; }, [t.portal]);
 
   const signedIn = (token, m) => {
     localStorage.setItem("teamToken", token);
@@ -55,13 +61,17 @@ export default function TeamPortal() {
   let page;
   if (status === "checking") page = <p className="tm-loading">{t.loading}</p>;
   else if (status === "out") page = <TeamLogin onSignedIn={signedIn} expired={expired} />;
-  else if (member.mustChangePassword) page = <PasswordForm forced onDone={setMember} />;
+  else if (member.mustChangePassword) page = <AuthLayout><PasswordForm forced /></AuthLayout>;
   else page = (
-    <Routes>
-      <Route index element={<TeamHome />} />
-      <Route path="projects/:id" element={<TeamProject />} />
-      <Route path="*" element={<TeamHome />} />
-    </Routes>
+    <>
+      <TeamTopbar />
+      <Routes>
+        <Route index element={<TeamHome />} />
+        <Route path="projects/:id" element={<TeamProject />} />
+        <Route path="*" element={<TeamHome />} />
+      </Routes>
+      <TeamFooter />
+    </>
   );
 
   return (
@@ -71,19 +81,71 @@ export default function TeamPortal() {
   );
 }
 
-// The small top bar shared by the portal's pages: brand, language switch, account actions.
-export function TeamTopbar({ children }) {
-  const { t, lang, setLang, member, logout } = useTeam();
+// The company mark + name, linking back to the website.
+function Brand({ subtitle }) {
+  return (
+    <Link to="/" className="tm-brand" title={COMPANY}>
+      <span className="tm-logo">SS</span>
+      <span className="tm-brand-text">
+        <span className="tm-brand-name">{COMPANY}</span>
+        {subtitle && <span className="tm-brand-sub">{subtitle}</span>}
+      </span>
+    </Link>
+  );
+}
+
+// Theme + language switches (used in the top bar and on the login screen).
+function Switches() {
+  const { t, lang, setLang } = useTeam();
+  const { theme, toggleTheme } = useSite();
+  return (
+    <div className="tm-switches">
+      <button type="button" className="tm-icon-pill" onClick={toggleTheme} title={theme === "dark" ? t.themeLight : t.themeDark} aria-label={theme === "dark" ? t.themeLight : t.themeDark}>
+        {theme === "dark" ? <SunIcon size={17} /> : <MoonIcon size={17} />}
+      </button>
+      <button type="button" className="tm-icon-pill tm-lang-pill" onClick={() => setLang(lang === "ar" ? "en" : "ar")} lang={lang === "ar" ? "en" : "ar"}>
+        <GlobeIcon size={16} /><span>{t.switchTo}</span>
+      </button>
+    </div>
+  );
+}
+
+function TeamTopbar() {
+  const { t, member, logout } = useTeam();
+  const [menu, setMenu] = useState(false);
   const [changing, setChanging] = useState(false);
+  const menuRef = useRef(null);
+
+  // Close the account menu on an outside click or Escape.
+  useEffect(() => {
+    if (!menu) return;
+    const onClick = (e) => { if (!menuRef.current?.contains(e.target)) setMenu(false); };
+    const onKey = (e) => { if (e.key === "Escape") setMenu(false); };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => { document.removeEventListener("mousedown", onClick); document.removeEventListener("keydown", onKey); };
+  }, [menu]);
+
   return (
     <>
       <header className="tm-topbar">
-        <div className="tm-brand"><span className="nav-badge">SS</span><span>{t.portal}</span></div>
+        <Brand subtitle={t.portal} />
         <div className="tm-topbar-actions">
-          {children}
-          <button type="button" className="tm-link" onClick={() => setLang(lang === "ar" ? "en" : "ar")} lang={lang === "ar" ? "en" : "ar"}>{t.switchTo}</button>
-          {member && <button type="button" className="tm-link" onClick={() => setChanging(true)}>{t.changePass}</button>}
-          {member && <button type="button" className="tm-link" onClick={logout}>{t.logout}</button>}
+          <Switches />
+          <div className="tm-account" ref={menuRef}>
+            <button type="button" className="tm-account-btn" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label={t.account}>
+              <span className="tm-avatar">{initials(member.name)}</span>
+              <span className="tm-account-name">{member.name.split(" ")[0]}</span>
+            </button>
+            {menu && (
+              <div className="tm-menu" role="menu">
+                <div className="tm-menu-head"><strong>{member.name}</strong><span>{member.specialty || `@${member.username}`}</span></div>
+                <button type="button" role="menuitem" onClick={() => { setMenu(false); setChanging(true); }}><KeyIcon size={16} />{t.changePass}</button>
+                <Link role="menuitem" to="/"><ExternalIcon size={16} />{t.visitSite}</Link>
+                <button type="button" role="menuitem" className="is-danger" onClick={logout}><LogoutIcon size={16} />{t.logout}</button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
       {changing && (
@@ -94,6 +156,37 @@ export function TeamTopbar({ children }) {
         </div>
       )}
     </>
+  );
+}
+
+function TeamFooter() {
+  const { t } = useTeam();
+  return (
+    <footer className="tm-footer">
+      <span>© {new Date().getFullYear()} {COMPANY}</span>
+      <Link to="/">{t.visitSite} <ExternalIcon size={13} /></Link>
+    </footer>
+  );
+}
+
+// Login / first password: a brand panel beside the form (stacked on phones).
+function AuthLayout({ children }) {
+  const { t } = useTeam();
+  return (
+    <div className="tm-authwrap">
+      <aside className="tm-authside">
+        <div className="tm-authside-top"><Brand /><Switches /></div>
+        <div className="tm-authside-body">
+          <span className="tm-eyebrow">{t.portal}</span>
+          <h1>{t.tagline}</h1>
+          <ul className="tm-perks">
+            {t.perks.map((p) => <li key={p}><CheckCircleIcon size={18} />{p}</li>)}
+          </ul>
+        </div>
+        <Link to="/" className="tm-authside-link">{t.visitSite} <ExternalIcon size={14} /></Link>
+      </aside>
+      <main className="tm-authmain">{children}</main>
+    </div>
   );
 }
 
@@ -119,24 +212,21 @@ function TeamLogin({ onSignedIn, expired }) {
   };
 
   return (
-    <>
-      <TeamTopbar />
-      <main className="tm-auth">
-        <form className="tm-auth-card" onSubmit={submit}>
-          <h1>{t.portal}</h1>
-          <p className="tm-muted">{t.loginIntro}</p>
-          {expired && !error && <p className="tm-note">{t.expired}</p>}
-          {error && <p className="tm-error" role="alert">{error}</p>}
-          <label className="tm-field"><span>{t.username}</span>
-            <input className="fp-input" dir="ltr" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoCapitalize="none" required />
-          </label>
-          <label className="tm-field"><span>{t.password}</span>
-            <input className="fp-input" dir="ltr" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
-          </label>
-          <button className="fp-btn" type="submit" disabled={busy}>{busy ? t.signingIn : t.signIn}</button>
-        </form>
-      </main>
-    </>
+    <AuthLayout>
+      <form className="tm-auth-card" onSubmit={submit}>
+        <h2>{t.signIn}</h2>
+        <p className="tm-muted">{t.loginIntro}</p>
+        {expired && !error && <p className="tm-note">{t.expired}</p>}
+        {error && <p className="tm-error" role="alert">{error}</p>}
+        <label className="tm-field"><span>{t.username}</span>
+          <input className="fp-input" dir="ltr" value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoCapitalize="none" required />
+        </label>
+        <label className="tm-field"><span>{t.password}</span>
+          <input className="fp-input" dir="ltr" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+        </label>
+        <button className="fp-btn tm-btn-block" type="submit" disabled={busy}>{busy ? t.signingIn : t.signIn}</button>
+      </form>
+    </AuthLayout>
   );
 }
 
@@ -164,9 +254,9 @@ function PasswordForm({ forced, onDone, onCancel }) {
     }
   };
 
-  const body = (
+  return (
     <form className="tm-auth-card" onSubmit={submit}>
-      <h1>{forced ? t.newPassTitle : t.changePass}</h1>
+      <h2>{forced ? t.newPassTitle : t.changePass}</h2>
       {forced && <p className="tm-muted">{t.newPassIntro}</p>}
       {error && <p className="tm-error" role="alert">{error}</p>}
       <label className="tm-field"><span>{t.current}</span>
@@ -184,5 +274,4 @@ function PasswordForm({ forced, onDone, onCancel }) {
       </div>
     </form>
   );
-  return forced ? <><TeamTopbar /><main className="tm-auth">{body}</main></> : body;
 }

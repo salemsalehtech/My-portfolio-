@@ -9,7 +9,7 @@ import { api } from "../../lib/api";
 import { initials, formatDue } from "../../lib/team";
 import Board from "../../components/team/Board";
 import MarkdownView from "../../components/team/MarkdownView";
-import { TeamTopbar, useTeam } from "./TeamPortal";
+import { useTeam } from "./TeamPortal";
 import TeamTaskModal from "./TeamTaskModal";
 
 export default function TeamProject() {
@@ -30,7 +30,7 @@ export default function TeamProject() {
   };
 
   if (!data) {
-    return (<><TeamTopbar /><main className="tm-page"><Link className="tm-back" to="/team">{t.back}</Link><p className={error ? "tm-error" : "tm-muted"}>{error || t.loading}</p></main></>);
+    return (<main className="tm-page"><Link className="tm-back" to="/team">{t.back}</Link><p className={error ? "tm-error" : "tm-muted"}>{error || t.loading}</p></main>);
   }
   const { project, tasks } = data;
   const done = tasks.filter((x) => x.status === "done").length;
@@ -38,7 +38,6 @@ export default function TeamProject() {
 
   return (
     <>
-      <TeamTopbar />
       <main className="tm-page tm-page-wide">
         <Link className="tm-back" to="/team">{t.back}</Link>
         <header className="tm-project-head">

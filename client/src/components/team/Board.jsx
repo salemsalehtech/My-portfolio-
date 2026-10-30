@@ -14,7 +14,7 @@ export function TaskCard({ task, lang, onOpen, mine }) {
         <span className={`tm-prio is-${task.priority}`}>{PRIORITY_LABEL[lang][task.priority]}</span>
         {task.reviewNote && task.status === "doing" && <span className="tm-flag">↩</span>}
       </span>
-      <span className="tm-card-title" dir="auto">{task.title}</span>
+      <span className="tm-card-title">{task.title}</span>
       <span className="tm-card-meta">
         {task.assignee ? (
           <span className="tm-who" title={task.assignee.name}><span className="tm-avatar">{initials(task.assignee.name)}</span>{task.assignee.name.split(" ")[0]}</span>

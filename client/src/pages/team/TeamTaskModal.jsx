@@ -47,7 +47,7 @@ export default function TeamTaskModal({ task, projectName, onClose, onChange }) 
           <span className={`tm-status is-${task.status}`}>{STATUS_LABEL[lang][task.status]}</span>
           <button type="button" className="tm-close" onClick={onClose} aria-label={t.close}>✕</button>
         </div>
-        <h2 id="tm-task-title" dir="auto">{task.title}</h2>
+        <h2 id="tm-task-title">{task.title}</h2>
         <dl className="tm-facts">
           {projectName && <div><dt>{t.project}</dt><dd dir="auto">{projectName}</dd></div>}
           <div><dt>{t.assignee}</dt><dd>{task.assignee ? task.assignee.name : "—"}</dd></div>
