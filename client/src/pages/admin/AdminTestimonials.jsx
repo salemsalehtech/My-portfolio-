@@ -11,6 +11,7 @@
 // "Approve" publishes it on the site.
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
+import { useAdminT } from "../../lib/adminI18n";
 
 // The public form links. HashRouter keeps the route after "#", so this works on the live site
 // (…/My-portfolio-/#/feedback/ar) and locally (http://localhost:5173/#/feedback/ar) alike.
@@ -33,6 +34,7 @@ const preview = (item) => {
 };
 
 export default function AdminTestimonials() {
+  const { t } = useAdminT();
   // ---- STATE ----
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null); // null | "new" | <testimonial id>
@@ -74,12 +76,12 @@ export default function AdminTestimonials() {
       setCopied(lang);
       setTimeout(() => setCopied(""), 2000);
     } catch {
-      window.prompt("Copy this link:", feedbackLink(lang)); // clipboard blocked: let the owner copy by hand
+      window.prompt(t("Copy this link:"), feedbackLink(lang)); // clipboard blocked: let the owner copy by hand
     }
   };
 
   const remove = async (id) => {
-    if (!confirm("Delete this testimonial?")) return;
+    if (!confirm(t("Delete this testimonial?"))) return;
     await api.del(`/admin/testimonials/${id}`);
     load();
   };
@@ -87,42 +89,42 @@ export default function AdminTestimonials() {
   // ---- RENDER: table of existing testimonials ----
   return (
     <div>
-      <h1>Testimonials</h1>
+      <h1>{t("Testimonials")}</h1>
 
       <div className="admin-linkbox">
-        <p><strong>Ask a client for a testimonial:</strong> send them one of these links (they write in the language of the form). What they send shows up below as <em>Pending</em> until you approve it.</p>
+        <p><strong>{t("Ask a client for a testimonial:")}</strong> {t("send them one of these links (they write in the language of the form). What they send shows up below as")} <em>{t("Pending")}</em> {t("until you approve it.")}</p>
         {LINKS.map(({ lang, label }) => (
           <div className="admin-linkrow" key={lang}>
-            <span>{label}</span>
+            <span>{t(label)}</span>
             <input className="form-input" readOnly value={feedbackLink(lang)} onFocus={(e) => e.target.select()} />
-            <button className="admin-btn" onClick={() => copyLink(lang)}>{copied === lang ? "Copied ✓" : "Copy"}</button>
-            <a className="admin-btn" href={feedbackLink(lang)} target="_blank" rel="noreferrer">Open</a>
+            <button className="admin-btn" onClick={() => copyLink(lang)}>{copied === lang ? t("Copied ✓") : t("Copy")}</button>
+            <a className="admin-btn" href={feedbackLink(lang)} target="_blank" rel="noreferrer">{t("Open")}</a>
           </div>
         ))}
       </div>
 
       <div className="admin-toolbar">
-        <button className="admin-btn admin-btn-primary" onClick={openNew}>+ New Testimonial</button>
+        <button className="admin-btn admin-btn-primary" onClick={openNew}>{t("+ New Testimonial")}</button>
       </div>
       <table className="admin-table">
         <thead>
-          <tr><th>Author</th><th>Testimonial</th><th>Rating</th><th>Order</th><th>On site</th><th></th></tr>
+          <tr><th>{t("Author")}</th><th>{t("Testimonial")}</th><th>{t("Rating")}</th><th>{t("Order")}</th><th>{t("On site")}</th><th></th></tr>
         </thead>
         <tbody>
-          {items.length === 0 && <tr><td colSpan={6} className="admin-empty">No testimonials yet — the section is hidden on the site until you add one.</td></tr>}
+          {items.length === 0 && <tr><td colSpan={6} className="admin-empty">{t("No testimonials yet — the section is hidden on the site until you add one.")}</td></tr>}
           {items.map((item) => (
             <tr key={item.id} className={item.pending ? "admin-row-unread" : ""}>
               <td>{item.authorName}</td>
               <td>{preview(item)}</td>
               <td>{"★".repeat(item.rating)}</td>
               <td>{item.order}</td>
-              <td>{item.pending ? "Pending review" : item.visible ? "Visible" : "Hidden"}</td>
+              <td>{item.pending ? "Pending review" : item.visible ? t("Visible") : t("Hidden")}</td>
               <td className="actions">
                 {item.pending
-                  ? <button className="admin-btn admin-btn-primary" onClick={() => toggleVisible(item)}>Approve</button>
-                  : <button className="admin-btn" onClick={() => toggleVisible(item)}>{item.visible ? "Hide" : "Show"}</button>}
-                <button className="admin-btn" onClick={() => openEdit(item)}>Edit</button>
-                <button className="admin-btn admin-btn-danger" onClick={() => remove(item.id)}>Delete</button>
+                  ? <button className="admin-btn admin-btn-primary" onClick={() => toggleVisible(item)}>{t("Approve")}</button>
+                  : <button className="admin-btn" onClick={() => toggleVisible(item)}>{item.visible ? t("Hide") : t("Show")}</button>}
+                <button className="admin-btn" onClick={() => openEdit(item)}>{t("Edit")}</button>
+                <button className="admin-btn admin-btn-danger" onClick={() => remove(item.id)}>{t("Delete")}</button>
               </td>
             </tr>
           ))}
@@ -133,42 +135,42 @@ export default function AdminTestimonials() {
       {editing !== null && (
         <div className="admin-modal-overlay" onClick={() => setEditing(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editing === "new" ? "New Testimonial" : "Edit Testimonial"}</h2>
+            <h2>{editing === "new" ? t("New Testimonial") : t("Edit Testimonial")}</h2>
             <form className="admin-form" onSubmit={save}>
-              <label>Author name
+              <label>{t("Author name")}
                 <input className="form-input" value={form.authorName} onChange={(e) => setForm({ ...form, authorName: e.target.value })} required />
               </label>
               <div className="admin-form-row">
-                <label>Role / company (EN)
+                <label>{t("Role / company (EN)")}
                   <input className="form-input" value={form.roleEn} onChange={(e) => setForm({ ...form, roleEn: e.target.value })} />
                 </label>
-                <label>Role / company (AR)
+                <label>{t("Role / company (AR)")}
                   <input className="form-input" dir="rtl" value={form.roleAr} onChange={(e) => setForm({ ...form, roleAr: e.target.value })} />
                 </label>
               </div>
-              <label>Testimonial (EN) — fill at least one of the two languages
+              <label>{t("Testimonial (EN) — fill at least one of the two languages")}
                 <textarea className="form-input" rows={4} value={form.textEn} onChange={(e) => setForm({ ...form, textEn: e.target.value })} />
               </label>
-              <label>Testimonial (AR) — the other language is shown if one is empty
+              <label>{t("Testimonial (AR) — the other language is shown if one is empty")}
                 <textarea className="form-input" rows={4} dir="rtl" value={form.textAr} onChange={(e) => setForm({ ...form, textAr: e.target.value })} />
               </label>
               <div className="admin-form-row">
-                <label>Rating
+                <label>{t("Rating")}
                   <select className="form-input" value={form.rating} onChange={(e) => setForm({ ...form, rating: e.target.value })}>
                     {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{"★".repeat(n)} ({n})</option>)}
                   </select>
                 </label>
-                <label>Order (lowest first)
+                <label>{t("Order (lowest first)")}
                   <input className="form-input" type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} />
                 </label>
               </div>
               <label>
-                <input type="checkbox" checked={form.visible} onChange={(e) => setForm({ ...form, visible: e.target.checked })} /> Show on the site
+                <input type="checkbox" checked={form.visible} onChange={(e) => setForm({ ...form, visible: e.target.checked })} /> {t("Show on the site")}
               </label>
               {error && <p className="admin-error">{error}</p>}
               <div className="admin-form-actions">
-                <button type="button" className="admin-btn" onClick={() => setEditing(null)}>Cancel</button>
-                <button type="submit" className="admin-btn admin-btn-primary">Save</button>
+                <button type="button" className="admin-btn" onClick={() => setEditing(null)}>{t("Cancel")}</button>
+                <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
               </div>
             </form>
           </div>

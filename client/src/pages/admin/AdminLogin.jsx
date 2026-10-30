@@ -6,9 +6,11 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";
+import { useAdminT } from "../../lib/adminI18n";
 
 export default function AdminLogin() {
   const { login, expired } = useAdmin();
+  const { t, dir, lang } = useAdminT();
   const navigate = useNavigate();
   const from = useLocation().state?.from;
   const [email, setEmail] = useState("");
@@ -24,30 +26,30 @@ export default function AdminLogin() {
       await login(email, password);
       navigate(from && from.startsWith("/admin/") && from !== "/admin/login" ? from : "/admin/projects", { replace: true });
     } catch (err) {
-      setError(err.message || "Login failed");
+      setError(err.message || t("Login failed"));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="admin-page admin-login">
+    <div className="admin-page admin-login" dir={dir} lang={lang}>
       <div className="admin-login-card">
-        <h1>Admin Login</h1>
-        {expired && !error && <div className="admin-notice">Your login has expired (logins last 7 days). Please sign in again.</div>}
+        <h1>{t("Admin Login")}</h1>
+        {expired && !error && <div className="admin-notice">{t("Your login has expired (logins last 7 days). Please sign in again.")}</div>}
         {error && <div className="admin-error">{error}</div>}
         <form className="admin-form" onSubmit={submit}>
           <label>
-            Email
+            {t("Email")}
             <input className="form-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </label>
           <label>
-            Password
+            {t("Password")}
             <input className="form-input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </label>
           <div className="admin-form-actions">
             <button type="submit" className="admin-btn admin-btn-primary" disabled={loading}>
-              {loading ? "Signing in…" : "Sign In"}
+              {loading ? t("Signing in…") : t("Sign In")}
             </button>
           </div>
         </form>

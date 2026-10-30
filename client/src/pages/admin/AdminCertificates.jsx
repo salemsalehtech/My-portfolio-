@@ -10,12 +10,14 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { readAsBase64 } from "../../lib/readAsBase64";
 import { certificateImageUrl } from "../../components/Certificates";
+import { useAdminT } from "../../lib/adminI18n";
 
 const EMPTY = { titleEn: "", titleAr: "", issuerEn: "", issuerAr: "", date: "", credentialUrl: "", visible: true, order: 0 };
 const MAX_MB = 2; // keep in sync with MAX_IMAGE_BYTES on the server
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export default function AdminCertificates() {
+  const { t } = useAdminT();
   // ---- STATE ----
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null); // null | "new" | <certificate id>
@@ -54,7 +56,7 @@ export default function AdminCertificates() {
   };
 
   const remove = async (id) => {
-    if (!confirm("Delete this certificate?")) return;
+    if (!confirm(t("Delete this certificate?"))) return;
     await api.del(`/admin/certificates/${id}`);
     load();
   };
@@ -67,8 +69,8 @@ export default function AdminCertificates() {
     const id = uploadFor.current;
     e.target.value = ""; // allow choosing the same file again later
     if (!file || !id) return;
-    if (!IMAGE_TYPES.includes(file.type)) return setError("Please choose a PNG, JPEG or WebP image.");
-    if (file.size > MAX_MB * 1024 * 1024) return setError(`The image is too large (max ${MAX_MB} MB).`);
+    if (!IMAGE_TYPES.includes(file.type)) return setError(t("Please choose a PNG, JPEG or WebP image."));
+    if (file.size > MAX_MB * 1024 * 1024) return setError(t("The image is too large (max {mb} MB).", { mb: MAX_MB }));
     setUploadingId(id);
     try {
       await api.put(`/admin/certificates/${id}/image`, { data: await readAsBase64(file) });
@@ -81,7 +83,7 @@ export default function AdminCertificates() {
   };
 
   const removeImage = async (item) => {
-    if (!confirm("Remove the picture of this certificate?")) return;
+    if (!confirm(t("Remove the picture of this certificate?"))) return;
     await api.del(`/admin/certificates/${item.id}/image`);
     load();
   };
@@ -89,18 +91,18 @@ export default function AdminCertificates() {
   // ---- RENDER: table of existing certificates ----
   return (
     <div>
-      <h1>Certificates</h1>
+      <h1>{t("Certificates")}</h1>
       <div className="admin-toolbar">
-        <button className="admin-btn admin-btn-primary" onClick={openNew}>+ New Certificate</button>
+        <button className="admin-btn admin-btn-primary" onClick={openNew}>{t("+ New Certificate")}</button>
       </div>
       {error && editing === null && <p className="admin-error">{error}</p>}
       <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} hidden />
       <table className="admin-table">
         <thead>
-          <tr><th>Picture</th><th>Title</th><th>Issuer</th><th>Date</th><th>Order</th><th>On site</th><th></th></tr>
+          <tr><th>{t("Picture")}</th><th>{t("Title")}</th><th>{t("Issuer")}</th><th>{t("Date")}</th><th>{t("Order")}</th><th>{t("On site")}</th><th></th></tr>
         </thead>
         <tbody>
-          {items.length === 0 && <tr><td colSpan={7} className="admin-empty">No certificates yet — the section is hidden on the site until you add one.</td></tr>}
+          {items.length === 0 && <tr><td colSpan={7} className="admin-empty">{t("No certificates yet — the section is hidden on the site until you add one.")}</td></tr>}
           {items.map((item) => (
             <tr key={item.id}>
               <td className="admin-thumb-cell">
@@ -113,15 +115,15 @@ export default function AdminCertificates() {
               <td>{item.issuerEn || item.issuerAr}</td>
               <td>{item.date}</td>
               <td>{item.order}</td>
-              <td>{item.visible ? "Visible" : "Hidden"}</td>
+              <td>{item.visible ? t("Visible") : t("Hidden")}</td>
               <td className="actions">
                 <button className="admin-btn" onClick={() => pickImage(item)} disabled={uploadingId === item.id}>
-                  {uploadingId === item.id ? "Uploading…" : item.hasImage ? "Replace picture" : "Upload picture"}
+                  {uploadingId === item.id ? "Uploading…" : item.hasImage ? t("Replace picture") : t("Upload picture")}
                 </button>
-                {item.hasImage && <button className="admin-btn" onClick={() => removeImage(item)}>Remove picture</button>}
-                <button className="admin-btn" onClick={() => toggleVisible(item)}>{item.visible ? "Hide" : "Show"}</button>
-                <button className="admin-btn" onClick={() => openEdit(item)}>Edit</button>
-                <button className="admin-btn admin-btn-danger" onClick={() => remove(item.id)}>Delete</button>
+                {item.hasImage && <button className="admin-btn" onClick={() => removeImage(item)}>{t("Remove picture")}</button>}
+                <button className="admin-btn" onClick={() => toggleVisible(item)}>{item.visible ? t("Hide") : t("Show")}</button>
+                <button className="admin-btn" onClick={() => openEdit(item)}>{t("Edit")}</button>
+                <button className="admin-btn admin-btn-danger" onClick={() => remove(item.id)}>{t("Delete")}</button>
               </td>
             </tr>
           ))}
@@ -133,43 +135,43 @@ export default function AdminCertificates() {
       {editing !== null && (
         <div className="admin-modal-overlay" onClick={() => setEditing(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editing === "new" ? "New Certificate" : "Edit Certificate"}</h2>
+            <h2>{editing === "new" ? t("New Certificate") : t("Edit Certificate")}</h2>
             <form className="admin-form" onSubmit={save}>
               <div className="admin-form-row">
-                <label>Title (EN)
+                <label>{t("Title (EN)")}
                   <input className="form-input" value={form.titleEn} onChange={set("titleEn")} maxLength={160} />
                 </label>
-                <label>Title (AR)
+                <label>{t("Title (AR)")}
                   <input className="form-input" dir="rtl" value={form.titleAr} onChange={set("titleAr")} maxLength={160} />
                 </label>
               </div>
               <div className="admin-form-row">
-                <label>Issuer (EN)
-                  <input className="form-input" value={form.issuerEn} onChange={set("issuerEn")} maxLength={120} placeholder="e.g. DEPI" />
+                <label>{t("Issuer (EN)")}
+                  <input className="form-input" value={form.issuerEn} onChange={set("issuerEn")} maxLength={120} placeholder={t("e.g. DEPI")} />
                 </label>
-                <label>Issuer (AR)
+                <label>{t("Issuer (AR)")}
                   <input className="form-input" dir="rtl" value={form.issuerAr} onChange={set("issuerAr")} maxLength={120} />
                 </label>
               </div>
               <div className="admin-form-row">
-                <label>Date
-                  <input className="form-input" value={form.date} onChange={set("date")} maxLength={40} placeholder="e.g. 2025 or Jun 2025" />
+                <label>{t("Date")}
+                  <input className="form-input" value={form.date} onChange={set("date")} maxLength={40} placeholder={t("e.g. 2025 or Jun 2025")} />
                 </label>
-                <label>Order (lowest first)
+                <label>{t("Order (lowest first)")}
                   <input className="form-input" type="number" value={form.order} onChange={set("order")} />
                 </label>
               </div>
-              <label>Verify link (optional)
+              <label>{t("Verify link (optional)")}
                 <input className="form-input" type="url" value={form.credentialUrl} onChange={set("credentialUrl")} placeholder="https://…" />
               </label>
               <label>
-                <input type="checkbox" checked={form.visible} onChange={(e) => setForm({ ...form, visible: e.target.checked })} /> Show on the site
+                <input type="checkbox" checked={form.visible} onChange={(e) => setForm({ ...form, visible: e.target.checked })} /> {t("Show on the site")}
               </label>
-              <p style={{ opacity: 0.7, fontSize: 13 }}>Fill at least one title. The picture is uploaded from the table after saving.</p>
+              <p style={{ opacity: 0.7, fontSize: 13 }}>{t("Fill at least one title. The picture is uploaded from the table after saving.")}</p>
               {error && <p className="admin-error">{error}</p>}
               <div className="admin-form-actions">
-                <button type="button" className="admin-btn" onClick={() => setEditing(null)}>Cancel</button>
-                <button type="submit" className="admin-btn admin-btn-primary">Save</button>
+                <button type="button" className="admin-btn" onClick={() => setEditing(null)}>{t("Cancel")}</button>
+                <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
               </div>
             </form>
           </div>

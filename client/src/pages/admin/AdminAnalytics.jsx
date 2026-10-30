@@ -9,6 +9,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { T } from "../../i18n/translations";
+import { useAdminT } from "../../lib/adminI18n";
 
 const RANGES = [7, 30, 90];
 const fmt = (n) => Number(n || 0).toLocaleString("en");
@@ -32,6 +33,7 @@ function barPath(x, y, w, h) {
 }
 
 function VisitsChart({ daily }) {
+  const { t } = useAdminT();
   const [hover, setHover] = useState(null);
   const W = 760, H = 230;
   const pad = { top: 14, right: 10, bottom: 30, left: 38 };
@@ -46,7 +48,7 @@ function VisitsChart({ daily }) {
 
   return (
     <div className="an-chart">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Visits per day">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t("Visits per day")}>
         {/* Gridlines at 0, the middle (only when it is a whole number of visits) and the top. */}
         {[0, top / 2, top].filter(Number.isInteger).map((v) => (
           <g key={v}>
@@ -78,7 +80,7 @@ function VisitsChart({ daily }) {
       </svg>
       {hovered && (
         <div className="an-tooltip" style={{ left: `${((pad.left + hover * slot + slot / 2) / W) * 100}%` }}>
-          <strong>{fmt(hovered.visits)} visits</strong>
+          <strong>{t("{n} visits", { n: fmt(hovered.visits) })}</strong>
           <span>{shortDate(hovered.date)}</span>
         </div>
       )}
@@ -88,12 +90,13 @@ function VisitsChart({ daily }) {
 
 // A small ranked table with an inline bar showing each row's share of the top value.
 function TopTable({ title, rows, label }) {
+  const { t } = useAdminT();
   const max = Math.max(1, ...rows.map((r) => r.count));
   return (
     <div className="an-card">
       <h2>{title}</h2>
       {rows.length === 0 ? (
-        <p className="admin-empty">Nothing yet.</p>
+        <p className="admin-empty">{t("Nothing yet.")}</p>
       ) : (
         <table className="admin-table an-top">
           <tbody>
@@ -112,6 +115,7 @@ function TopTable({ title, rows, label }) {
 }
 
 export default function AdminAnalytics() {
+  const { t } = useAdminT();
   const [days, setDays] = useState(30);
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
@@ -121,36 +125,36 @@ export default function AdminAnalytics() {
     api.get(`/admin/analytics?days=${days}`).then(setData).catch((err) => setError(err.message));
   }, [days]);
 
-  const t = data && data.totals;
+  const totals = data && data.totals;
   return (
     <div>
-      <h1>Analytics</h1>
+      <h1>{t("Analytics")}</h1>
       <div className="an-filters">
         {RANGES.map((r) => (
-          <button key={r} className={`admin-btn ${days === r ? "admin-btn-primary" : ""}`} onClick={() => setDays(r)}>Last {r} days</button>
+          <button key={r} className={`admin-btn ${days === r ? "admin-btn-primary" : ""}`} onClick={() => setDays(r)}>{t("Last {n} days", { n: r })}</button>
         ))}
       </div>
-      <p className="an-note">Anonymous counts only — no cookies, no IP addresses. Your own visits while logged in are not counted.</p>
+      <p className="an-note">{t("Anonymous counts only — no cookies, no IP addresses. Your own visits while logged in are not counted.")}</p>
       {error && <p className="admin-error">{error}</p>}
-      {!data && !error && <p>Loading…</p>}
+      {!data && !error && <p>{t("Loading…")}</p>}
 
       {data && (
         <>
           <div className="an-tiles">
-            <div className="an-tile"><span>Visits</span><strong>{fmt(t.visits)}</strong></div>
-            <div className="an-tile"><span>Per day (average)</span><strong>{(t.visits / data.days).toFixed(1)}</strong></div>
-            <div className="an-tile"><span>CV downloads</span><strong>{fmt(t.cvDownloads)}</strong></div>
-            <div className="an-tile"><span>On mobile</span><strong>{pct(t.mobile, t.mobile + t.desktop)}</strong></div>
-            <div className="an-tile"><span>In Arabic</span><strong>{pct(t.langAr, t.langAr + t.langEn)}</strong></div>
+            <div className="an-tile"><span>{t("Visits")}</span><strong>{fmt(totals.visits)}</strong></div>
+            <div className="an-tile"><span>{t("Per day (average)")}</span><strong>{(totals.visits / data.days).toFixed(1)}</strong></div>
+            <div className="an-tile"><span>{t("CV downloads")}</span><strong>{fmt(totals.cvDownloads)}</strong></div>
+            <div className="an-tile"><span>{t("On mobile")}</span><strong>{pct(totals.mobile, totals.mobile + totals.desktop)}</strong></div>
+            <div className="an-tile"><span>{t("In Arabic")}</span><strong>{pct(totals.langAr, totals.langAr + totals.langEn)}</strong></div>
           </div>
 
           <div className="an-card">
-            <h2>Visits per day</h2>
-            {t.visits === 0 ? <p className="admin-empty">No visits recorded in this period yet.</p> : <VisitsChart daily={data.daily} />}
+            <h2>{t("Visits per day")}</h2>
+            {totals.visits === 0 ? <p className="admin-empty">{t("No visits recorded in this period yet.")}</p> : <VisitsChart daily={data.daily} />}
             <details className="an-details">
-              <summary>Daily numbers (table)</summary>
+              <summary>{t("Daily numbers (table)")}</summary>
               <table className="admin-table">
-                <thead><tr><th>Date</th><th className="an-num">Visits</th></tr></thead>
+                <thead><tr><th>{t("Date")}</th><th className="an-num">{t("Visits")}</th></tr></thead>
                 <tbody>
                   {[...data.daily].reverse().map((d) => (
                     <tr key={d.date}><td>{d.date}</td><td className="an-num">{fmt(d.visits)}</td></tr>
@@ -161,10 +165,10 @@ export default function AdminAnalytics() {
           </div>
 
           <div className="an-grid-3">
-            <TopTable title="Sections viewed" rows={data.sections} label={(r) => T.en.nav[r.name] || r.name} />
-            <TopTable title="Projects opened" rows={data.projects} label={(r) => r.title} />
-            <TopTable title="Articles read" rows={data.posts || []} label={(r) => r.title} />
-            <TopTable title="Where visitors came from" rows={data.referrers} label={(r) => (r.host === "direct" ? "Direct / unknown" : r.host === "other" ? "Other sites" : r.host)} />
+            <TopTable title={t("Sections viewed")} rows={data.sections} label={(r) => T.en.nav[r.name] || r.name} />
+            <TopTable title={t("Projects opened")} rows={data.projects} label={(r) => r.title} />
+            <TopTable title={t("Articles read")} rows={data.posts || []} label={(r) => r.title} />
+            <TopTable title={t("Where visitors came from")} rows={data.referrers} label={(r) => (r.host === "direct" ? "Direct / unknown" : r.host === "other" ? "Other sites" : r.host)} />
           </div>
         </>
       )}

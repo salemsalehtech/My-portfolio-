@@ -9,7 +9,8 @@
 //     /admin/youtube     -> AdminYoutube
 //     /admin/messages    -> AdminMessages
 //
-// SiteProvider (theme/language) and AdminProvider (admin login state) wrap EVERYTHING, so
+// SiteProvider (theme/language), AdminProvider (admin login state) and AdminI18nProvider (the
+// dashboard's own English/Arabic switch, lib/adminI18n.jsx) wrap EVERYTHING, so
 // every page/component below can call useSite()/useAdmin() without extra setup. HashRouter
 // (URLs like "/#/admin") is used instead of BrowserRouter because the client is deployed as
 // a static site to GitHub Pages, which can't be configured to redirect unknown paths back
@@ -17,6 +18,7 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { SiteProvider } from "./context/SiteContext";
 import { AdminProvider } from "./context/AdminContext";
+import { AdminI18nProvider } from "./lib/adminI18n";
 import Portfolio from "./pages/Portfolio";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
@@ -57,6 +59,7 @@ export default function App() {
   return (
     <SiteProvider>
       <AdminProvider>
+      <AdminI18nProvider>
         <HashRouter>
           <Routes>
             <Route path="/" element={<Portfolio />} />
@@ -92,6 +95,7 @@ export default function App() {
             </Route>
           </Routes>
         </HashRouter>
+      </AdminI18nProvider>
       </AdminProvider>
     </SiteProvider>
   );

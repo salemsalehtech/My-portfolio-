@@ -14,11 +14,13 @@ import { api } from "../../lib/api";
 import { renderMarkdown, readingMinutes } from "../../lib/markdown";
 import { Field } from "./FormParts";
 import { slugify } from "../../lib/slug";
+import { useAdminT } from "../../lib/adminI18n";
 
 const EMPTY = { slug: "", titleEn: "", titleAr: "", excerptEn: "", excerptAr: "", bodyEn: "", bodyAr: "", tags: [], published: false };
 
 
 export default function AdminPostEditor() {
+  const { t } = useAdminT();
   const { id } = useParams(); // "new" or a post id
   const isNew = id === "new";
   const navigate = useNavigate();
@@ -37,7 +39,7 @@ export default function AdminPostEditor() {
       .catch((err) => setError(err.message));
   }, [id, isNew]);
 
-  if (!form) return <p>{error || "Loading…"}</p>;
+  if (!form) return <p>{error || t("Loading…")}</p>;
 
   const set = (key) => (value) => {
     const next = { ...form, [key]: value };
@@ -57,7 +59,7 @@ export default function AdminPostEditor() {
       const post = isNew ? await api.post("/admin/posts", payload) : await api.put(`/admin/posts/${id}`, payload);
       setForm({ ...EMPTY, ...post });
       setSlugTouched(true);
-      setSaved(post.published ? "Published ✓" : "Draft saved ✓");
+      setSaved(post.published ? t("Published ✓") : t("Draft saved ✓"));
       if (isNew) navigate(`/admin/posts/${post.id}`, { replace: true });
     } catch (err) {
       setError(err.message);
@@ -68,16 +70,16 @@ export default function AdminPostEditor() {
 
   return (
     <div className="post-editor">
-      <p><Link to="/admin/posts">← All posts</Link></p>
-      <h1>{isNew ? "New post" : "Edit post"} <span className="admin-sub">{form.published ? "· Published" : "· Draft"}</span></h1>
+      <p><Link to="/admin/posts">{t("← All posts")}</Link></p>
+      <h1>{isNew ? t("New post") : t("Edit post")} <span className="admin-sub">{form.published ? t("· Published") : t("· Draft")}</span></h1>
 
       <div className="admin-form">
         <div className="admin-form-row">
-          <Field label="Title (EN)" value={form.titleEn} onChange={set("titleEn")} maxLength={200} />
-          <Field label="Title (AR)" value={form.titleAr} onChange={set("titleAr")} maxLength={200} rtl />
+          <Field label={t("Title (EN)")} value={form.titleEn} onChange={set("titleEn")} maxLength={200} />
+          <Field label={t("Title (AR)")} value={form.titleAr} onChange={set("titleAr")} maxLength={200} rtl />
         </div>
         <label>
-          Link name — the address will be /blog/<strong>{form.slug || "…"}</strong>
+          {t("Link name — the address will be")} /blog/<strong>{form.slug || "…"}</strong>
           <input
             className="form-input"
             value={form.slug}
@@ -87,23 +89,23 @@ export default function AdminPostEditor() {
           />
         </label>
         <div className="admin-form-row">
-          <Field label="Short summary (EN) — shown on the cards" value={form.excerptEn} onChange={set("excerptEn")} multiline maxLength={400} />
-          <Field label="Short summary (AR)" value={form.excerptAr} onChange={set("excerptAr")} multiline maxLength={400} rtl />
+          <Field label={t("Short summary (EN) — shown on the cards")} value={form.excerptEn} onChange={set("excerptEn")} multiline maxLength={400} />
+          <Field label={t("Short summary (AR)")} value={form.excerptAr} onChange={set("excerptAr")} multiline maxLength={400} rtl />
         </div>
         <label>
-          Tags (comma separated, up to 8)
-          <input className="form-input" value={tagsText} onChange={(e) => { setTagsText(e.target.value); setSaved(""); }} placeholder="React, Node.js, Career" />
+          {t("Tags (comma separated, up to 8)")}
+          <input className="form-input" value={tagsText} onChange={(e) => { setTagsText(e.target.value); setSaved(""); }} placeholder={t("React, Node.js, Career")} />
         </label>
 
         <div className="editor-tabs">
-          <button type="button" className={`admin-btn ${tab === "en" ? "admin-btn-primary" : ""}`} onClick={() => setTab("en")}>English text</button>
-          <button type="button" className={`admin-btn ${tab === "ar" ? "admin-btn-primary" : ""}`} onClick={() => setTab("ar")}>Arabic text</button>
+          <button type="button" className={`admin-btn ${tab === "en" ? "admin-btn-primary" : ""}`} onClick={() => setTab("en")}>{t("English text")}</button>
+          <button type="button" className={`admin-btn ${tab === "ar" ? "admin-btn-primary" : ""}`} onClick={() => setTab("ar")}>{t("Arabic text")}</button>
           <span className="editor-spacer" />
-          <button type="button" className="admin-btn" onClick={() => setPreview(!preview)}>{preview ? "✎ Write" : "👁 Preview"}</button>
-          <span className="admin-sub">~{readingMinutes(form[bodyKey])} min read</span>
+          <button type="button" className="admin-btn" onClick={() => setPreview(!preview)}>{preview ? t("✎ Write") : t("👁 Preview")}</button>
+          <span className="admin-sub">{t("~{n} min read", { n: readingMinutes(form[bodyKey]) })}</span>
         </div>
         {preview ? (
-          <div className="prose editor-preview" dir={tab === "ar" ? "rtl" : "ltr"} dangerouslySetInnerHTML={{ __html: renderMarkdown(form[bodyKey]) || "<p><em>Nothing to preview yet.</em></p>" }} />
+          <div className="prose editor-preview" dir={tab === "ar" ? "rtl" : "ltr"} dangerouslySetInnerHTML={{ __html: renderMarkdown(form[bodyKey]) || `<p><em>${t("Nothing to preview yet.")}</em></p>` }} />
         ) : (
           <textarea
             className="form-input editor-body"
@@ -111,19 +113,19 @@ export default function AdminPostEditor() {
             value={form[bodyKey]}
             onChange={(e) => set(bodyKey)(e.target.value)}
             maxLength={60000}
-            placeholder={tab === "ar" ? "اكتب المقال هنا بالـ Markdown…" : "Write the article here in Markdown…"}
+            placeholder={tab === "ar" ? t("اكتب المقال هنا بالـ Markdown…") : t("Write the article here in Markdown…")}
           />
         )}
         <p className="admin-sub">
-          Markdown: <code>## Heading</code> · <code>**bold**</code> · <code>*italic*</code> · <code>- list item</code> ·{" "}
-          <code>[link](https://…)</code> · <code>![image](https://…)</code> · <code>`code`</code> · a line with <code>```</code> before and after a code block.
+          {t("Markdown:")} <code>## Heading</code> · <code>**bold**</code> · <code>*italic*</code> · <code>{t("- list item")}</code> ·{" "}
+          <code>{t("[link](https://…)")}</code> · <code>{t("![image](https://…)")}</code> · <code>`code`</code> · <code>```</code> {t("before and after a code block")}
         </p>
 
         {error && <p className="admin-error">{error}</p>}
         <div className="admin-form-actions">
           {saved && <span>{saved}</span>}
-          <button type="button" className="admin-btn" onClick={() => save(false)}>{form.published ? "Unpublish (save as draft)" : "Save draft"}</button>
-          <button type="button" className="admin-btn admin-btn-primary" onClick={() => save(true)}>{form.published ? "Save" : "Publish"}</button>
+          <button type="button" className="admin-btn" onClick={() => save(false)}>{form.published ? t("Unpublish (save as draft)") : t("Save draft")}</button>
+          <button type="button" className="admin-btn admin-btn-primary" onClick={() => save(true)}>{form.published ? t("Save") : t("Publish")}</button>
         </div>
       </div>
     </div>

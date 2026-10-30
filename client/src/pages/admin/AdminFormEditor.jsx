@@ -13,12 +13,14 @@ import { api } from "../../lib/api";
 import { FIELD_TYPES, newFieldKey } from "../../lib/forms";
 import { slugify } from "../../lib/slug";
 import { Field } from "./FormParts";
+import { useAdminT } from "../../lib/adminI18n";
 
 const EMPTY = { slug: "", titleEn: "", titleAr: "", descEn: "", descAr: "", open: true, fields: [] };
 const MAX_FIELDS = 30; // keep in sync with the Form model on the server
 const blankField = () => ({ key: newFieldKey(), type: "text", labelEn: "", labelAr: "", required: false, options: [] });
 
 export default function AdminFormEditor() {
+  const { t } = useAdminT();
   const { id } = useParams(); // "new" or a form id
   const isNew = id === "new";
   const navigate = useNavigate();
@@ -32,7 +34,7 @@ export default function AdminFormEditor() {
     api.get(`/admin/forms/${id}`).then((f) => setForm({ ...EMPTY, ...f })).catch((err) => setError(err.message));
   }, [id, isNew]);
 
-  if (!form) return <p>{error || "Loading…"}</p>;
+  if (!form) return <p>{error || t("Loading…")}</p>;
 
   const set = (key) => (value) => {
     const next = { ...form, [key]: value };
@@ -69,42 +71,42 @@ export default function AdminFormEditor() {
 
   return (
     <div>
-      <p><Link to="/admin/forms">← All forms</Link></p>
-      <h1>{isNew ? "New Form" : "Edit Form"}</h1>
+      <p><Link to="/admin/forms">{t("← All forms")}</Link></p>
+      <h1>{isNew ? t("New Form") : t("Edit Form")}</h1>
       <form className="admin-form" onSubmit={save}>
         <div className="admin-form-row">
-          <Field label="Title (EN)" value={form.titleEn} onChange={set("titleEn")} maxLength={200} placeholder="e.g. Project request" />
-          <Field label="Title (AR)" value={form.titleAr} onChange={set("titleAr")} maxLength={200} rtl />
+          <Field label={t("Title (EN)")} value={form.titleEn} onChange={set("titleEn")} maxLength={200} placeholder={t("e.g. Project request")} />
+          <Field label={t("Title (AR)")} value={form.titleAr} onChange={set("titleAr")} maxLength={200} rtl />
         </div>
         <div className="admin-form-row">
-          <Field label="Description (EN, optional)" value={form.descEn} onChange={set("descEn")} maxLength={1000} multiline />
-          <Field label="Description (AR, optional)" value={form.descAr} onChange={set("descAr")} maxLength={1000} multiline rtl />
+          <Field label={t("Description (EN, optional)")} value={form.descEn} onChange={set("descEn")} maxLength={1000} multiline />
+          <Field label={t("Description (AR, optional)")} value={form.descAr} onChange={set("descAr")} maxLength={1000} multiline rtl />
         </div>
         <div className="admin-form-row">
-          <Field label="Link name" value={form.slug} onChange={(v) => { setSlugTouched(true); set("slug")(v.toLowerCase()); }} maxLength={80} placeholder="project-request" />
+          <Field label={t("Link name")} value={form.slug} onChange={(v) => { setSlugTouched(true); set("slug")(v.toLowerCase()); }} maxLength={80} placeholder="project-request" />
           <label className="admin-check" style={{ alignSelf: "end", paddingBottom: 12 }}>
-            <input type="checkbox" checked={form.open} onChange={(e) => set("open")(e.target.checked)} /> Open — people can send answers
+            <input type="checkbox" checked={form.open} onChange={(e) => set("open")(e.target.checked)} /> {t("Open — people can send answers")}
           </label>
         </div>
         <p style={{ opacity: 0.7, fontSize: 13, margin: 0 }}>
-          Fill at least one title. A title in a language = a link in that language. Link name: a-z, 0-9 and dashes only.
+          {t("Fill at least one title. A title in a language = a link in that language. Link name: a-z, 0-9 and dashes only.")}
         </p>
 
-        <h2 style={{ marginTop: 18 }}>Fields</h2>
-        {form.fields.length === 0 && <p className="admin-empty">No fields yet — add at least one.</p>}
+        <h2 style={{ marginTop: 18 }}>{t("Fields")}</h2>
+        {form.fields.length === 0 && <p className="admin-empty">{t("No fields yet — add at least one.")}</p>}
         {form.fields.map((field, index) => (
           <div className="admin-field-card" key={field.key}>
             <div className="admin-form-row admin-field-row">
-              <label>Type
+              <label>{t("Type")}
                 <select className="form-input" value={field.type} onChange={(e) => updateField(index, { type: e.target.value })}>
-                  {FIELD_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  {FIELD_TYPES.map((ft) => <option key={ft.value} value={ft.value}>{t(ft.label)}</option>)}
                 </select>
               </label>
-              <Field label="Label (EN)" value={field.labelEn} onChange={(v) => updateField(index, { labelEn: v })} maxLength={200} />
-              <Field label="Label (AR)" value={field.labelAr} onChange={(v) => updateField(index, { labelAr: v })} maxLength={200} rtl />
+              <Field label={t("Label (EN)")} value={field.labelEn} onChange={(v) => updateField(index, { labelEn: v })} maxLength={200} />
+              <Field label={t("Label (AR)")} value={field.labelAr} onChange={(v) => updateField(index, { labelAr: v })} maxLength={200} rtl />
             </div>
             {field.type === "select" && (
-              <label>Choices — one per line
+              <label>{t("Choices — one per line")}
                 <textarea
                   className="form-input"
                   rows={4}
@@ -115,23 +117,23 @@ export default function AdminFormEditor() {
               </label>
             )}
             <div className="admin-field-actions">
-              <label className="admin-check"><input type="checkbox" checked={field.required} onChange={(e) => updateField(index, { required: e.target.checked })} /> Required</label>
+              <label className="admin-check"><input type="checkbox" checked={field.required} onChange={(e) => updateField(index, { required: e.target.checked })} /> {t("Required")}</label>
               <div className="actions">
-                <button type="button" className="admin-btn" onClick={() => moveField(index, -1)} disabled={index === 0} aria-label="Move up">↑</button>
-                <button type="button" className="admin-btn" onClick={() => moveField(index, 1)} disabled={index === form.fields.length - 1} aria-label="Move down">↓</button>
-                <button type="button" className="admin-btn admin-btn-danger" onClick={() => removeField(index)}>Remove</button>
+                <button type="button" className="admin-btn" onClick={() => moveField(index, -1)} disabled={index === 0} aria-label={t("Move up")}>↑</button>
+                <button type="button" className="admin-btn" onClick={() => moveField(index, 1)} disabled={index === form.fields.length - 1} aria-label={t("Move down")}>↓</button>
+                <button type="button" className="admin-btn admin-btn-danger" onClick={() => removeField(index)}>{t("Remove")}</button>
               </div>
             </div>
           </div>
         ))}
         {form.fields.length < MAX_FIELDS && (
-          <div><button type="button" className="admin-btn" onClick={() => setFields([...form.fields, blankField()])}>+ Add field</button></div>
+          <div><button type="button" className="admin-btn" onClick={() => setFields([...form.fields, blankField()])}>{t("+ Add field")}</button></div>
         )}
 
         {error && <p className="admin-error">{error}</p>}
         <div className="admin-form-actions">
-          {saved && <span style={{ alignSelf: "center", opacity: 0.8 }}>Saved ✓</span>}
-          <button type="submit" className="admin-btn admin-btn-primary">Save</button>
+          {saved && <span style={{ alignSelf: "center", opacity: 0.8 }}>{t("Saved ✓")}</span>}
+          <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
         </div>
       </form>
     </div>

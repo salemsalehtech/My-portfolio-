@@ -7,6 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
 import { readAsBase64 } from "../../lib/readAsBase64";
 import { postCoverUrl } from "../../lib/posts";
+import { useAdminT } from "../../lib/adminI18n";
 
 const MAX_MB = 2;
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
@@ -15,6 +16,7 @@ const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 const publicUrl = (slug) => `${window.location.origin}${window.location.pathname}#/blog/${slug}`;
 
 export default function AdminPosts() {
+  const { t } = useAdminT();
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState("");
@@ -36,7 +38,7 @@ export default function AdminPosts() {
   };
 
   const remove = async (post) => {
-    if (!confirm(`Delete "${post.titleEn || post.titleAr}"? This cannot be undone.`)) return;
+    if (!confirm(t("Delete “{title}”? This cannot be undone.", { title: post.titleEn || post.titleAr }))) return;
     await api.del(`/admin/posts/${post.id}`);
     load();
   };
@@ -47,8 +49,8 @@ export default function AdminPosts() {
     const id = uploadFor.current;
     e.target.value = "";
     if (!file || !id) return;
-    if (!IMAGE_TYPES.includes(file.type)) return setError("Please choose a PNG, JPEG or WebP image.");
-    if (file.size > MAX_MB * 1024 * 1024) return setError(`The image is too large (max ${MAX_MB} MB).`);
+    if (!IMAGE_TYPES.includes(file.type)) return setError(t("Please choose a PNG, JPEG or WebP image."));
+    if (file.size > MAX_MB * 1024 * 1024) return setError(t("The image is too large (max {mb} MB).", { mb: MAX_MB }));
     setUploadingId(id);
     try {
       await api.put(`/admin/posts/${id}/cover`, { data: await readAsBase64(file) });
@@ -60,25 +62,25 @@ export default function AdminPosts() {
     }
   };
   const removeCover = async (post) => {
-    if (!confirm("Remove the cover picture?")) return;
+    if (!confirm(t("Remove the cover picture?"))) return;
     await api.del(`/admin/posts/${post.id}/cover`);
     load();
   };
 
   return (
     <div>
-      <h1>Blog posts</h1>
+      <h1>{t("Blog posts")}</h1>
       <div className="admin-toolbar">
-        <button className="admin-btn admin-btn-primary" onClick={() => navigate("/admin/posts/new")}>+ New Post</button>
+        <button className="admin-btn admin-btn-primary" onClick={() => navigate("/admin/posts/new")}>{t("+ New Post")}</button>
       </div>
       {error && <p className="admin-error">{error}</p>}
       <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" onChange={uploadCover} hidden />
       <table className="admin-table">
         <thead>
-          <tr><th>Cover</th><th>Title</th><th>Status</th><th>Last edited</th><th></th></tr>
+          <tr><th>{t("Cover")}</th><th>{t("Title")}</th><th>{t("Status")}</th><th>{t("Last edited")}</th><th></th></tr>
         </thead>
         <tbody>
-          {posts.length === 0 && <tr><td colSpan={5} className="admin-empty">No posts yet — write your first one with “+ New Post”.</td></tr>}
+          {posts.length === 0 && <tr><td colSpan={5} className="admin-empty">{t("No posts yet — write your first one with “+ New Post”.")}</td></tr>}
           {posts.map((post) => (
             <tr key={post.id} className={post.published ? "" : "admin-row-draft"}>
               <td className="admin-thumb-cell">
@@ -91,19 +93,19 @@ export default function AdminPosts() {
                 <Link to={`/admin/posts/${post.id}`}>{post.titleEn || post.titleAr}</Link>
                 <div className="admin-sub">/blog/{post.slug}</div>
               </td>
-              <td>{post.published ? `Published ${new Date(post.publishedAt).toLocaleDateString()}` : "Draft"}</td>
+              <td>{post.published ? t("Published {date}", { date: new Date(post.publishedAt).toLocaleDateString() }) : t("Draft")}</td>
               <td>{new Date(post.updatedAt).toLocaleString()}</td>
               <td className="actions">
-                <button className="admin-btn" onClick={() => navigate(`/admin/posts/${post.id}`)}>Edit</button>
+                <button className="admin-btn" onClick={() => navigate(`/admin/posts/${post.id}`)}>{t("Edit")}</button>
                 <button className={`admin-btn ${post.published ? "" : "admin-btn-primary"}`} onClick={() => togglePublished(post)}>
-                  {post.published ? "Unpublish" : "Publish"}
+                  {post.published ? t("Unpublish") : t("Publish")}
                 </button>
-                {post.published && <a className="admin-btn" href={publicUrl(post.slug)} target="_blank" rel="noreferrer">View</a>}
+                {post.published && <a className="admin-btn" href={publicUrl(post.slug)} target="_blank" rel="noreferrer">{t("View")}</a>}
                 <button className="admin-btn" onClick={() => pickCover(post)} disabled={uploadingId === post.id}>
-                  {uploadingId === post.id ? "Uploading…" : post.hasCover ? "Replace cover" : "Upload cover"}
+                  {uploadingId === post.id ? "Uploading…" : post.hasCover ? t("Replace cover") : t("Upload cover")}
                 </button>
-                {post.hasCover && <button className="admin-btn" onClick={() => removeCover(post)}>Remove cover</button>}
-                <button className="admin-btn admin-btn-danger" onClick={() => remove(post)}>Delete</button>
+                {post.hasCover && <button className="admin-btn" onClick={() => removeCover(post)}>{t("Remove cover")}</button>}
+                <button className="admin-btn admin-btn-danger" onClick={() => remove(post)}>{t("Delete")}</button>
               </td>
             </tr>
           ))}

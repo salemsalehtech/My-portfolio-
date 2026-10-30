@@ -5,6 +5,7 @@
 // displays on the public site.
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
+import { useAdminT } from "../../lib/adminI18n";
 
 const EMPTY = {
   titleEn: "", titleAr: "", subEn: "", subAr: "",
@@ -12,6 +13,7 @@ const EMPTY = {
 };
 
 export default function AdminYoutube() {
+  const { t } = useAdminT();
   // ---- STATE ----
   const [videos, setVideos] = useState([]);
   const [editing, setEditing] = useState(null); // null | "new" | <video id>
@@ -35,7 +37,7 @@ export default function AdminYoutube() {
   };
 
   const remove = async (id) => {
-    if (!confirm("Delete this video?")) return;
+    if (!confirm(t("Delete this video?"))) return;
     await api.del(`/admin/youtube/${id}`);
     load();
   };
@@ -43,23 +45,23 @@ export default function AdminYoutube() {
   // ---- RENDER: table of existing videos ----
   return (
     <div>
-      <h1>YouTube Videos</h1>
+      <h1>{t("YouTube Videos")}</h1>
       <div className="admin-toolbar">
-        <button className="admin-btn admin-btn-primary" onClick={openNew}>+ New Video</button>
+        <button className="admin-btn admin-btn-primary" onClick={openNew}>{t("+ New Video")}</button>
       </div>
       <table className="admin-table">
         <thead>
-          <tr><th>Title</th><th>Order</th><th></th></tr>
+          <tr><th>{t("Title")}</th><th>{t("Order")}</th><th></th></tr>
         </thead>
         <tbody>
-          {videos.length === 0 && <tr><td colSpan={3} className="admin-empty">No videos yet.</td></tr>}
+          {videos.length === 0 && <tr><td colSpan={3} className="admin-empty">{t("No videos yet.")}</td></tr>}
           {videos.map((v) => (
             <tr key={v.id}>
               <td>{v.titleEn}</td>
               <td>{v.order}</td>
               <td className="actions">
-                <button className="admin-btn" onClick={() => openEdit(v)}>Edit</button>
-                <button className="admin-btn admin-btn-danger" onClick={() => remove(v.id)}>Delete</button>
+                <button className="admin-btn" onClick={() => openEdit(v)}>{t("Edit")}</button>
+                <button className="admin-btn admin-btn-danger" onClick={() => remove(v.id)}>{t("Delete")}</button>
               </td>
             </tr>
           ))}
@@ -70,36 +72,36 @@ export default function AdminYoutube() {
       {editing !== null && (
         <div className="admin-modal-overlay" onClick={() => setEditing(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editing === "new" ? "New Video" : "Edit Video"}</h2>
+            <h2>{editing === "new" ? t("New Video") : t("Edit Video")}</h2>
             <form className="admin-form" onSubmit={save}>
               <div className="admin-form-row">
-                <label>Title (EN)
+                <label>{t("Title (EN)")}
                   <input className="form-input" value={form.titleEn} onChange={(e) => setForm({ ...form, titleEn: e.target.value })} required />
                 </label>
-                <label>Title (AR)
+                <label>{t("Title (AR)")}
                   <input className="form-input" value={form.titleAr} onChange={(e) => setForm({ ...form, titleAr: e.target.value })} required />
                 </label>
               </div>
               <div className="admin-form-row">
-                <label>Subtitle (EN)
+                <label>{t("Subtitle (EN)")}
                   <input className="form-input" value={form.subEn} onChange={(e) => setForm({ ...form, subEn: e.target.value })} />
                 </label>
-                <label>Subtitle (AR)
+                <label>{t("Subtitle (AR)")}
                   <input className="form-input" value={form.subAr} onChange={(e) => setForm({ ...form, subAr: e.target.value })} />
                 </label>
               </div>
-              <label>Video URL
+              <label>{t("Video URL")}
                 <input className="form-input" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} required />
               </label>
-              <label>Gradient (CSS)
+              <label>{t("Gradient (CSS)")}
                 <input className="form-input" value={form.gradient} onChange={(e) => setForm({ ...form, gradient: e.target.value })} />
               </label>
-              <label>Order
+              <label>{t("Order")}
                 <input className="form-input" type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} />
               </label>
               <div className="admin-form-actions">
-                <button type="button" className="admin-btn" onClick={() => setEditing(null)}>Cancel</button>
-                <button type="submit" className="admin-btn admin-btn-primary">Save</button>
+                <button type="button" className="admin-btn" onClick={() => setEditing(null)}>{t("Cancel")}</button>
+                <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
               </div>
             </form>
           </div>

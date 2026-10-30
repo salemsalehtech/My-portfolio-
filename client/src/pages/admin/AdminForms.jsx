@@ -7,8 +7,10 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { formLink } from "../../lib/forms";
+import { useAdminT } from "../../lib/adminI18n";
 
 export default function AdminForms() {
+  const { t } = useAdminT();
   const [forms, setForms] = useState([]);
   const [copied, setCopied] = useState(""); // "<form id>-<lang>" of the link just copied
 
@@ -21,8 +23,10 @@ export default function AdminForms() {
   };
 
   const remove = async (form) => {
-    const answers = form.responseCount ? ` and its ${form.responseCount} answer(s)` : "";
-    if (!confirm(`Delete this form${answers}? This cannot be undone.`)) return;
+    const question = form.responseCount
+      ? t("Delete this form and its {n} answer(s)? This cannot be undone.", { n: form.responseCount })
+      : t("Delete this form? This cannot be undone.");
+    if (!confirm(question)) return;
     await api.del(`/admin/forms/${form.id}`);
     load();
   };
@@ -34,7 +38,7 @@ export default function AdminForms() {
       setCopied(`${form.id}-${lang}`);
       setTimeout(() => setCopied(""), 2000);
     } catch {
-      window.prompt("Copy this link:", link); // clipboard blocked: let the owner copy by hand
+      window.prompt(t("Copy this link:"), link); // clipboard blocked: let the owner copy by hand
     }
   };
 
@@ -43,38 +47,38 @@ export default function AdminForms() {
 
   return (
     <div>
-      <h1>Forms</h1>
+      <h1>{t("Forms")}</h1>
       <p style={{ opacity: 0.75, marginBottom: 16 }}>
-        Build a form, send its link to people, and read the answers here as a sheet — or download them as an Excel file.
+        {t("Build a form, send its link to people, and read the answers here as a sheet — or download them as an Excel file.")}
       </p>
       <div className="admin-toolbar">
-        <Link className="admin-btn admin-btn-primary" to="/admin/forms/new">+ New Form</Link>
+        <Link className="admin-btn admin-btn-primary" to="/admin/forms/new">{t("+ New Form")}</Link>
       </div>
 
-      {forms.length === 0 && <p className="admin-empty">No forms yet.</p>}
+      {forms.length === 0 && <p className="admin-empty">{t("No forms yet.")}</p>}
       {forms.map((form) => (
         <div className="admin-linkbox" key={form.id}>
           <div className="admin-form-head">
             <div>
               <strong>{form.titleEn || form.titleAr}</strong>
-              <span className={`admin-status ${form.open ? "is-open" : ""}`}>{form.open ? "Open" : "Closed"}</span>
+              <span className={`admin-status ${form.open ? "is-open" : ""}`}>{form.open ? t("Open") : t("Closed")}</span>
               <div style={{ opacity: 0.7, fontSize: 13, marginTop: 4 }}>
                 {form.fields.length} field(s) · {form.responseCount} answer(s)
               </div>
             </div>
             <div className="actions">
               <Link className="admin-btn admin-btn-primary" to={`/admin/forms/${form.id}/responses`}>Answers ({form.responseCount})</Link>
-              <button className="admin-btn" onClick={() => toggleOpen(form)}>{form.open ? "Close form" : "Open form"}</button>
-              <Link className="admin-btn" to={`/admin/forms/${form.id}`}>Edit</Link>
-              <button className="admin-btn admin-btn-danger" onClick={() => remove(form)}>Delete</button>
+              <button className="admin-btn" onClick={() => toggleOpen(form)}>{form.open ? t("Close form") : t("Open form")}</button>
+              <Link className="admin-btn" to={`/admin/forms/${form.id}`}>{t("Edit")}</Link>
+              <button className="admin-btn admin-btn-danger" onClick={() => remove(form)}>{t("Delete")}</button>
             </div>
           </div>
           {langsOf(form).map((lang) => (
             <div className="admin-linkrow" key={lang}>
-              <span>{lang === "ar" ? "Arabic link" : "English link"}</span>
+              <span>{lang === "ar" ? t("Arabic link") : t("English link")}</span>
               <input className="form-input" readOnly value={formLink(form.slug, lang)} onFocus={(e) => e.target.select()} />
-              <button className="admin-btn" onClick={() => copy(form, lang)}>{copied === `${form.id}-${lang}` ? "Copied ✓" : "Copy"}</button>
-              <a className="admin-btn" href={formLink(form.slug, lang)} target="_blank" rel="noreferrer">Open</a>
+              <button className="admin-btn" onClick={() => copy(form, lang)}>{copied === `${form.id}-${lang}` ? t("Copied ✓") : t("Copy")}</button>
+              <a className="admin-btn" href={formLink(form.slug, lang)} target="_blank" rel="noreferrer">{t("Open")}</a>
             </div>
           ))}
         </div>

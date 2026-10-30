@@ -10,8 +10,10 @@ import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { siteDefaults } from "../../lib/siteDefaults";
 import { Field, ListEditor } from "./FormParts";
+import { useAdminT } from "../../lib/adminI18n";
 
 export default function AdminSettings() {
+  const { t } = useAdminT();
   // ---- STATE ----
   const [form, setForm] = useState(null); // null while loading
   const [saved, setSaved] = useState(false);
@@ -39,84 +41,84 @@ export default function AdminSettings() {
   };
 
   const reset = async () => {
-    if (!confirm("Discard your changes and go back to the original texts and links?")) return;
+    if (!confirm(t("Discard your changes and go back to the original texts and links?"))) return;
     await api.del("/admin/settings");
     setForm(siteDefaults());
     setSaved(false);
   };
 
-  if (!form) return <p>Loading…</p>;
+  if (!form) return <p>{t("Loading…")}</p>;
 
   // ---- RENDER ----
   return (
     <div>
-      <h1>Profile &amp; Links</h1>
+      <h1>{t("Profile & Links")}</h1>
       <form className="admin-form" onSubmit={save}>
-        <h2>Hero (top of the page)</h2>
+        <h2>{t("Hero (top of the page)")}</h2>
         <div className="admin-form-row">
-          <Field label="Greeting (EN)" value={form.greetingEn} onChange={set("greetingEn")} />
-          <Field label="Greeting (AR)" value={form.greetingAr} onChange={set("greetingAr")} rtl />
+          <Field label={t("Greeting (EN)")} value={form.greetingEn} onChange={set("greetingEn")} />
+          <Field label={t("Greeting (AR)")} value={form.greetingAr} onChange={set("greetingAr")} rtl />
         </div>
         <div className="admin-form-row">
-          <Field label="Name (EN)" value={form.nameEn} onChange={set("nameEn")} />
-          <Field label="Name (AR)" value={form.nameAr} onChange={set("nameAr")} rtl />
+          <Field label={t("Name (EN)")} value={form.nameEn} onChange={set("nameEn")} />
+          <Field label={t("Name (AR)")} value={form.nameAr} onChange={set("nameAr")} rtl />
         </div>
         <div className="admin-form-row">
-          <Field label="Tagline (EN)" value={form.taglineEn} onChange={set("taglineEn")} multiline />
-          <Field label="Tagline (AR)" value={form.taglineAr} onChange={set("taglineAr")} multiline rtl />
+          <Field label={t("Tagline (EN)")} value={form.taglineEn} onChange={set("taglineEn")} multiline />
+          <Field label={t("Tagline (AR)")} value={form.taglineAr} onChange={set("taglineAr")} multiline rtl />
         </div>
         <p style={{ opacity: 0.7, fontSize: 13 }}>
-          USP — one short line that says what makes you different (e.g. “I build fast, bilingual web apps and teach what I build.”). Leave empty to hide it.
+          {t("USP — one short line that says what makes you different (e.g. “I build fast, bilingual web apps and teach what I build.”). Leave empty to hide it.")}
         </p>
         <div className="admin-form-row">
-          <Field label="USP line (EN)" value={form.uspEn} onChange={set("uspEn")} maxLength={300} />
-          <Field label="USP line (AR)" value={form.uspAr} onChange={set("uspAr")} maxLength={300} rtl />
+          <Field label={t("USP line (EN)")} value={form.uspEn} onChange={set("uspEn")} maxLength={300} />
+          <Field label={t("USP line (AR)")} value={form.uspAr} onChange={set("uspAr")} maxLength={300} rtl />
         </div>
 
         <ListEditor
-          title="Rotating titles (shown one after another under your name)"
+          title={t("Rotating titles (shown one after another under your name)")}
           items={form.titles}
           onChange={set("titles")}
           blank={{ en: "", ar: "" }}
           max={6}
-          emptyText="No titles — the rotating line is hidden."
+          emptyText={t("No titles — the rotating line is hidden.")}
           renderRow={(item, update) => (
             <>
-              <Field label="Title (EN)" value={item.en} onChange={(v) => update({ en: v })} maxLength={80} />
-              <Field label="Title (AR)" value={item.ar} onChange={(v) => update({ ar: v })} maxLength={80} rtl />
+              <Field label={t("Title (EN)")} value={item.en} onChange={(v) => update({ en: v })} maxLength={80} />
+              <Field label={t("Title (AR)")} value={item.ar} onChange={(v) => update({ ar: v })} maxLength={80} rtl />
             </>
           )}
         />
 
-        <h2>Links (empty = hidden)</h2>
+        <h2>{t("Links (empty = hidden)")}</h2>
         <div className="admin-form-row">
-          <Field label="Email" type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" />
-          <Field label="GitHub URL" type="url" value={form.githubUrl} onChange={set("githubUrl")} placeholder="https://github.com/…" />
+          <Field label={t("Email")} type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" />
+          <Field label={t("GitHub URL")} type="url" value={form.githubUrl} onChange={set("githubUrl")} placeholder="https://github.com/…" />
         </div>
         <div className="admin-form-row">
-          <Field label="LinkedIn URL" type="url" value={form.linkedinUrl} onChange={set("linkedinUrl")} placeholder="https://www.linkedin.com/in/…" />
-          <Field label="YouTube channel URL" type="url" value={form.youtubeUrl} onChange={set("youtubeUrl")} placeholder="https://www.youtube.com/@…" />
+          <Field label={t("LinkedIn URL")} type="url" value={form.linkedinUrl} onChange={set("linkedinUrl")} placeholder="https://www.linkedin.com/in/…" />
+          <Field label={t("YouTube channel URL")} type="url" value={form.youtubeUrl} onChange={set("youtubeUrl")} placeholder="https://www.youtube.com/@…" />
         </div>
 
-        <h2>Other texts</h2>
+        <h2>{t("Other texts")}</h2>
         <div className="admin-form-row">
-          <Field label="Location (EN)" value={form.locationEn} onChange={set("locationEn")} />
-          <Field label="Location (AR)" value={form.locationAr} onChange={set("locationAr")} rtl />
+          <Field label={t("Location (EN)")} value={form.locationEn} onChange={set("locationEn")} />
+          <Field label={t("Location (AR)")} value={form.locationAr} onChange={set("locationAr")} rtl />
         </div>
         <div className="admin-form-row">
-          <Field label="Role in the footer (EN)" value={form.roleEn} onChange={set("roleEn")} />
-          <Field label="Role in the footer (AR)" value={form.roleAr} onChange={set("roleAr")} rtl />
+          <Field label={t("Role in the footer (EN)")} value={form.roleEn} onChange={set("roleEn")} />
+          <Field label={t("Role in the footer (AR)")} value={form.roleAr} onChange={set("roleAr")} rtl />
         </div>
         <div className="admin-form-row">
-          <Field label="YouTube channel description (EN)" value={form.channelDescEn} onChange={set("channelDescEn")} multiline />
-          <Field label="YouTube channel description (AR)" value={form.channelDescAr} onChange={set("channelDescAr")} multiline rtl />
+          <Field label={t("YouTube channel description (EN)")} value={form.channelDescEn} onChange={set("channelDescEn")} multiline />
+          <Field label={t("YouTube channel description (AR)")} value={form.channelDescAr} onChange={set("channelDescAr")} multiline rtl />
         </div>
 
         {error && <p className="admin-error">{error}</p>}
         <div className="admin-form-actions">
-          <button type="button" className="admin-btn" onClick={reset}>Reset to original</button>
-          <button type="submit" className="admin-btn admin-btn-primary">Save</button>
-          {saved && <span>Saved ✓</span>}
+          <button type="button" className="admin-btn" onClick={reset}>{t("Reset to original")}</button>
+          <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
+          {saved && <span>{t("Saved ✓")}</span>}
         </div>
       </form>
     </div>

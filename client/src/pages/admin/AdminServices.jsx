@@ -7,10 +7,12 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { SERVICE_ICONS, serviceIcon } from "../../lib/serviceIcons";
+import { useAdminT } from "../../lib/adminI18n";
 
 const EMPTY = { titleEn: "", titleAr: "", descEn: "", descAr: "", icon: "web", visible: true, order: 0 };
 
 export default function AdminServices() {
+  const { t } = useAdminT();
   // ---- STATE ----
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null); // null | "new" | <service id>
@@ -46,7 +48,7 @@ export default function AdminServices() {
   };
 
   const remove = async (id) => {
-    if (!confirm("Delete this service?")) return;
+    if (!confirm(t("Delete this service?"))) return;
     await api.del(`/admin/services/${id}`);
     load();
   };
@@ -54,27 +56,27 @@ export default function AdminServices() {
   // ---- RENDER: table of existing services ----
   return (
     <div>
-      <h1>Services</h1>
+      <h1>{t("Services")}</h1>
       <div className="admin-toolbar">
-        <button className="admin-btn admin-btn-primary" onClick={openNew}>+ New Service</button>
+        <button className="admin-btn admin-btn-primary" onClick={openNew}>{t("+ New Service")}</button>
       </div>
       <table className="admin-table">
         <thead>
-          <tr><th></th><th>Title</th><th>Description</th><th>Order</th><th>On site</th><th></th></tr>
+          <tr><th></th><th>{t("Title")}</th><th>{t("Description")}</th><th>{t("Order")}</th><th>{t("On site")}</th><th></th></tr>
         </thead>
         <tbody>
-          {items.length === 0 && <tr><td colSpan={6} className="admin-empty">No services yet — the section is hidden on the site until you add one.</td></tr>}
+          {items.length === 0 && <tr><td colSpan={6} className="admin-empty">{t("No services yet — the section is hidden on the site until you add one.")}</td></tr>}
           {items.map((item) => (
             <tr key={item.id}>
               <td className="admin-icon-cell">{serviceIcon(item.icon)}</td>
               <td>{item.titleEn || item.titleAr}</td>
               <td>{(item.descEn || item.descAr).slice(0, 80)}{(item.descEn || item.descAr).length > 80 ? "…" : ""}</td>
               <td>{item.order}</td>
-              <td>{item.visible ? "Visible" : "Hidden"}</td>
+              <td>{item.visible ? t("Visible") : t("Hidden")}</td>
               <td className="actions">
-                <button className="admin-btn" onClick={() => toggleVisible(item)}>{item.visible ? "Hide" : "Show"}</button>
-                <button className="admin-btn" onClick={() => openEdit(item)}>Edit</button>
-                <button className="admin-btn admin-btn-danger" onClick={() => remove(item.id)}>Delete</button>
+                <button className="admin-btn" onClick={() => toggleVisible(item)}>{item.visible ? t("Hide") : t("Show")}</button>
+                <button className="admin-btn" onClick={() => openEdit(item)}>{t("Edit")}</button>
+                <button className="admin-btn admin-btn-danger" onClick={() => remove(item.id)}>{t("Delete")}</button>
               </td>
             </tr>
           ))}
@@ -85,41 +87,41 @@ export default function AdminServices() {
       {editing !== null && (
         <div className="admin-modal-overlay" onClick={() => setEditing(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editing === "new" ? "New Service" : "Edit Service"}</h2>
+            <h2>{editing === "new" ? t("New Service") : t("Edit Service")}</h2>
             <form className="admin-form" onSubmit={save}>
               <div className="admin-form-row">
-                <label>Title (EN)
+                <label>{t("Title (EN)")}
                   <input className="form-input" value={form.titleEn} onChange={set("titleEn")} maxLength={120} />
                 </label>
-                <label>Title (AR)
+                <label>{t("Title (AR)")}
                   <input className="form-input" dir="rtl" value={form.titleAr} onChange={set("titleAr")} maxLength={120} />
                 </label>
               </div>
-              <label>Description (EN)
+              <label>{t("Description (EN)")}
                 <textarea className="form-input" rows={3} value={form.descEn} onChange={set("descEn")} maxLength={600} />
               </label>
-              <label>Description (AR)
+              <label>{t("Description (AR)")}
                 <textarea className="form-input" rows={3} dir="rtl" value={form.descAr} onChange={set("descAr")} maxLength={600} />
               </label>
               <div className="admin-form-row" style={{ alignItems: "end" }}>
-                <label>Icon
+                <label>{t("Icon")}
                   <select className="form-input" value={form.icon} onChange={set("icon")}>
-                    {Object.entries(SERVICE_ICONS).map(([key, { label }]) => <option key={key} value={key}>{label}</option>)}
+                    {Object.entries(SERVICE_ICONS).map(([key, { label }]) => <option key={key} value={key}>{t(label)}</option>)}
                   </select>
                 </label>
-                <div className="service-icon" title="Preview">{serviceIcon(form.icon)}</div>
-                <label>Order (lowest first)
+                <div className="service-icon" title={t("Preview")}>{serviceIcon(form.icon)}</div>
+                <label>{t("Order (lowest first)")}
                   <input className="form-input" type="number" value={form.order} onChange={set("order")} />
                 </label>
               </div>
               <label>
-                <input type="checkbox" checked={form.visible} onChange={(e) => setForm({ ...form, visible: e.target.checked })} /> Show on the site
+                <input type="checkbox" checked={form.visible} onChange={(e) => setForm({ ...form, visible: e.target.checked })} /> {t("Show on the site")}
               </label>
-              <p style={{ opacity: 0.7, fontSize: 13 }}>Fill at least one title. If a text is empty in one language, the other language is shown.</p>
+              <p style={{ opacity: 0.7, fontSize: 13 }}>{t("Fill at least one title. If a text is empty in one language, the other language is shown.")}</p>
               {error && <p className="admin-error">{error}</p>}
               <div className="admin-form-actions">
-                <button type="button" className="admin-btn" onClick={() => setEditing(null)}>Cancel</button>
-                <button type="submit" className="admin-btn admin-btn-primary">Save</button>
+                <button type="button" className="admin-btn" onClick={() => setEditing(null)}>{t("Cancel")}</button>
+                <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
               </div>
             </form>
           </div>

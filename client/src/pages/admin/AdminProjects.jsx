@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { readAsBase64 } from "../../lib/readAsBase64";
 import { projectImageUrl } from "../../components/Projects";
+import { useAdminT } from "../../lib/adminI18n";
 
 // ---- Blank form shape, used both for a fresh "New Project" and as the shape `form` state
 //      always has ----
@@ -39,6 +40,7 @@ const MAX_MB = 2; // keep in sync with MAX_IMAGE_BYTES on the server
 const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
 export default function AdminProjects() {
+  const { t } = useAdminT();
   // ---- STATE ----
   const [projects, setProjects] = useState([]); // the table's data
   const [editing, setEditing] = useState(null); // null | "new" | <project id>
@@ -72,7 +74,7 @@ export default function AdminProjects() {
   };
 
   const remove = async (id) => {
-    if (!confirm("Delete this project?")) return;
+    if (!confirm(t("Delete this project?"))) return;
     await api.del(`/admin/projects/${id}`);
     load();
   };
@@ -85,8 +87,8 @@ export default function AdminProjects() {
     const id = uploadFor.current;
     e.target.value = ""; // allow choosing the same file again later
     if (!file || !id) return;
-    if (!IMAGE_TYPES.includes(file.type)) return setError("Please choose a PNG, JPEG or WebP image.");
-    if (file.size > MAX_MB * 1024 * 1024) return setError(`The image is too large (max ${MAX_MB} MB).`);
+    if (!IMAGE_TYPES.includes(file.type)) return setError(t("Please choose a PNG, JPEG or WebP image."));
+    if (file.size > MAX_MB * 1024 * 1024) return setError(t("The image is too large (max {mb} MB).", { mb: MAX_MB }));
     setUploadingId(id);
     try {
       await api.put(`/admin/projects/${id}/image`, { data: await readAsBase64(file) });
@@ -99,7 +101,7 @@ export default function AdminProjects() {
   };
 
   const removeImage = async (p) => {
-    if (!confirm("Remove the picture of this project?")) return;
+    if (!confirm(t("Remove the picture of this project?"))) return;
     await api.del(`/admin/projects/${p.id}/image`);
     load();
   };
@@ -107,18 +109,18 @@ export default function AdminProjects() {
   // ---- RENDER: table of existing projects ----
   return (
     <div>
-      <h1>Projects</h1>
+      <h1>{t("Projects")}</h1>
       <div className="admin-toolbar">
-        <button className="admin-btn admin-btn-primary" onClick={openNew}>+ New Project</button>
+        <button className="admin-btn admin-btn-primary" onClick={openNew}>{t("+ New Project")}</button>
       </div>
       {error && editing === null && <p className="admin-error">{error}</p>}
       <input ref={fileInput} type="file" accept="image/png,image/jpeg,image/webp" onChange={upload} hidden />
       <table className="admin-table">
         <thead>
-          <tr><th>Picture</th><th>Title</th><th>Category</th><th>Order</th><th></th></tr>
+          <tr><th>{t("Picture")}</th><th>{t("Title")}</th><th>{t("Category")}</th><th>{t("Order")}</th><th></th></tr>
         </thead>
         <tbody>
-          {projects.length === 0 && <tr><td colSpan={5} className="admin-empty">No projects yet.</td></tr>}
+          {projects.length === 0 && <tr><td colSpan={5} className="admin-empty">{t("No projects yet.")}</td></tr>}
           {projects.map((p) => (
             <tr key={p.id}>
               <td className="admin-thumb-cell">
@@ -129,11 +131,11 @@ export default function AdminProjects() {
               <td>{p.order}</td>
               <td className="actions">
                 <button className="admin-btn" onClick={() => pickImage(p)} disabled={uploadingId === p.id}>
-                  {uploadingId === p.id ? "Uploading…" : p.hasImage ? "Replace picture" : "Upload picture"}
+                  {uploadingId === p.id ? "Uploading…" : p.hasImage ? t("Replace picture") : t("Upload picture")}
                 </button>
-                {p.hasImage && <button className="admin-btn" onClick={() => removeImage(p)}>Remove picture</button>}
-                <button className="admin-btn" onClick={() => openEdit(p)}>Edit</button>
-                <button className="admin-btn admin-btn-danger" onClick={() => remove(p.id)}>Delete</button>
+                {p.hasImage && <button className="admin-btn" onClick={() => removeImage(p)}>{t("Remove picture")}</button>}
+                <button className="admin-btn" onClick={() => openEdit(p)}>{t("Edit")}</button>
+                <button className="admin-btn admin-btn-danger" onClick={() => remove(p.id)}>{t("Delete")}</button>
               </td>
             </tr>
           ))}
@@ -145,74 +147,74 @@ export default function AdminProjects() {
       {editing !== null && (
         <div className="admin-modal-overlay" onClick={() => setEditing(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>{editing === "new" ? "New Project" : "Edit Project"}</h2>
+            <h2>{editing === "new" ? t("New Project") : t("Edit Project")}</h2>
             <form className="admin-form" onSubmit={save}>
               <div className="admin-form-row">
-                <label>Title (EN)
+                <label>{t("Title (EN)")}
                   <input className="form-input" value={form.titleEn} onChange={(e) => setForm({ ...form, titleEn: e.target.value })} required />
                 </label>
-                <label>Title (AR)
+                <label>{t("Title (AR)")}
                   <input className="form-input" value={form.titleAr} onChange={(e) => setForm({ ...form, titleAr: e.target.value })} required />
                 </label>
               </div>
-              <label>Description (EN)
+              <label>{t("Description (EN)")}
                 <textarea className="form-input form-textarea" rows={3} value={form.descEn} onChange={(e) => setForm({ ...form, descEn: e.target.value })} required />
               </label>
-              <label>Description (AR)
+              <label>{t("Description (AR)")}
                 <textarea className="form-input form-textarea" rows={3} value={form.descAr} onChange={(e) => setForm({ ...form, descAr: e.target.value })} required />
               </label>
-              <label>Tags (comma separated)
+              <label>{t("Tags (comma separated)")}
                 <input className="form-input" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
               </label>
               <div className="admin-form-row">
-                <label>Category
+                <label>{t("Category")}
                   <select className="form-input" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
                     <option value="web">web</option>
                     <option value="youtube">youtube</option>
                     <option value="automation">automation</option>
                   </select>
                 </label>
-                <label>Order
+                <label>{t("Order")}
                   <input className="form-input" type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} />
                 </label>
               </div>
               <div className="admin-form-row">
-                <label>Category Label (EN)
+                <label>{t("Category Label (EN)")}
                   <input className="form-input" value={form.catLabelEn} onChange={(e) => setForm({ ...form, catLabelEn: e.target.value })} required />
                 </label>
-                <label>Category Label (AR)
+                <label>{t("Category Label (AR)")}
                   <input className="form-input" value={form.catLabelAr} onChange={(e) => setForm({ ...form, catLabelAr: e.target.value })} required />
                 </label>
               </div>
               <div className="admin-form-row">
-                <label>GitHub URL
+                <label>{t("GitHub URL")}
                   <input className="form-input" value={form.githubUrl} onChange={(e) => setForm({ ...form, githubUrl: e.target.value })} />
                 </label>
-                <label>Demo URL
+                <label>{t("Demo URL")}
                   <input className="form-input" value={form.demoUrl} onChange={(e) => setForm({ ...form, demoUrl: e.target.value })} />
                 </label>
               </div>
-              <label>Gradient (CSS) — shown when the project has no picture
+              <label>{t("Gradient (CSS) — shown when the project has no picture")}
                 <input className="form-input" value={form.gradient} onChange={(e) => setForm({ ...form, gradient: e.target.value })} />
               </label>
 
-              <h3 style={{ marginTop: 10 }}>Case study (optional)</h3>
+              <h3 style={{ marginTop: 10 }}>{t("Case study (optional)")}</h3>
               <p style={{ opacity: 0.7, fontSize: 13, margin: 0 }}>
-                Shown in the project popup as Problem → Solution → Result. Leave a part empty to skip it.
+                {t("Shown in the project popup as Problem → Solution → Result. Leave a part empty to skip it.")}
               </p>
-              {CASE_STUDY.map(({ key, label }) => (
+              {CASE_STUDY.map(({ key, label: caseLabel }) => (
                 <div className="admin-form-row" key={key}>
-                  <label>{label} (EN)
+                  <label>{t(caseLabel)} ({t("EN")})
                     <textarea className="form-input form-textarea" rows={3} value={form[`${key}En`]} onChange={(e) => setForm({ ...form, [`${key}En`]: e.target.value })} maxLength={1500} />
                   </label>
-                  <label>{label} (AR)
+                  <label>{t(caseLabel)} ({t("AR")})
                     <textarea className="form-input form-textarea" rows={3} dir="rtl" value={form[`${key}Ar`]} onChange={(e) => setForm({ ...form, [`${key}Ar`]: e.target.value })} maxLength={1500} />
                   </label>
                 </div>
               ))}
               <div className="admin-form-actions">
-                <button type="button" className="admin-btn" onClick={() => setEditing(null)}>Cancel</button>
-                <button type="submit" className="admin-btn admin-btn-primary">Save</button>
+                <button type="button" className="admin-btn" onClick={() => setEditing(null)}>{t("Cancel")}</button>
+                <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
               </div>
             </form>
           </div>

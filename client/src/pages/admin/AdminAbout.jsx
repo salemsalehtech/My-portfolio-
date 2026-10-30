@@ -10,6 +10,7 @@ import { api } from "../../lib/api";
 import { aboutDefaults } from "../../lib/aboutDefaults";
 import { Field, ListEditor } from "./FormParts";
 import { youtubeId, youtubeEmbedUrl } from "../../lib/youtube";
+import { useAdminT } from "../../lib/adminI18n";
 
 const ICONS = [
   { value: "education", label: "Education" },
@@ -19,6 +20,7 @@ const ICONS = [
 ];
 
 export default function AdminAbout() {
+  const { t } = useAdminT();
   // ---- STATE ----
   const [form, setForm] = useState(null); // null while loading
   const [saved, setSaved] = useState(false);
@@ -46,111 +48,111 @@ export default function AdminAbout() {
   };
 
   const reset = async () => {
-    if (!confirm("Discard your changes and go back to the original About content?")) return;
+    if (!confirm(t("Discard your changes and go back to the original About content?"))) return;
     await api.del("/admin/about");
     setForm(aboutDefaults());
     setSaved(false);
   };
 
-  if (!form) return <p>Loading…</p>;
+  if (!form) return <p>{t("Loading…")}</p>;
 
   // ---- RENDER ----
   return (
     <div>
-      <h1>About</h1>
+      <h1>{t("About")}</h1>
       <form className="admin-form" onSubmit={save}>
-        <h2>Heading</h2>
+        <h2>{t("Heading")}</h2>
         <div className="admin-form-row">
-          <Field label="Small badge (EN)" value={form.badgeEn} onChange={set("badgeEn")} />
-          <Field label="Small badge (AR)" value={form.badgeAr} onChange={set("badgeAr")} rtl />
+          <Field label={t("Small badge (EN)")} value={form.badgeEn} onChange={set("badgeEn")} />
+          <Field label={t("Small badge (AR)")} value={form.badgeAr} onChange={set("badgeAr")} rtl />
         </div>
         <div className="admin-form-row">
-          <Field label="Title (EN)" value={form.titleEn} onChange={set("titleEn")} />
-          <Field label="Title (AR)" value={form.titleAr} onChange={set("titleAr")} rtl />
+          <Field label={t("Title (EN)")} value={form.titleEn} onChange={set("titleEn")} />
+          <Field label={t("Title (AR)")} value={form.titleAr} onChange={set("titleAr")} rtl />
         </div>
 
-        <h2>Bio</h2>
+        <h2>{t("Bio")}</h2>
         <div className="admin-form-row">
-          <Field label="Paragraph 1 (EN)" value={form.p1En} onChange={set("p1En")} multiline />
-          <Field label="Paragraph 1 (AR)" value={form.p1Ar} onChange={set("p1Ar")} multiline rtl />
+          <Field label={t("Paragraph 1 (EN)")} value={form.p1En} onChange={set("p1En")} multiline />
+          <Field label={t("Paragraph 1 (AR)")} value={form.p1Ar} onChange={set("p1Ar")} multiline rtl />
         </div>
         <div className="admin-form-row">
-          <Field label="Paragraph 2 (EN)" value={form.p2En} onChange={set("p2En")} multiline />
-          <Field label="Paragraph 2 (AR)" value={form.p2Ar} onChange={set("p2Ar")} multiline rtl />
+          <Field label={t("Paragraph 2 (EN)")} value={form.p2En} onChange={set("p2En")} multiline />
+          <Field label={t("Paragraph 2 (AR)")} value={form.p2Ar} onChange={set("p2Ar")} multiline rtl />
         </div>
 
         <ListEditor
-          title="Info rows"
+          title={t("Info rows")}
           items={form.infoItems}
           onChange={set("infoItems")}
           blank={{ icon: "other", textEn: "", textAr: "" }}
           renderRow={(item, update) => (
             <>
-              <label>Icon
+              <label>{t("Icon")}
                 <select className="form-input" value={item.icon} onChange={(e) => update({ icon: e.target.value })}>
-                  {ICONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  {ICONS.map((o) => <option key={o.value} value={o.value}>{t(o.label)}</option>)}
                 </select>
               </label>
-              <Field label="Text (EN)" value={item.textEn} onChange={(v) => update({ textEn: v })} />
-              <Field label="Text (AR)" value={item.textAr} onChange={(v) => update({ textAr: v })} rtl />
+              <Field label={t("Text (EN)")} value={item.textEn} onChange={(v) => update({ textEn: v })} />
+              <Field label={t("Text (AR)")} value={item.textAr} onChange={(v) => update({ textAr: v })} rtl />
             </>
           )}
         />
 
         <ListEditor
-          title="Stat cards"
+          title={t("Stat cards")}
           items={form.stats}
           onChange={set("stats")}
           blank={{ number: "", labelEn: "", labelAr: "" }}
           renderRow={(item, update) => (
             <>
-              <Field label="Number (e.g. 10+)" value={item.number} onChange={(v) => update({ number: v })} />
-              <Field label="Label (EN)" value={item.labelEn} onChange={(v) => update({ labelEn: v })} />
-              <Field label="Label (AR)" value={item.labelAr} onChange={(v) => update({ labelAr: v })} rtl />
+              <Field label={t("Number (e.g. 10+)")} value={item.number} onChange={(v) => update({ number: v })} />
+              <Field label={t("Label (EN)")} value={item.labelEn} onChange={(v) => update({ labelEn: v })} />
+              <Field label={t("Label (AR)")} value={item.labelAr} onChange={(v) => update({ labelAr: v })} rtl />
             </>
           )}
         />
 
-        <h2>Interests</h2>
+        <h2>{t("Interests")}</h2>
         <div className="admin-form-row">
-          <Field label="Card title (EN)" value={form.interestsTitleEn} onChange={set("interestsTitleEn")} />
-          <Field label="Card title (AR)" value={form.interestsTitleAr} onChange={set("interestsTitleAr")} rtl />
+          <Field label={t("Card title (EN)")} value={form.interestsTitleEn} onChange={set("interestsTitleEn")} />
+          <Field label={t("Card title (AR)")} value={form.interestsTitleAr} onChange={set("interestsTitleAr")} rtl />
         </div>
         <ListEditor
-          title="Interest tags"
+          title={t("Interest tags")}
           items={form.interests}
           onChange={set("interests")}
           blank={{ en: "", ar: "" }}
           renderRow={(item, update) => (
             <>
-              <Field label="Tag (EN)" value={item.en} onChange={(v) => update({ en: v })} />
-              <Field label="Tag (AR)" value={item.ar} onChange={(v) => update({ ar: v })} rtl />
+              <Field label={t("Tag (EN)")} value={item.en} onChange={(v) => update({ en: v })} />
+              <Field label={t("Tag (AR)")} value={item.ar} onChange={(v) => update({ ar: v })} rtl />
             </>
           )}
         />
 
-        <h2>“About me” video (optional)</h2>
+        <h2>{t("“About me” video (optional)")}</h2>
         <Field
-          label="YouTube link — shown under the About section; leave empty for no video"
+          label={t("YouTube link — shown under the About section; leave empty for no video")}
           type="url"
           placeholder="https://www.youtube.com/watch?v=…  or  https://youtu.be/…"
           value={form.videoUrl || ""}
           onChange={set("videoUrl")}
         />
         {form.videoUrl && !youtubeId(form.videoUrl) && (
-          <p className="admin-error">This doesn’t look like a YouTube video link — the server will refuse it.</p>
+          <p className="admin-error">{t("This doesn’t look like a YouTube video link — the server will refuse it.")}</p>
         )}
         {youtubeId(form.videoUrl) && (
           <div className="about-video admin-video-preview">
-            <iframe src={youtubeEmbedUrl(youtubeId(form.videoUrl))} title="Video preview" loading="lazy" allowFullScreen></iframe>
+            <iframe src={youtubeEmbedUrl(youtubeId(form.videoUrl))} title={t("Video preview")} loading="lazy" allowFullScreen></iframe>
           </div>
         )}
 
         {error && <p className="admin-error">{error}</p>}
         <div className="admin-form-actions">
-          <button type="button" className="admin-btn" onClick={reset}>Reset to original</button>
-          <button type="submit" className="admin-btn admin-btn-primary">Save</button>
-          {saved && <span>Saved ✓</span>}
+          <button type="button" className="admin-btn" onClick={reset}>{t("Reset to original")}</button>
+          <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
+          {saved && <span>{t("Saved ✓")}</span>}
         </div>
       </form>
     </div>

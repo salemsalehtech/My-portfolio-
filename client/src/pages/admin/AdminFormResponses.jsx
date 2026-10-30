@@ -6,8 +6,10 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../lib/api";
 import { downloadExcel, formatSubmitted, sheetColumns } from "../../lib/forms";
+import { useAdminT } from "../../lib/adminI18n";
 
 export default function AdminFormResponses() {
+  const { t } = useAdminT();
   const { id } = useParams();
   const [form, setForm] = useState(null);
   const [responses, setResponses] = useState([]);
@@ -20,7 +22,7 @@ export default function AdminFormResponses() {
       .catch((err) => setError(err.message));
   useEffect(() => { load(); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!form) return <p>{error || "Loading…"}</p>;
+  if (!form) return <p>{error || t("Loading…")}</p>;
   const columns = sheetColumns(form, responses);
 
   const exportExcel = async () => {
@@ -29,33 +31,33 @@ export default function AdminFormResponses() {
     try {
       await downloadExcel(form, responses);
     } catch (err) {
-      setError("Could not create the Excel file: " + err.message);
+      setError(t("Could not create the Excel file: ") + err.message);
     } finally {
       setExporting(false);
     }
   };
 
   const remove = async (responseId) => {
-    if (!confirm("Delete this answer?")) return;
+    if (!confirm(t("Delete this answer?"))) return;
     await api.del(`/admin/forms/${id}/responses/${responseId}`);
     load();
   };
 
   return (
     <div>
-      <p><Link to="/admin/forms">← All forms</Link></p>
+      <p><Link to="/admin/forms">{t("← All forms")}</Link></p>
       <h1>{form.titleEn || form.titleAr} — answers</h1>
       <div className="admin-toolbar">
         <button className="admin-btn admin-btn-primary" onClick={exportExcel} disabled={responses.length === 0 || exporting}>
-          {exporting ? "Preparing…" : "⬇ Download Excel"}
+          {exporting ? t("Preparing…") : t("⬇ Download Excel")}
         </button>
-        <Link className="admin-btn" to={`/admin/forms/${id}`}>Edit form</Link>
-        <span style={{ opacity: 0.75 }}>{responses.length} answer(s)</span>
+        <Link className="admin-btn" to={`/admin/forms/${id}`}>{t("Edit form")}</Link>
+        <span style={{ opacity: 0.75 }}>{t("{n} answer(s)", { n: responses.length })}</span>
       </div>
       {error && <p className="admin-error">{error}</p>}
 
       {responses.length === 0 ? (
-        <p className="admin-empty">No answers yet. Send the form's link from the Forms page.</p>
+        <p className="admin-empty">{t("No answers yet. Send the form's link from the Forms page.")}</p>
       ) : (
         <div className="admin-sheet-wrap">
           <table className="admin-table admin-sheet">
@@ -63,7 +65,7 @@ export default function AdminFormResponses() {
               <tr>
                 <th>#</th>
                 {columns.map((c) => <th key={c.key}>{c.label}</th>)}
-                <th>Submitted</th>
+                <th>{t("Submitted")}</th>
                 <th></th>
               </tr>
             </thead>
@@ -75,7 +77,7 @@ export default function AdminFormResponses() {
                     <td key={c.key} dir="auto" className={c.type === "textarea" ? "admin-sheet-long" : ""}>{(r.answers || {})[c.key] || ""}</td>
                   ))}
                   <td className="admin-sheet-date">{formatSubmitted(r.createdAt)}</td>
-                  <td><button className="admin-btn admin-btn-danger" onClick={() => remove(r.id)} aria-label="Delete answer">✕</button></td>
+                  <td><button className="admin-btn admin-btn-danger" onClick={() => remove(r.id)} aria-label={t("Delete answer")}>✕</button></td>
                 </tr>
               ))}
             </tbody>

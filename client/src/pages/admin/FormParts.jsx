@@ -1,3 +1,4 @@
+import { useAdminT } from "../../lib/adminI18n";
 // FormParts.jsx — small form building blocks shared by the admin pages that edit one big
 // document (AdminAbout.jsx, AdminSettings.jsx).
 
@@ -16,6 +17,7 @@ export function Field({ label, value, onChange, multiline, rtl, ...rest }) {
 // Editable list with add / remove / move up / move down. `renderRow(item, update)` draws one row.
 // `max` (optional) hides the "+ Add" button once the list is full.
 export function ListEditor({ title, items, onChange, blank, renderRow, max, emptyText }) {
+  const { t } = useAdminT();
   const update = (index, patch) => onChange(items.map((item, i) => (i === index ? { ...item, ...patch } : item)));
   const remove = (index) => onChange(items.filter((_, i) => i !== index));
   const move = (index, step) => {
@@ -29,7 +31,7 @@ export function ListEditor({ title, items, onChange, blank, renderRow, max, empt
   return (
     <div style={{ marginBottom: 28 }}>
       <h2>{title}</h2>
-      {items.length === 0 && <p className="admin-empty">{emptyText || "Nothing here — this block is hidden on the site."}</p>}
+      {items.length === 0 && <p className="admin-empty">{emptyText || t("Nothing here — this block is hidden on the site.")}</p>}
       {items.map((item, index) => (
         <div key={index} className="admin-form-row" style={{ alignItems: "end", marginBottom: 10 }}>
           {renderRow(item, (patch) => update(index, patch))}
@@ -41,7 +43,7 @@ export function ListEditor({ title, items, onChange, blank, renderRow, max, empt
         </div>
       ))}
       {(!max || items.length < max) && (
-        <button type="button" className="admin-btn" onClick={() => onChange([...items, { ...blank }])}>+ Add</button>
+        <button type="button" className="admin-btn" onClick={() => onChange([...items, { ...blank }])}>{t("+ Add")}</button>
       )}
     </div>
   );
