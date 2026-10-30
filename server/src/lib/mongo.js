@@ -415,6 +415,88 @@ formSchema.pre("validate", function () {
   });
 });
 
+// ---- Team workspace (Admin → Team, member portal /#/team) ----
+// A team member account, created by the owner. Members log in with username + password at
+// /#/team (routes/team.js) — a login completely separate from the admin's. A new account (or a
+// reset password) must choose a new password on first login. `active: false` blocks the login
+// without deleting anything.
+const teamMemberSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      required: [true, "A username is required"],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [/^[a-z0-9._-]{3,30}$/, "Username: 3–30 characters, a-z, 0-9, dot, dash or underscore"],
+    },
+    name: { type: String, required: [true, "A name is required"], trim: true, maxlength: 80 },
+    specialty: { type: String, default: "", trim: true, maxlength: 80 }, // e.g. "Frontend", "UI design"
+    passwordHash: { type: String, required: true, select: false },
+    mustChangePassword: { type: Boolean, default: true },
+    active: { type: Boolean, default: true },
+    lastLoginAt: { type: Date, default: null },
+  },
+  { timestamps: true }
+);
+
+// An internal project the team works on (not the portfolio's Project model). `docs` is a
+// Markdown page — how to run it, decisions, notes — shown to every member of the project.
+const teamProjectSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: [true, "A project name is required"], trim: true, maxlength: 120 },
+    summary: { type: String, default: "", maxlength: 500 },
+    docs: { type: String, default: "", maxlength: 60000 },
+    links: {
+      type: [{ _id: false, label: { type: String, maxlength: 60, default: "" }, url: httpUrl }],
+      default: [],
+      validate: { validator: (l) => l.length <= 12, message: "Up to 12 links" },
+    },
+    dueDate: { type: String, default: "", match: [/^(\d{4}-\d{2}-\d{2})?$/, "The due date must be YYYY-MM-DD"] },
+    members: [{ type: mongoose.Schema.Types.ObjectId, ref: "TeamMember" }],
+    status: { type: String, enum: ["active", "completed", "archived"], default: "active" },
+  },
+  { timestamps: true }
+);
+
+// One task. Members move their own tasks todo → doing → review; only the owner moves a task
+// from review to done (approve) or back to doing with a `reviewNote` (send back).
+// `steps` is the task's to-do list — the owner and the assigned member can both edit it.
+const TASK_STATUSES = ["todo", "doing", "review", "done"];
+const teamTaskSchema = new mongoose.Schema(
+  {
+    project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", required: true, index: true },
+    title: { type: String, required: [true, "A task title is required"], trim: true, maxlength: 200 },
+    description: { type: String, default: "", maxlength: 20000 }, // Markdown
+    assignee: { type: mongoose.Schema.Types.ObjectId, ref: "TeamMember", default: null, index: true },
+    priority: { type: String, enum: ["low", "normal", "high", "urgent"], default: "normal" },
+    dueDate: { type: String, default: "", match: [/^(\d{4}-\d{2}-\d{2})?$/, "The due date must be YYYY-MM-DD"] },
+    status: { type: String, enum: TASK_STATUSES, default: "todo" },
+    steps: {
+      type: [{ text: { type: String, required: true, trim: true, maxlength: 300 }, done: { type: Boolean, default: false } }],
+      default: [],
+      validate: { validator: (s) => s.length <= 50, message: "Up to 50 steps per task" },
+    },
+    reviewNote: { type: String, default: "", maxlength: 2000 }, // the owner's comment when sending it back
+    submittedAt: { type: Date, default: null },
+    completedAt: { type: Date, default: null },
+    order: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+
+// What happened in the workspace, newest first ("Mona submitted 'Login page' for review").
+const teamActivitySchema = new mongoose.Schema(
+  {
+    project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", index: true },
+    task: { type: mongoose.Schema.Types.ObjectId, ref: "TeamTask", default: null },
+    member: { type: mongoose.Schema.Types.ObjectId, ref: "TeamMember", default: null }, // null = the owner
+    action: { type: String, required: true, maxlength: 40 },
+    detail: { type: String, default: "", maxlength: 300 },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } }
+);
+
 // One submission of a Form: `answers` maps each field key to the text the person typed.
 const formResponseSchema = new mongoose.Schema(
   {
@@ -444,6 +526,10 @@ const models = {
   Course: mongoose.models.Course || mongoose.model("Course", courseSchema),
   Form: mongoose.models.Form || mongoose.model("Form", formSchema),
   FormResponse: mongoose.models.FormResponse || mongoose.model("FormResponse", formResponseSchema),
+  TeamMember: mongoose.models.TeamMember || mongoose.model("TeamMember", teamMemberSchema),
+  TeamProject: mongoose.models.TeamProject || mongoose.model("TeamProject", teamProjectSchema),
+  TeamTask: mongoose.models.TeamTask || mongoose.model("TeamTask", teamTaskSchema),
+  TeamActivity: mongoose.models.TeamActivity || mongoose.model("TeamActivity", teamActivitySchema),
 };
 
 // When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and
@@ -473,6 +559,17 @@ for (const model of [models.Project, models.Certificate, models.Course]) {
     },
   });
 }
+
+// Team members: never send the password hash, even when a route loaded it to check a password.
+models.TeamMember.schema.set("toJSON", {
+  transform: (_document, ret) => {
+    ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    delete ret.passwordHash;
+    return ret;
+  },
+});
 
 // Blog posts: the cover picture becomes `hasCover` (fetched from GET /api/posts/:slug/cover).
 models.Post.schema.set("toJSON", {

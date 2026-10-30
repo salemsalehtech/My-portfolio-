@@ -12,15 +12,18 @@ const BASE = import.meta.env.VITE_API_URL || "/api";
 export const API_BASE = BASE;
 
 // Internal helper that every api.* method funnels through. It:
-//  1. attaches the admin's JWT (if logged in — see AdminContext.jsx) as a Bearer header,
+//  1. attaches a JWT as a Bearer header: the team member's token for the member portal's
+//     /team/* calls (pages/team/), otherwise the admin's (if logged in — see AdminContext.jsx),
 //  2. sends the request and parses the JSON response,
 //  3. throws an Error with the server's message whenever the response isn't 2xx, so
 //     callers can just try/catch instead of checking res.ok themselves every time.
 //  4. if the server says the login token is no longer valid (401 — it expires after 7 days),
-//     forgets it and fires an "admin-session-expired" event; AdminContext.jsx listens for it and
-//     sends the admin to the login page (and back to the same page afterwards).
+//     forgets it and fires "admin-session-expired" (or "team-session-expired"); AdminContext.jsx
+//     and the team portal listen for it and send the person back to their login page.
 async function request(path, options = {}) {
-  const token = localStorage.getItem("adminToken");
+  const kind = path.startsWith("/team/") ? "team" : "admin";
+  const storageKey = `${kind}Token`;
+  const token = localStorage.getItem(storageKey);
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
   if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -28,8 +31,8 @@ async function request(path, options = {}) {
   if (res.status === 204) return null; // no-content responses (e.g. successful deletes)
   const data = await res.json().catch(() => null);
   if (res.status === 401 && token) {
-    localStorage.removeItem("adminToken");
-    window.dispatchEvent(new Event("admin-session-expired"));
+    localStorage.removeItem(storageKey);
+    window.dispatchEvent(new Event(`${kind}-session-expired`));
     throw new Error("Your login has expired — please sign in again.");
   }
   if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);

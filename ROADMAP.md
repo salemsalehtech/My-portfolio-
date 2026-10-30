@@ -66,6 +66,7 @@ Estimates assume ~5–8 hours/week alongside coursework — adjust to real avail
 10. **Wave B** — ~~certificates~~, ~~visitor analytics~~, ~~blog~~, ~~courses~~ done; next: newsletter 🔒 (needs the email), chat 🔒.
 11. **2.6** whenever a custom domain is bought.
 12. **Google Search visibility** — *postponed by the owner (2026-10-25)*. Add `client/public/robots.txt` (disallow `/admin`) + `sitemap.xml`, register the site in Google Search Console (URL-prefix property, HTML-tag verification — owner sends the meta tag), submit the sitemap, Request indexing; owner links the site from LinkedIn/GitHub/YouTube. Best done together with 2.6.
+13. **Wave D** — team workspace (now) → product landing pages → SaaS subscriptions; see Wave D below.
 
 ---
 
@@ -141,3 +142,22 @@ Every item follows rule 1 (dashboard-managed). Waves are ordered by proximity an
 - [x] **Form Builder** — `/admin/forms`: custom forms (EN/AR title + description, up to 30 fields: short text, paragraph, email, phone, number, list, date; required flag), open/closed, public link `/#/form/<slug>[/en|ar]`; answers shown as a sheet + **Download Excel** (.xlsx, lazy-loaded `write-excel-file`). Server re-validates every answer, honeypot, 10 submissions/hour per visitor. *Done 2026-10-30.*
 - **Services + pricing page** — idea not finalized yet.
 - **Additional product listings** — details decided after the first store is stable.
+
+### Wave D — Team workspace → product landing pages → SaaS (owner request 2026-10-30)
+
+The flow: the team **builds** a project in the workspace → it gets a **landing page** on the site → it is **sold as a monthly subscription (SaaS)**.
+
+Owner decisions (2026-10-30):
+- A team member sees the **whole board of their projects** but can edit only **their own** tasks.
+- **Only the owner creates and assigns tasks**; a member can add **to-do steps** inside their own task.
+- Team pages in **Arabic and English**.
+- "Done" by a member goes to **Waiting for review**; the owner approves (→ Done) or sends it back with a comment.
+- Products are sold as **monthly subscriptions (SaaS)**, priced in **EGP and USD**.
+
+Build order:
+1. [x] **Team workspace, phase 1** *(done 2026-10-30)* — member accounts created by the owner (username, temporary password changed on first login, specialty, can be disabled; a login fully separate from the admin token), internal projects with a Markdown docs page, tasks (description, assignee, priority, due date, status, to-do steps), member portal `/#/team` (my tasks + project board), owner Kanban board, progress per project / member, review queue, activity log.
+2. **Product landing pages** — built from blocks in the dashboard (hero, problem/solution, features, screenshots, demo video, live demo, tech, pricing EGP/USD, FAQ, reviews), per-product accent color + share image, `/#/p/<slug>`, a "Products" section on the home page, "Publish as product" from a finished workspace project. First version: "Request / subscribe" goes to a Form Builder form.
+3. **SaaS subscriptions** — needs a design pass first: how each customer gets their own instance or account, recurring billing (e.g. Paymob in Egypt, a merchant-of-record platform for USD — verify terms for Egyptian sellers before choosing), trial, renewal, suspension.
+4. **Workspace phase 2** — daily standup (yesterday / today / blocked), task comments, time logging + Excel, project templates, in-app notifications (email later), points / badges / "star of the week" (can be turned off), a client progress page (read-only link).
+
+⚠ Only sell projects the owner has the rights to (not client work unless the contract or client allows it); each product gets license / terms of use.

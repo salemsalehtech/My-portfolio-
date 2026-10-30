@@ -47,6 +47,10 @@ import { lazy, Suspense } from "react";
 // pages is opened — the home page stays as light as before.
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const AdminPostEditor = lazy(() => import("./pages/admin/AdminPostEditor"));
+// The team workspace (member portal + the owner's team pages) is only downloaded when opened.
+const TeamPortal = lazy(() => import("./pages/team/TeamPortal"));
+const AdminTeam = lazy(() => import("./pages/admin/AdminTeam"));
+const AdminTeamProject = lazy(() => import("./pages/admin/AdminTeamProject"));
 const loading = <p style={{ padding: 40, textAlign: "center" }}>…</p>;
 
 export default function App() {
@@ -62,6 +66,7 @@ export default function App() {
             <Route path="/feedback/:lang" element={<FeedbackForm />} />
             <Route path="/form/:slug" element={<PublicForm />} />
             <Route path="/form/:slug/:lang" element={<PublicForm />} />
+            <Route path="/team/*" element={<Suspense fallback={loading}><TeamPortal /></Suspense>} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<Navigate to="/admin/projects" replace />} />
@@ -75,6 +80,8 @@ export default function App() {
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="posts" element={<AdminPosts />} />
               <Route path="courses" element={<AdminCourses />} />
+              <Route path="team" element={<Suspense fallback={loading}><AdminTeam /></Suspense>} />
+              <Route path="team/projects/:id" element={<Suspense fallback={loading}><AdminTeamProject /></Suspense>} />
               <Route path="forms" element={<AdminForms />} />
               <Route path="forms/:id" element={<AdminFormEditor />} />
               <Route path="forms/:id/responses" element={<AdminFormResponses />} />
