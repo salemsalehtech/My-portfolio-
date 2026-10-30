@@ -4,7 +4,7 @@
 // a sidebar (links to each admin page + logout) and <Outlet /> — react-router-dom's
 // placeholder for whichever child route is currently active (AdminProjects, AdminSkills,
 // etc.).
-import { Navigate, NavLink, Outlet } from "react-router-dom";
+import { Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useAdmin } from "../../context/AdminContext";
 
 const LINKS = [
@@ -26,8 +26,10 @@ const LINKS = [
 
 export default function AdminLayout() {
   const { isAuthed, logout } = useAdmin();
+  const location = useLocation();
 
-  if (!isAuthed) return <Navigate to="/admin/login" replace />;
+  // Remember the page, so after signing in the admin goes straight back to it.
+  if (!isAuthed) return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />;
 
   return (
     <div className="admin-page admin-shell">

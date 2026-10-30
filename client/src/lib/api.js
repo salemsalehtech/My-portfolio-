@@ -16,6 +16,9 @@ export const API_BASE = BASE;
 //  2. sends the request and parses the JSON response,
 //  3. throws an Error with the server's message whenever the response isn't 2xx, so
 //     callers can just try/catch instead of checking res.ok themselves every time.
+//  4. if the server says the login token is no longer valid (401 — it expires after 7 days),
+//     forgets it and fires an "admin-session-expired" event; AdminContext.jsx listens for it and
+//     sends the admin to the login page (and back to the same page afterwards).
 async function request(path, options = {}) {
   const token = localStorage.getItem("adminToken");
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
@@ -24,6 +27,11 @@ async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, { ...options, headers });
   if (res.status === 204) return null; // no-content responses (e.g. successful deletes)
   const data = await res.json().catch(() => null);
+  if (res.status === 401 && token) {
+    localStorage.removeItem("adminToken");
+    window.dispatchEvent(new Event("admin-session-expired"));
+    throw new Error("Your login has expired — please sign in again.");
+  }
   if (!res.ok) throw new Error(data?.error || `Request failed (${res.status})`);
   return data;
 }
