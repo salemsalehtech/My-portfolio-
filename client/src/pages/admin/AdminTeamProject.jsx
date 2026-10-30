@@ -1,17 +1,20 @@
 // AdminTeamProject.jsx — one team project for the owner (/admin/team/projects/:id), loaded on
 // demand. Tabs:
 //   Board    — the Kanban board; "+ Task" and clicking a card open the task editor (title,
-//              Markdown description, assignee, priority, due date, status, to-do steps). A task
-//              waiting for review can be approved or sent back with a note right there.
+//              Markdown description, assignee, priority, due date, status, to-do steps, comments).
+//              A task waiting for review can be approved or sent back with a note right there.
+//              Cards can be dragged to any column (dropping on Done counts as approving);
+//              search and filters sit above the board.
 //   Docs     — the project's Markdown documentation (Write / Preview), shown to every member.
 //   Settings — name, summary, due date, status, members, links; delete the project.
 // ?tab=settings and ?task=<id> in the address open that tab / task directly (used by AdminTeam).
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../../lib/api";
-import { STATUSES, STATUS_LABEL, PRIORITIES, PRIORITY_LABEL } from "../../lib/team";
+import { STATUSES, STATUS_LABEL, PRIORITIES, PRIORITY_LABEL, SHARED_COPY } from "../../lib/team";
 import Board from "../../components/team/Board";
 import MarkdownView from "../../components/team/MarkdownView";
+import Comments from "../../components/team/Comments";
 import { ListEditor } from "./FormParts";
 import { useAdminT } from "../../lib/adminI18n";
 
@@ -39,6 +42,19 @@ export default function AdminTeamProject() {
   }, [data, taskParam]);
   const closeEditor = () => { setEditing(null); if (taskParam) setParams({}, { replace: true }); };
 
+  const patchTask = (taskId, patch) => setData((d) => ({ ...d, tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, ...patch } : x)) }));
+  // Drag & drop: the card moves at once and goes back if saving fails.
+  const onMove = async (task, status) => {
+    setError("");
+    patchTask(task.id, { status });
+    try {
+      patchTask(task.id, await api.put(`/admin/team/tasks/${task.id}`, { status }));
+    } catch (err) {
+      patchTask(task.id, { status: task.status });
+      setError(err.message || SHARED_COPY[lang].moveFailed);
+    }
+  };
+
   if (!data) return <p className={error ? "admin-error" : ""}>{error || t("Loading…")}</p>;
   const { project, tasks } = data;
   const done = tasks.filter((t) => t.status === "done").length;
@@ -56,7 +72,9 @@ export default function AdminTeamProject() {
       {tab === "board" && (
         <>
           {project.members.length === 0 && <p className="admin-notice">{t("Add members in Settings to assign tasks to them.")}</p>}
-          <Board tasks={tasks} lang={lang} onOpen={setEditing} onAdd={() => setEditing("new")} addLabel={t("+ Task")} />
+          {error && <p className="admin-error">{error}</p>}
+          <Board tasks={tasks} lang={lang} onOpen={setEditing} onAdd={() => setEditing("new")} addLabel={t("+ Task")}
+            members={project.members} canMove={() => true} onMove={onMove} />
         </>
       )}
       {tab === "docs" && <DocsEditor project={project} onSaved={load} />}
@@ -72,6 +90,7 @@ export default function AdminTeamProject() {
           task={editing === "new" ? null : editing}
           onClose={closeEditor}
           onSaved={() => { closeEditor(); load(); }}
+          onCommentCount={(n) => patchTask(editing.id, { commentCount: n })}
         />
       )}
     </div>
@@ -79,7 +98,7 @@ export default function AdminTeamProject() {
 }
 
 // ---- Task editor (modal) ----
-function TaskEditor({ projectId, members, task, onClose, onSaved }) {
+function TaskEditor({ projectId, members, task, onClose, onSaved, onCommentCount }) {
   const { t, lang } = useAdminT();
   const [form, setForm] = useState(() => (task ? { ...BLANK_TASK, ...task, assignee: task.assignee?.id || "" } : BLANK_TASK));
   const [preview, setPreview] = useState(false);
@@ -122,7 +141,7 @@ function TaskEditor({ projectId, members, task, onClose, onSaved }) {
         <form className="admin-form" onSubmit={save}>
           <label>{t("Title")}<input className="form-input" dir="auto" value={form.title} onChange={set("title")} maxLength={200} required /></label>
           <label>
-            <span className="tm-label-row">What to do (Markdown)
+            <span className="tm-label-row">{t("What to do (Markdown)")}
               <button type="button" className="admin-btn" onClick={() => setPreview(!preview)}>{preview ? t("✎ Write") : t("Preview")}</button>
             </span>
             {preview
@@ -158,6 +177,15 @@ function TaskEditor({ projectId, members, task, onClose, onSaved }) {
             <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
           </div>
         </form>
+        {task && (
+          <Comments
+            path={`/admin/team/tasks/${task.id}/comments`}
+            deletePath={(x) => `/admin/team/comments/${x.id}`}
+            canDelete={() => true}
+            lang={lang}
+            onCount={onCommentCount}
+          />
+        )}
       </div>
     </div>
   );

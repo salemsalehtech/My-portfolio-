@@ -2,8 +2,8 @@
 // App.jsx). Guards the whole admin section: if not logged in (useAdmin().isAuthed is false), it
 // redirects to /admin/login, remembering the page.
 //
-// Layout: a sidebar menu grouped by purpose (with icons) + a top bar (View site, light / dark
-// theme, English / Arabic) + <Outlet /> — react-router-dom's placeholder for the active page.
+// Layout: a sidebar menu grouped by purpose (with icons) + a top bar (team notifications 🔔,
+// View site, light / dark theme, English / Arabic) + <Outlet /> — react-router-dom's placeholder for the active page.
 // On phones the sidebar becomes a drawer opened from the ☰ button and closed after choosing a page.
 // The dashboard language (lib/adminI18n.jsx) also flips the whole layout to right-to-left.
 import { useEffect, useState } from "react";
@@ -13,6 +13,11 @@ import { useSite } from "../../context/SiteContext";
 import { useAdminT } from "../../lib/adminI18n";
 import { COMPANY } from "../../lib/brand";
 import { NAV_ICONS } from "../../components/admin/navIcons";
+import Bell from "../../components/team/Bell";
+
+// Where a click on a notification 🔔 leads: the task in its project, or today's standups.
+const bellLink = ({ project, task, kind }) =>
+  kind === "blocker" ? "/admin/team?tab=standups" : project && task ? `/admin/team/projects/${project}?task=${task}` : null;
 
 const GROUPS = [
   { title: "Insights", links: [{ to: "/admin/analytics", label: "Analytics", icon: "analytics" }] },
@@ -91,6 +96,7 @@ export default function AdminLayout() {
           <button type="button" className="admin-icon-btn admin-only-mobile" onClick={() => setMenuOpen(true)} aria-label={t("Open menu")}>{NAV_ICONS.menu}</button>
           <Link to="/" className="admin-brand admin-only-mobile"><span className="tm-logo">SS</span></Link>
           <div className="admin-topbar-actions">
+            <Bell base="/admin/team" lang={lang} link={bellLink} className="is-admin" />
             <a className="admin-icon-btn admin-view-site" href="#/" target="_blank" rel="noreferrer" title={t("View site")}>{NAV_ICONS.external}<span>{t("View site")}</span></a>
             <button type="button" className="admin-icon-btn" onClick={toggleTheme} title={theme === "dark" ? t("Light mode") : t("Dark mode")} aria-label={theme === "dark" ? t("Light mode") : t("Dark mode")}>
               {theme === "dark" ? NAV_ICONS.sun : NAV_ICONS.moon}

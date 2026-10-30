@@ -6,7 +6,8 @@
 // a different login from the admin's. A new account must first replace its temporary password.
 // Then:
 //   /team               → TeamHome: what needs attention, my tasks, my projects
-//   /team/projects/:id  → TeamProject: the project's board, docs and team
+//   /team/projects/:id  → TeamProject: the project's board, docs and team (?task=<id> opens a task)
+// The top bar has the notification bell 🔔 (components/team/Bell.jsx).
 // The portal speaks English and Arabic (remembered in localStorage) and follows the site's
 // light / dark theme; both switches are in the top bar.
 import { createContext, useContext, useEffect, useRef, useState } from "react";
@@ -19,6 +20,7 @@ import { SunIcon, MoonIcon, GlobeIcon, KeyIcon, LogoutIcon, ExternalIcon, CheckC
 import { TEAM_COPY } from "./teamCopy";
 import TeamHome from "./TeamHome";
 import TeamProject from "./TeamProject";
+import Bell from "../../components/team/Bell";
 
 const TeamContext = createContext(null);
 export const useTeam = () => useContext(TeamContext);
@@ -111,7 +113,7 @@ function Switches() {
 }
 
 function TeamTopbar() {
-  const { t, member, logout } = useTeam();
+  const { t, lang, member, logout } = useTeam();
   const [menu, setMenu] = useState(false);
   const [changing, setChanging] = useState(false);
   const menuRef = useRef(null);
@@ -131,6 +133,7 @@ function TeamTopbar() {
       <header className="tm-topbar">
         <Brand subtitle={t.portal} />
         <div className="tm-topbar-actions">
+          <Bell base="/team" lang={lang} link={({ project, task }) => (project && task ? `/team/projects/${project}?task=${task}` : null)} />
           <Switches />
           <div className="tm-account" ref={menuRef}>
             <button type="button" className="tm-account-btn" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label={t.account}>

@@ -3,14 +3,16 @@
 // For the member's OWN task: change the status (Start → I'm done, send for review; or back),
 // and manage the to-do steps (tick, add, delete). If the owner sent the task back, their review
 // notes are shown at the top. A teammate's task opens read-only.
+// Anyone on the project can comment (Comments.jsx); the new count goes up with onCommentCount(n).
 // Every change is saved right away (routes/team.js) and passed up with onChange(updatedTask).
 import { useState } from "react";
 import { api } from "../../lib/api";
 import { STATUS_LABEL, PRIORITY_LABEL, isOverdue, formatDue } from "../../lib/team";
 import MarkdownView from "../../components/team/MarkdownView";
+import Comments from "../../components/team/Comments";
 import { useTeam } from "./TeamPortal";
 
-export default function TeamTaskModal({ task, projectName, onClose, onChange }) {
+export default function TeamTaskModal({ task, projectName, onClose, onChange, onCommentCount }) {
   const { t, lang, member } = useTeam();
   const mine = task.assignee?.id === member.id;
   const [stepText, setStepText] = useState("");
@@ -104,6 +106,15 @@ export default function TeamTaskModal({ task, projectName, onClose, onChange }) 
           )}
           {task.status === "done" && <p className="tm-done-text">{t.approved}</p>}
         </div>
+
+        <Comments
+          path={`/team/tasks/${task.id}/comments`}
+          deletePath={(x) => `/team/comments/${x.id}`}
+          canDelete={(x) => x.member?.id === member.id}
+          lang={lang}
+          me={member.id}
+          onCount={onCommentCount}
+        />
       </div>
     </div>
   );

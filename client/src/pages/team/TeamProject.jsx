@@ -1,12 +1,15 @@
 // TeamProject.jsx — one project in the member portal (/#/team/projects/:id), in three tabs:
 //   Board — every task of the project by status (the member's own cards are highlighted;
-//           clicking any card opens it, a teammate's read-only),
+//           clicking any card opens it, a teammate's read-only). The member drags their own
+//           cards between the columns they may use (todo ↔ doing → review, see MEMBER_MOVES);
+//           search and filters sit above the board,
 //   Docs  — the project's Markdown documentation + its links,
 //   Team  — who is on the project and their specialty.
+// ?task=<id> in the address (a link from the bell 🔔) opens that task.
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../../lib/api";
-import { initials, formatDue } from "../../lib/team";
+import { initials, formatDue, MEMBER_MOVES, SHARED_COPY } from "../../lib/team";
 import Board from "../../components/team/Board";
 import MarkdownView from "../../components/team/MarkdownView";
 import { useTeam } from "./TeamPortal";
@@ -19,14 +22,36 @@ export default function TeamProject() {
   const [tab, setTab] = useState("board");
   const [open, setOpen] = useState(null);
   const [error, setError] = useState("");
+  const [params, setParams] = useSearchParams();
+  const taskParam = params.get("task");
 
   useEffect(() => {
     api.get(`/team/projects/${id}`).then(setData).catch((err) => setError(err.message));
   }, [id]);
 
+  useEffect(() => {
+    if (data && taskParam) { const found = data.tasks.find((x) => x.id === taskParam); if (found) { setOpen(found); setTab("board"); } }
+  }, [data, taskParam]);
+  const close = () => { setOpen(null); if (taskParam) setParams({}, { replace: true }); };
+
+  const patchTask = (taskId, patch) => setData((d) => ({ ...d, tasks: d.tasks.map((x) => (x.id === taskId ? { ...x, ...patch } : x)) }));
   const replaceTask = (updated) => {
-    setData((d) => ({ ...d, tasks: d.tasks.map((x) => (x.id === updated.id ? updated : x)) }));
-    setOpen(updated);
+    patchTask(updated.id, updated);
+    setOpen((cur) => ({ ...cur, ...updated }));
+  };
+
+  // Drag & drop: only my own cards, only the moves a member may make. The card moves at once
+  // and goes back if the server says no.
+  const canMove = (task, status) => task.assignee?.id === member.id && MEMBER_MOVES[task.status].includes(status);
+  const onMove = async (task, status) => {
+    setError("");
+    patchTask(task.id, { status });
+    try {
+      patchTask(task.id, await api.patch(`/team/tasks/${task.id}/status`, { status }));
+    } catch (err) {
+      patchTask(task.id, { status: task.status });
+      setError(err.message || SHARED_COPY[lang].moveFailed);
+    }
   };
 
   if (!data) {
@@ -57,7 +82,8 @@ export default function TeamProject() {
           ))}
         </nav>
 
-        {tab === "board" && <Board tasks={tasks} lang={lang} onOpen={setOpen} mine={member.id} />}
+        {tab === "board" && error && <p className="tm-error" role="alert">{error}</p>}
+        {tab === "board" && <Board tasks={tasks} lang={lang} onOpen={setOpen} mine={member.id} members={project.members} canMove={canMove} onMove={onMove} />}
 
         {tab === "docs" && (
           <div className="tm-docs">
@@ -82,7 +108,7 @@ export default function TeamProject() {
           </ul>
         )}
       </main>
-      {open && <TeamTaskModal task={open} projectName={project.name} onClose={() => setOpen(null)} onChange={replaceTask} />}
+      {open && <TeamTaskModal task={open} projectName={project.name} onClose={close} onChange={replaceTask} onCommentCount={(n) => patchTask(open.id, { commentCount: n })} />}
     </>
   );
 }

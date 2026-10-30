@@ -497,6 +497,52 @@ const teamActivitySchema = new mongoose.Schema(
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 
+// A comment on a task — the owner and the project's members talk in the task itself.
+// `member` is the member who wrote it; `byOwner` marks the owner's comments (a deleted member's
+// comments stay, with member null and byOwner false).
+const teamCommentSchema = new mongoose.Schema(
+  {
+    task: { type: mongoose.Schema.Types.ObjectId, ref: "TeamTask", required: true, index: true },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", required: true },
+    member: { type: mongoose.Schema.Types.ObjectId, ref: "TeamMember", default: null },
+    byOwner: { type: Boolean, default: false }, // written by the owner (member stays null)
+    body: { type: String, required: [true, "Write a comment first"], trim: true, maxlength: 2000 },
+  },
+  { timestamps: true }
+);
+
+// A notification for the bell 🔔. `recipient` is a member, or null for the owner. `kind` says
+// what happened (assigned, approved, returned, submitted, comment, blocker); the client words it.
+// Old notifications delete themselves after 60 days (TTL index).
+const teamNotificationSchema = new mongoose.Schema(
+  {
+    recipient: { type: mongoose.Schema.Types.ObjectId, ref: "TeamMember", default: null, index: true },
+    kind: { type: String, required: true, maxlength: 30 },
+    actor: { type: String, default: "", maxlength: 80 }, // the name of who did it
+    task: { type: mongoose.Schema.Types.ObjectId, ref: "TeamTask", default: null },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", default: null },
+    detail: { type: String, default: "", maxlength: 300 },
+    read: { type: Boolean, default: false },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } }
+);
+teamNotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 24 * 60 * 60 });
+
+// A member's daily standup: what I did yesterday, what I'll do today, what blocks me.
+// One per member per day (`date` is the Cairo date, "YYYY-MM-DD").
+const teamStandupSchema = new mongoose.Schema(
+  {
+    member: { type: mongoose.Schema.Types.ObjectId, ref: "TeamMember", required: true },
+    date: { type: String, required: true, match: [/^\d{4}-\d{2}-\d{2}$/, "The date must be YYYY-MM-DD"] },
+    yesterday: { type: String, default: "", trim: true, maxlength: 2000 },
+    today: { type: String, default: "", trim: true, maxlength: 2000 },
+    blockers: { type: String, default: "", trim: true, maxlength: 2000 },
+  },
+  { timestamps: true }
+);
+teamStandupSchema.index({ member: 1, date: 1 }, { unique: true });
+teamStandupSchema.index({ date: 1 });
+
 // One submission of a Form: `answers` maps each field key to the text the person typed.
 const formResponseSchema = new mongoose.Schema(
   {
@@ -530,6 +576,9 @@ const models = {
   TeamProject: mongoose.models.TeamProject || mongoose.model("TeamProject", teamProjectSchema),
   TeamTask: mongoose.models.TeamTask || mongoose.model("TeamTask", teamTaskSchema),
   TeamActivity: mongoose.models.TeamActivity || mongoose.model("TeamActivity", teamActivitySchema),
+  TeamComment: mongoose.models.TeamComment || mongoose.model("TeamComment", teamCommentSchema),
+  TeamNotification: mongoose.models.TeamNotification || mongoose.model("TeamNotification", teamNotificationSchema),
+  TeamStandup: mongoose.models.TeamStandup || mongoose.model("TeamStandup", teamStandupSchema),
 };
 
 // When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and

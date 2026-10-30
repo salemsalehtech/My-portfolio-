@@ -943,3 +943,94 @@ body.ar .cert-title { font-family: var(--font-ar); }
   .admin-toolbar { justify-content: flex-start; }
 }
 .tm-admin-grid > * { min-width: 0; }
+
+/* ---- Team efficiency: board filters + drag & drop, comments, bell, standups ---- */
+.tm-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
+.tm-filters .fp-input { width: auto; padding: 8px 12px; font-size: 14px; }
+.tm-filters .tm-search { flex: 1 1 220px; min-width: 0; }
+.tm-check { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; color: var(--text-secondary); cursor: pointer; white-space: nowrap; }
+.tm-check input { accent-color: var(--gold); width: 16px; height: 16px; }
+.tm-link-btn { background: none; border: none; padding: 4px 6px; color: var(--gold); font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.tm-drag-hint { margin-bottom: 10px; }
+.tm-card.is-draggable { cursor: grab; }
+.tm-card.is-dragging { opacity: .45; transform: none; }
+.tm-col { transition: border-color .15s, background .15s, opacity .15s; }
+.tm-col.is-target { border-style: dashed; border-color: var(--gold); }
+.tm-col.is-over { background: var(--gold-dim); }
+.tm-col.is-blocked { opacity: .55; }
+@media (hover: none) { .tm-drag-hint { display: none; } }
+
+.tm-comments { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; padding-top: 16px; border-top: 1px solid var(--card-border); }
+.tm-comments h3 { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-muted); }
+.tm[lang="ar"] .tm-comments h3, .admin-shell[lang="ar"] .tm-comments h3 { letter-spacing: 0; font-size: 14px; }
+.tm-comment-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; }
+.tm-comment { display: flex; gap: 10px; align-items: flex-start; }
+.tm-comment .tm-avatar { flex-shrink: 0; }
+.tm-comment.is-owner .tm-avatar { background: var(--gold); color: #1a1a1a; }
+.tm-comment-main { flex: 1; min-width: 0; padding: 8px 12px; border-radius: 12px; background: var(--card); border: 1px solid var(--card-border); }
+.tm-comment.is-mine .tm-comment-main { background: var(--gold-dim); border-color: transparent; }
+.tm-comment-head { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.tm-comment-head .tm-icon-btn { margin-inline-start: auto; font-size: 13px; padding: 2px 6px; }
+.tm-comment-main p { margin: 4px 0 0; font-size: 14.5px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; unicode-bidi: plaintext; text-align: start; }
+.tm-comment-form { display: flex; gap: 8px; align-items: flex-end; }
+.tm-comment-form textarea { flex: 1; resize: vertical; min-height: 44px; }
+.tm-comment-form .fp-btn { flex-shrink: 0; }
+
+.tm-bell { position: relative; }
+.tm-bell-btn { position: relative; display: inline-flex; align-items: center; justify-content: center; height: 36px; width: 36px; border-radius: 10px; border: 1px solid var(--card-border); background: var(--card); color: var(--text-secondary); cursor: pointer; transition: color .2s, border-color .2s; }
+.tm-bell.is-admin .tm-bell-btn { background: var(--surface); }
+.tm-bell-btn:hover, .tm-bell-btn[aria-expanded="true"] { color: var(--gold); border-color: var(--gold); }
+.tm-bell-badge { position: absolute; top: -6px; inset-inline-end: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #E53E3E; color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; box-shadow: 0 0 0 2px var(--bg); }
+.tm-bell-panel { position: absolute; top: calc(100% + 8px); inset-inline-end: 0; width: min(360px, calc(100vw - 24px)); border-radius: 14px; background: var(--surface); border: 1px solid var(--card-border); box-shadow: var(--shadow); z-index: 60; overflow: hidden; }
+.tm-bell-head { padding: 12px 14px; border-bottom: 1px solid var(--card-border); font-size: 14px; color: var(--text-primary); }
+.tm-bell-scroll { max-height: min(420px, 70vh); overflow-y: auto; padding: 6px; }
+.tm-bell-group + .tm-bell-group { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--card-border); }
+.tm-bell-title { display: block; padding: 6px 8px 4px; font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; }
+.tm-bell-item { display: flex; gap: 10px; align-items: flex-start; width: 100%; padding: 9px 8px; border: none; border-radius: 9px; background: none; color: var(--text-primary); font: inherit; font-size: 13.5px; line-height: 1.45; text-align: start; cursor: pointer; }
+.tm-bell-item:hover { background: var(--gold-dim); }
+.tm-bell-item.is-new { background: color-mix(in srgb, var(--gold-dim) 60%, transparent); }
+.tm-bell-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.tm-bell-dot { width: 8px; height: 8px; margin-top: 6px; border-radius: 50%; flex-shrink: 0; background: var(--gold); }
+.tm-bell-dot.is-overdue, .tm-bell-dot.is-returned, .tm-bell-dot.is-blocker { background: #E53E3E; }
+.tm-bell-dot.is-today { background: #DD6B20; }
+.tm-bell-dot.is-tomorrow, .tm-bell-dot.is-assigned { background: #3182CE; }
+.tm-bell-dot.is-approved { background: #38A169; }
+.tm-bell-empty { padding: 18px 10px; text-align: center; }
+
+.tm-standup { padding: 18px; margin-bottom: 30px; border-radius: 16px; border: 1px solid var(--gold); background: var(--surface); }
+.tm-standup.is-done { border-color: var(--card-border); }
+.tm-standup-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.tm-standup-head h2 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.tm-standup-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.tm-standup-form .tm-field textarea { resize: vertical; font-weight: 400; }
+.tm-standup-form .tm-error, .tm-standup-form .tm-row { grid-column: 1 / -1; }
+.tm-standup-view { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0; }
+.tm-standup-view > div { padding: 10px 12px; border-radius: 10px; background: var(--card); border: 1px solid var(--card-border); }
+.tm-standup-view > div.is-blocked { border-color: rgba(229,62,62,.4); background: rgba(229,62,62,.05); }
+.tm-standup-view dt { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+.tm-standup-view dd { margin: 0; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; unicode-bidi: plaintext; text-align: start; }
+
+.tm-standup-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; margin-bottom: 16px; border-radius: 12px; border: 1px solid var(--card-border); background: var(--surface); color: var(--text-primary); text-decoration: none; font-size: 14px; }
+.tm-standup-strip:hover { border-color: var(--gold); }
+.tm-standup-strip.is-blocked { border-color: rgba(229,62,62,.4); }
+.tm-standup-strip .tm-pill { margin: 0; }
+.tm-strip-arrow { display: inline-block; margin-inline-start: auto; font-size: 18px; }
+.admin-shell[dir="rtl"] .tm-strip-arrow { transform: scaleX(-1); }
+.tm-day-picker { align-items: center; }
+.tm-day-picker .form-input { width: auto; }
+.tm-standup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-bottom: 16px; }
+.tm-standup-entry { margin: 0; }
+.tm-standup-entry.is-blocked { border-color: rgba(229,62,62,.45); }
+.tm-standup-entry header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.tm-standup-entry dl { margin: 0; display: grid; gap: 4px; }
+.tm-standup-entry dt { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-top: 6px; }
+.tm-standup-entry dd { margin: 0; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; unicode-bidi: plaintext; text-align: start; }
+
+@media (max-width: 600px) {
+  .tm-bell-panel { position: fixed; top: 62px; inset-inline: 12px; width: auto; }
+}
+@media (max-width: 720px) {
+  .tm-standup-form, .tm-standup-view { grid-template-columns: 1fr; }
+  .tm-filters .fp-input:not(.tm-search) { flex: 1 1 40%; }
+  .tm-comment-form { flex-direction: column; align-items: stretch; }
+}

@@ -5,15 +5,17 @@
 //   - see the whole board and docs of every project they are a member of,
 //   - change the status of THEIR OWN tasks: todo ↔ doing → review ("I'm done, please check");
 //     only the owner can approve a task (done) or send it back,
-//   - add / tick / edit / remove to-do steps inside their own tasks.
+//   - add / tick / edit / remove to-do steps inside their own tasks,
+//   - comment on any task of their projects (and delete their own comments),
+//   - read their notifications 🔔 (plus live due-date reminders) and fill in the daily standup.
 // Creating tasks, assigning them and editing projects is the owner's job (routes/adminTeam.js).
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
-const { TeamMember, TeamProject, TeamTask } = require("../lib/mongo");
+const { TeamMember, TeamProject, TeamTask, TeamComment, TeamNotification, TeamStandup } = require("../lib/mongo");
 const { requireMember, signMemberToken } = require("../middleware/teamAuth");
-const { logActivity, MEMBER_PUBLIC } = require("../lib/team");
+const { todayCairo, logActivity, notify, bellFor, withCommentCounts, MEMBER_PUBLIC } = require("../lib/team");
 
 const router = express.Router();
 
@@ -77,7 +79,7 @@ router.get("/tasks", async (req, res) => {
     .populate("project", "name status")
     .populate("assignee", MEMBER_PUBLIC)
     .sort({ dueDate: 1, createdAt: 1 });
-  res.json(tasks.filter((t) => t.project && t.project.status !== "archived"));
+  res.json(await withCommentCounts(tasks.filter((t) => t.project && t.project.status !== "archived")));
 });
 
 // GET /api/team/projects — the projects I belong to, with simple progress numbers.
@@ -98,7 +100,7 @@ router.get("/projects/:id", async (req, res) => {
     .populate("members", MEMBER_PUBLIC);
   if (!project) return res.status(404).json({ error: "Project not found" });
   const tasks = await TeamTask.find({ project: project._id }).populate("assignee", MEMBER_PUBLIC).sort({ order: 1, createdAt: 1 });
-  res.json({ project, tasks });
+  res.json({ project, tasks: await withCommentCounts(tasks) });
 });
 
 // Loads a task that belongs to the logged-in member (404 for anyone else's task).
@@ -106,6 +108,15 @@ async function ownTask(req, res) {
   if (!mongoose.isValidObjectId(req.params.id)) { res.status(404).json({ error: "Task not found" }); return null; }
   const task = await TeamTask.findOne({ _id: req.params.id, assignee: req.member._id });
   if (!task) { res.status(404).json({ error: "Task not found" }); return null; }
+  return task;
+}
+
+// Loads any task of a project I belong to (to read it or comment on it).
+async function visibleTask(req, res) {
+  if (!mongoose.isValidObjectId(req.params.id)) { res.status(404).json({ error: "Task not found" }); return null; }
+  const task = await TeamTask.findById(req.params.id);
+  const project = task && await TeamProject.exists({ _id: task.project, members: req.member._id, status: { $ne: "archived" } });
+  if (!project) { res.status(404).json({ error: "Task not found" }); return null; }
   return task;
 }
 
@@ -125,6 +136,7 @@ router.patch("/tasks/:id/status", async (req, res) => {
   await task.save();
   const action = status === "review" ? "submitted" : status === "doing" ? "started" : "moved";
   logActivity({ project: task.project, task: task._id, member: req.member._id, action, detail: task.title });
+  if (status === "review") notify({ kind: "submitted", actor: req.member.name, task: task._id, project: task.project, detail: task.title });
   res.json(await task.populate("assignee", MEMBER_PUBLIC));
 });
 
@@ -154,6 +166,63 @@ router.delete("/tasks/:id/steps/:stepId", async (req, res) => {
   step.deleteOne();
   await task.save();
   res.json(await task.populate("assignee", MEMBER_PUBLIC));
+});
+
+// ---- Comments ----
+// 60 comments per 10 minutes is plenty for a person, and stops a runaway script.
+const commentLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false, message: { error: "Too many comments. Please wait a few minutes." } });
+
+router.get("/tasks/:id/comments", async (req, res) => {
+  const task = await visibleTask(req, res);
+  if (!task) return;
+  res.json(await TeamComment.find({ task: task._id }).sort({ createdAt: 1 }).populate("member", MEMBER_PUBLIC));
+});
+router.post("/tasks/:id/comments", commentLimiter, async (req, res) => {
+  const task = await visibleTask(req, res);
+  if (!task) return;
+  const comment = await TeamComment.create({ task: task._id, project: task.project, member: req.member._id, body: req.body?.body });
+  const note = { kind: "comment", actor: req.member.name, task: task._id, project: task.project, detail: task.title };
+  notify({ ...note, to: null });
+  if (task.assignee && !task.assignee.equals(req.member._id)) notify({ ...note, to: task.assignee });
+  logActivity({ project: task.project, task: task._id, member: req.member._id, action: "commented", detail: task.title });
+  res.status(201).json(await comment.populate("member", MEMBER_PUBLIC));
+});
+// Members may delete only their own comments.
+router.delete("/comments/:id", async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ error: "Comment not found" });
+  const gone = await TeamComment.findOneAndDelete({ _id: req.params.id, member: req.member._id });
+  if (!gone) return res.status(404).json({ error: "Comment not found" });
+  res.status(204).end();
+});
+
+// ---- Notifications 🔔 ----
+router.get("/notifications", async (req, res) => {
+  res.json(await bellFor(req.member._id, { assignee: req.member._id }));
+});
+// POST /notifications/read — marks every notification as read (the bell was opened).
+router.post("/notifications/read", async (req, res) => {
+  await TeamNotification.updateMany({ recipient: req.member._id, read: false }, { read: true });
+  res.status(204).end();
+});
+
+// ---- Daily standup ----
+// GET /standup → today's standup (or null) and the date the server counts as today.
+router.get("/standup", async (req, res) => {
+  const date = todayCairo();
+  res.json({ date, standup: await TeamStandup.findOne({ member: req.member._id, date }) });
+});
+// PUT /standup { yesterday, today, blockers } — saves (or updates) today's standup.
+router.put("/standup", async (req, res) => {
+  const date = todayCairo();
+  const data = Object.fromEntries(["yesterday", "today", "blockers"].map((k) => [k, String(req.body?.[k] ?? "")]));
+  if (!data.yesterday.trim() && !data.today.trim() && !data.blockers.trim()) return res.status(400).json({ error: "Write at least one line" });
+  const before = await TeamStandup.findOne({ member: req.member._id, date });
+  const standup = await TeamStandup.findOneAndUpdate({ member: req.member._id, date }, data, { new: true, upsert: true, runValidators: true });
+  // Tell the owner when someone is blocked (once per new or changed blocker).
+  if (standup.blockers && standup.blockers !== (before?.blockers || "")) {
+    notify({ kind: "blocker", actor: req.member.name, detail: standup.blockers });
+  }
+  res.json({ date, standup });
 });
 
 module.exports = router;

@@ -2,6 +2,7 @@
 //   - a greeting with today's date,
 //   - "Needs attention": overdue tasks, tasks due within 2 days, and tasks sent back with notes,
 //   - four numbers (open / overdue / waiting for review / recently done),
+//   - today's standup (StandupCard.jsx),
 //   - "My tasks" grouped by status (in progress first), as compact rows,
 //   - "My projects" with their progress.
 // A task opens in TeamTaskModal.
@@ -12,6 +13,7 @@ import { isOverdue, today, formatDue, STATUS_LABEL, PRIORITY_LABEL, stepsDone } 
 import { ListIcon, AlertIcon, EyeIcon, CheckCircleIcon, FolderIcon, ChevronIcon } from "../../components/team/icons";
 import { useTeam } from "./TeamPortal";
 import TeamTaskModal from "./TeamTaskModal";
+import StandupCard from "./StandupCard";
 
 const GROUPS = ["doing", "todo", "review", "done"];
 const inDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
@@ -53,8 +55,8 @@ export default function TeamHome() {
   }, []);
 
   const replaceTask = (updated) => {
-    setTasks((list) => list.map((x) => (x.id === updated.id ? { ...updated, project: x.project } : x)));
-    setOpen((cur) => (cur && cur.id === updated.id ? { ...updated, project: cur.project } : cur));
+    setTasks((list) => list.map((x) => (x.id === updated.id ? { ...x, ...updated, project: x.project } : x)));
+    setOpen((cur) => (cur && cur.id === updated.id ? { ...cur, ...updated, project: cur.project } : cur));
   };
 
   const list = tasks || [];
@@ -87,6 +89,8 @@ export default function TeamHome() {
           </div>
         ))}
       </div>
+
+      <StandupCard />
 
       {tasks && (
         <section className={`tm-focus ${attention.length ? "" : "is-calm"}`}>

@@ -1,11 +1,14 @@
-// AdminTeam.jsx — the owner's team workspace (/admin/team), loaded on demand. Three tabs:
+// AdminTeam.jsx — the owner's team workspace (/admin/team), loaded on demand. Four tabs
+// (?tab=projects|members|standups in the address picks one):
 //   Overview — tasks waiting for review (approve / send back with a note), progress of every
 //              project, each member's open / overdue / done-this-week tasks, recent activity.
 //   Projects — the project list + "New project"; a project opens AdminTeamProject.jsx.
 //   Members  — accounts: create (temporary password), edit, disable, reset password, delete,
 //              and the portal link to send them (/#/team).
+//   Standups — each member's daily standup (yesterday / today / blockers) for a chosen day,
+//              and who hasn't posted yet.
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../lib/api";
 import { initials, portalLink, formatDue } from "../../lib/team";
 import { useAdminT } from "../../lib/adminI18n";
@@ -13,7 +16,7 @@ import { useAdminT } from "../../lib/adminI18n";
 const ACTIONS = {
   project_created: "created the project", task_created: "added a task", assigned: "assigned a task",
   started: "started", moved: "moved back to To do", submitted: "sent for review",
-  approved: "approved", returned: "sent back",
+  approved: "approved", returned: "sent back", commented: "commented on",
 };
 const timeAgo = (iso, t) => {
   const min = Math.round((Date.now() - new Date(iso)) / 60000);
@@ -25,18 +28,21 @@ const timeAgo = (iso, t) => {
 
 export default function AdminTeam() {
   const { t } = useAdminT();
-  const [tab, setTab] = useState("overview");
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") || "overview";
+  const setTab = (next) => setParams(next === "overview" ? {} : { tab: next }, { replace: true });
   return (
     <div>
       <h1>{t("Team")}</h1>
       <div className="admin-toolbar">
-        {[["overview", "Overview"], ["projects", "Projects"], ["members", "Members"]].map(([key, label]) => (
+        {[["overview", "Overview"], ["projects", "Projects"], ["members", "Members"], ["standups", "Standups"]].map(([key, label]) => (
           <button key={key} className={`admin-btn ${tab === key ? "admin-btn-primary" : ""}`} onClick={() => setTab(key)}>{t(label)}</button>
         ))}
       </div>
       {tab === "overview" && <Overview />}
       {tab === "projects" && <Projects />}
       {tab === "members" && <Members />}
+      {tab === "standups" && <Standups />}
     </div>
   );
 }
@@ -58,8 +64,17 @@ function Overview() {
   };
 
   if (!data) return <p className={error ? "admin-error" : ""}>{error || t("Loading…")}</p>;
+  const su = data.standups;
   return (
     <div className="tm-admin">
+      {su && su.expected > 0 && (
+        <Link className={`tm-standup-strip ${su.blocked ? "is-blocked" : ""}`} to="/admin/team?tab=standups">
+          <strong>{t("Today's standups")}</strong>
+          <span>{t("{done} of {total} posted", { done: su.done, total: su.expected })}</span>
+          {su.blocked > 0 && <span className="tm-pill is-late">{t("{n} blocked", { n: su.blocked })}</span>}
+          <span className="tm-muted tm-strip-arrow" aria-hidden="true">›</span>
+        </Link>
+      )}
       <section className="admin-linkbox">
         <h2 className="tm-admin-h">{t("Waiting for your review")} <span className="tm-count">{data.review.length}</span></h2>
         {data.review.length === 0 && <p className="admin-empty">{t("Nothing to review.")}</p>}
@@ -212,7 +227,7 @@ function Members() {
   };
   const toggle = async (m) => { await api.put(`/admin/team/members/${m.id}`, { active: !m.active }); load(); };
   const reset = async (m) => {
-    if (!confirm(`Give ${m.name} a new temporary password?`)) return;
+    if (!confirm(t("Give {name} a new temporary password?", { name: m.name }))) return;
     const password = tempPassword();
     await api.post(`/admin/team/members/${m.id}/password`, { password });
     setCreated({ name: m.name, username: m.username, password });
@@ -293,6 +308,56 @@ function Members() {
             </form>
           </div>
         </div>
+      )}
+    </div>
+  );
+}
+
+// ---- Standups ----
+// One day's standups (default today): what each member posted, blockers first, then who hasn't
+// posted yet. The arrows step one day back / forward.
+const shiftDay = (date, days) => {
+  const d = new Date(`${date}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
+function Standups() {
+  const { t, lang } = useAdminT();
+  const [date, setDate] = useState("");
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    api.get(`/admin/team/standups${date ? `?date=${date}` : ""}`).then((d) => { setData(d); setError(""); }).catch((err) => setError(err.message));
+  }, [date]);
+
+  if (!data) return <p className={error ? "admin-error" : ""}>{error || t("Loading…")}</p>;
+  const entries = [...data.entries].sort((a, b) => Boolean(b.blockers) - Boolean(a.blockers));
+  const dayName = new Date(`${data.date}T12:00:00Z`).toLocaleDateString(lang === "ar" ? "ar-EG" : "en-GB", { weekday: "long", day: "numeric", month: "long" });
+  return (
+    <div className="tm-admin">
+      <div className="admin-toolbar tm-day-picker">
+        <button className="admin-btn" onClick={() => setDate(shiftDay(data.date, -1))} aria-label={t("Previous day")}>{lang === "ar" ? "→" : "←"}</button>
+        <input className="form-input" type="date" value={data.date} max={data.today} onChange={(e) => e.target.value && setDate(e.target.value)} />
+        <button className="admin-btn" onClick={() => setDate(shiftDay(data.date, 1))} disabled={data.date >= data.today} aria-label={t("Next day")}>{lang === "ar" ? "←" : "→"}</button>
+        <span className="admin-sub">{dayName}{data.date === data.today ? ` · ${t("Today")}` : ""}</span>
+      </div>
+      {error && <p className="admin-error">{error}</p>}
+      {entries.length === 0 && <p className="admin-empty">{t("No standups posted for this day.")}</p>}
+      <div className="tm-standup-grid">
+        {entries.map((e) => (
+          <article className={`admin-linkbox tm-standup-entry ${e.blockers ? "is-blocked" : ""}`} key={e.id}>
+            <header><span className="tm-avatar">{initials(e.member.name)}</span><strong>{e.member.name}</strong><span className="tm-muted tm-small">{e.member.specialty}</span></header>
+            <dl>
+              <dt>{t("Yesterday")}</dt><dd dir="auto">{e.yesterday || "—"}</dd>
+              <dt>{t("Today")}</dt><dd dir="auto">{e.today || "—"}</dd>
+              <dt>{t("Blockers")}</dt><dd dir="auto" className={e.blockers ? "tm-late" : "tm-muted"}>{e.blockers || t("None")}</dd>
+            </dl>
+          </article>
+        ))}
+      </div>
+      {data.missing.length > 0 && (
+        <p className="tm-muted">{t("Not posted yet:")} {data.missing.map((m) => m.name).join(lang === "ar" ? "، " : ", ")}</p>
       )}
     </div>
   );

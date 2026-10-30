@@ -160,7 +160,7 @@ Build order:
 3. **SaaS subscriptions** — needs a design pass first: how each customer gets their own instance or account, recurring billing (e.g. Paymob in Egypt, a merchant-of-record platform for USD — verify terms for Egyptian sellers before choosing), trial, renewal, suspension.
 1b. [x] **Brand + portal redesign** *(done 2026-10-30)* — company name **Salem Saleh Tech** (`client/src/lib/brand.js`), logo / name link back to the website, split login screen, account menu, theme + language switches, "Needs attention" box, tasks grouped by status; small "Team login" link in the site footer.
 1c. [x] **Dashboard redesign** *(done 2026-10-30)* — mobile-friendly admin layout (collapsible sidebar), theme + language switches, the **whole dashboard in Arabic and English**.
-1d. **Workspace efficiency** *(owner picked 2026-10-30)* — drag & drop on the board + search / filters, task comments, notifications 🔔 + due-date reminders, daily standup.
-4. **Workspace phase 2** — daily standup (yesterday / today / blocked), task comments, time logging + Excel, project templates, in-app notifications (email later), points / badges / "star of the week" (can be turned off), a client progress page (read-only link).
+1d. ✓ **Workspace efficiency** *(owner picked 2026-10-30, shipped 2026-10-30)* — drag & drop on the board + search / filters, task comments, notifications 🔔 + due-date reminders, daily standup.
+4. **Workspace phase 2** — time logging + Excel, project templates, email notifications, points / badges / "star of the week" (can be turned off), a client progress page (read-only link).
 
 ⚠ Only sell projects the owner has the rights to (not client work unless the contract or client allows it); each product gets license / terms of use.
