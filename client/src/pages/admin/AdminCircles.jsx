@@ -13,6 +13,7 @@ import { money, day, METHOD_LABEL, whatsappLink } from "../../lib/circles";
 import { initials, timeAgo } from "../../lib/team";
 import { useAdminT } from "../../lib/adminI18n";
 import { pushState, enablePush } from "../../lib/webPush";
+import { BellIcon, TargetIcon, ShieldIcon } from "../../components/team/icons";
 
 const portal = () => `${window.location.origin}${window.location.pathname}#/gam3eya`;
 const joinLink = (token) => `${portal()}/join/${token}`;
@@ -97,7 +98,7 @@ function Circles() {
                   </span>
                 </>
               )}
-              <span className="tm-muted tm-small">{c.startMonth} → {c.endMonth}</span>
+              <span className="tm-muted tm-small" dir="ltr">{c.startMonth} – {c.endMonth}</span>
             </Link>
           );
         })}
@@ -111,9 +112,9 @@ function OwnerPush() {
   const { t } = useAdminT();
   const [state, setState] = useState("checking");
   useEffect(() => { pushState().then(setState).catch(() => setState("unsupported")); }, []);
-  if (state === "on") return <span className="admin-sub">🔔 {t("Phone notifications on")}</span>;
+  if (state === "on") return <span className="admin-sub"><BellIcon size={14} className="ui-icon" /> {t("Phone notifications on")}</span>;
   if (state !== "off") return null;
-  return <button className="admin-btn" onClick={() => enablePush("/admin/circles").then(() => setState("on")).catch(() => setState("blocked"))}>🔔 {t("Notify me on this device")}</button>;
+  return <button className="admin-btn" onClick={() => enablePush("/admin/circles").then(() => setState("on")).catch(() => setState("blocked"))}><BellIcon size={15} /> {t("Notify me on this device")}</button>;
 }
 
 // ---- Inbox: payments to confirm + early-turn requests ----
@@ -163,7 +164,7 @@ function Inbox() {
               <span className="tm-small tm-muted">{timeAgo(p.createdAt, lang)}{p.note ? ` · “${p.note}”` : ""}</span>
             </div>
             <div className="actions">
-              <button className="admin-btn admin-btn-primary" onClick={() => decide(p, "confirm")}>{t("Confirm ✓")}</button>
+              <button className="admin-btn admin-btn-primary" onClick={() => decide(p, "confirm")}>{t("Confirm")}</button>
               <button className="admin-btn" onClick={() => decide(p, "reject")}>{t("Reject")}</button>
             </div>
           </div>
@@ -273,17 +274,17 @@ function Members() {
               const score = total ? Math.round((r.onTime / total) * 100) : null;
               return (
                 <tr key={m.id} className={m.pending ? "tm-pending" : m.active ? "" : "tm-inactive"}>
-                  <td><span className="tm-avatar">{initials(m.name)}</span> {m.name}{m.pending && <div><span className="tm-pill">{t("Waiting for your approval")}</span></div>}{m.goal && <div className="tm-small tm-muted">🎯 {m.goal}</div>}</td>
+                  <td><span className="tm-avatar">{initials(m.name)}</span> {m.name}{m.pending && <div><span className="tm-pill">{t("Waiting for your approval")}</span></div>}{m.goal && <div className="tm-small tm-muted"><TargetIcon size={13} className="ui-icon" /> {m.goal}</div>}</td>
                   <td><a dir="ltr" href={whatsappLink(m.phone, "")} target="_blank" rel="noreferrer">{m.phone}</a></td>
                   <td className="gm-record">
                     {score === null ? <span className="tm-muted">—</span> : <span className={`gm-score ${score >= 90 ? "is-good" : score >= 60 ? "is-mid" : "is-bad"}`}>{score}%</span>}
                     {total > 0 && <span className="tm-small tm-muted">{t("{a} on time · {b} late · {c} unpaid", { a: r.onTime, b: r.lateButPaid, c: r.lateNow })}</span>}
                   </td>
-                  <td className="tm-small">{m.notes || ""}{m.guarantorName && <div>🤝 {m.guarantorName} <span dir="ltr">{m.guarantorPhone}</span></div>}</td>
+                  <td className="tm-small">{m.notes || ""}{m.guarantorName && <div><ShieldIcon size={13} className="ui-icon" /> {m.guarantorName} <span dir="ltr">{m.guarantorPhone}</span></div>}</td>
                   <td className="actions">
                     {m.pending ? (
                       <>
-                        <button className="admin-btn admin-btn-primary" onClick={() => act(() => api.post(`/admin/circles/members/${m.id}/approve`))}>{t("Approve ✓")}</button>
+                        <button className="admin-btn admin-btn-primary" onClick={() => act(() => api.post(`/admin/circles/members/${m.id}/approve`))}>{t("Approve")}</button>
                         <button className="admin-btn admin-btn-danger" onClick={() => act(async () => { if (confirm(t("Reject {name}'s sign-up? The account will be deleted.", { name: m.name }))) await api.del(`/admin/circles/members/${m.id}`); })}>{t("Reject")}</button>
                       </>
                     ) : (<>
@@ -368,7 +369,7 @@ function Invites() {
         <div className="admin-notice">
           <div className="admin-linkrow">
             <input className="form-input" dir="ltr" readOnly value={fresh.link} onFocus={(e) => e.target.select()} />
-            <button className="admin-btn admin-btn-primary" onClick={copy}>{copied ? t("Copied ✓") : t("Copy")}</button>
+            <button className="admin-btn admin-btn-primary" onClick={copy}>{copied ? t("Copied") : t("Copy")}</button>
             <a className="admin-btn" href={`https://wa.me/?text=${encodeURIComponent(shareText(fresh.link))}`} target="_blank" rel="noreferrer">{t("Send on WhatsApp")}</a>
           </div>
           <p className="admin-sub">{t("Copy it now — for safety it is shown only once.")}</p>
@@ -405,7 +406,7 @@ function PaymentInfo() {
   const set = (k) => (e) => { setForm({ ...form, [k]: e.target.value }); setStatus(""); };
   const save = async (e) => {
     e.preventDefault();
-    try { setForm(await api.put("/admin/circles/settings/pay", form)); setStatus(t("Saved ✓")); } catch (err) { setStatus(err.message); }
+    try { setForm(await api.put("/admin/circles/settings/pay", form)); setStatus(t("Saved")); } catch (err) { setStatus(err.message); }
   };
   return (
     <form className="admin-form admin-linkbox" onSubmit={save}>

@@ -249,7 +249,7 @@ router.post("/requests/:id", async (req, res) => {
   if (!status) return res.status(400).json({ error: "Choose accept or decline" });
   const request = isId(req.params.id) && await CircleRequest.findByIdAndUpdate(req.params.id, { status, reply: String(req.body?.reply ?? "").slice(0, 500) }, { new: true }).populate("member", "name").populate("circle", "name");
   if (!request) return res.status(404).json({ error: "Request not found" });
-  notifyCircle({ to: request.member._id, kind: "answered", circle: request.circle._id, detail: request.reply || (status === "accepted" ? "✓" : "✕"), url: "/gam3eya" });
+  notifyCircle({ to: request.member._id, kind: "answered", circle: request.circle._id, detail: request.reply || (status === "accepted" ? "Accepted" : "Declined"), url: "/gam3eya" });
   logCircle({ circle: request.circle._id, action: `request_${status}`, detail: `${request.member.name}: ${request.reason}` });
   res.json(request);
 });

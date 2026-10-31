@@ -135,7 +135,7 @@ function TaskEditor({ projectId, members, task, onClose, onSaved, onCommentCount
             <textarea className="form-input" rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("If something needs to change, write it here and press Send back…")} />
             <div className="actions">
               <button type="button" className="admin-btn" onClick={sendBack}>{t("Send back")}</button>
-              <button type="button" className="admin-btn admin-btn-primary" onClick={approve}>{t("Approve ✓")}</button>
+              <button type="button" className="admin-btn admin-btn-primary" onClick={approve}>{t("Approve")}</button>
             </div>
           </div>
         )}
@@ -144,7 +144,7 @@ function TaskEditor({ projectId, members, task, onClose, onSaved, onCommentCount
           <label>{t("Title")}<input className="form-input" dir="auto" value={form.title} onChange={set("title")} maxLength={200} required /></label>
           <label>
             <span className="tm-label-row">{t("What to do (Markdown)")}
-              <button type="button" className="admin-btn" onClick={() => setPreview(!preview)}>{preview ? t("✎ Write") : t("Preview")}</button>
+              <button type="button" className="admin-btn" onClick={() => setPreview(!preview)}>{preview ? t("Write") : t("Preview")}</button>
             </span>
             {preview
               ? <div className="tm-preview"><MarkdownView text={form.description} empty={t("Nothing written yet.")} /></div>
@@ -221,12 +221,12 @@ function DocsEditor({ project, onSaved }) {
   const [status, setStatus] = useState("");
   const save = async () => {
     setStatus(t("Saving…"));
-    try { await api.put(`/admin/team/projects/${project.id}`, { docs }); setStatus(t("Saved ✓")); onSaved(); } catch (err) { setStatus(err.message); }
+    try { await api.put(`/admin/team/projects/${project.id}`, { docs }); setStatus(t("Saved")); onSaved(); } catch (err) { setStatus(err.message); }
   };
   return (
     <div className="admin-form">
       <div className="admin-toolbar">
-        <button className="admin-btn" onClick={() => setPreview(!preview)}>{preview ? t("✎ Write") : t("Preview")}</button>
+        <button className="admin-btn" onClick={() => setPreview(!preview)}>{preview ? t("Write") : t("Preview")}</button>
         <button className="admin-btn admin-btn-primary" onClick={save}>{t("Save docs")}</button>
         <span className="admin-sub">{status}</span>
       </div>
@@ -253,7 +253,7 @@ function ProjectSettings({ project, allMembers, onSaved, onDeleted }) {
   const save = async (e) => {
     e.preventDefault();
     setMsg("");
-    try { await api.put(`/admin/team/projects/${project.id}`, form); setMsg(t("Saved ✓")); onSaved(); } catch (err) { setMsg(err.message); }
+    try { await api.put(`/admin/team/projects/${project.id}`, form); setMsg(t("Saved")); onSaved(); } catch (err) { setMsg(err.message); }
   };
   const remove = async () => {
     if (!confirm(t("Delete “{name}” with all its tasks? This cannot be undone.", { name: project.name }))) return;

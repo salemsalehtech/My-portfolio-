@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { isOverdue, today, formatDue, STATUS_LABEL, PRIORITY_LABEL, stepsDone } from "../../lib/team";
-import { ListIcon, AlertIcon, EyeIcon, CheckCircleIcon, FolderIcon, ChevronIcon } from "../../components/team/icons";
+import { CheckSquareIcon, ReplyIcon, ListIcon, AlertIcon, EyeIcon, CheckCircleIcon, FolderIcon, ChevronIcon } from "../../components/team/icons";
 import { useTeam } from "./TeamPortal";
 import TeamTaskModal from "./TeamTaskModal";
 import StandupCard from "./StandupCard";
@@ -28,8 +28,8 @@ export function TaskRow({ task, lang, onOpen, showProject = true }) {
         <span className="tm-trow-title">{task.title}</span>
         <span className="tm-trow-sub">
           {showProject && task.project?.name && <span dir="auto">{task.project.name}</span>}
-          {task.steps.length > 0 && <span>☑ {stepsDone(task)}</span>}
-          {task.reviewNote && task.status === "doing" && <span className="tm-late">↩</span>}
+          {task.steps.length > 0 && <span><CheckSquareIcon size={13} className="ui-icon" /> {stepsDone(task)}</span>}
+          {task.reviewNote && task.status === "doing" && <span className="tm-late"><ReplyIcon size={14} className="ui-icon" /></span>}
         </span>
       </span>
       <span className="tm-trow-end">

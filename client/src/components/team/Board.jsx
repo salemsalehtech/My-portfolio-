@@ -10,6 +10,7 @@
 // (no HTML drag & drop) the status is changed from inside the task instead.
 // Above the board: search + filters (assignee, priority, overdue only).
 import { useState } from "react";
+import { ChatIcon, CheckSquareIcon, ReplyIcon } from "./icons";
 import { STATUSES, PRIORITIES, STATUS_LABEL, PRIORITY_LABEL, SHARED_COPY, initials, isOverdue, formatDue, stepsDone } from "../../lib/team";
 
 export function TaskCard({ task, lang, onOpen, mine, draggable, onDragStart, onDragEnd, dragging }) {
@@ -25,7 +26,7 @@ export function TaskCard({ task, lang, onOpen, mine, draggable, onDragStart, onD
     >
       <span className="tm-card-top">
         <span className={`tm-prio is-${task.priority}`}>{PRIORITY_LABEL[lang][task.priority]}</span>
-        {task.reviewNote && task.status === "doing" && <span className="tm-flag">↩</span>}
+        {task.reviewNote && task.status === "doing" && <span className="tm-flag"><ReplyIcon size={14} /></span>}
       </span>
       <span className="tm-card-title">{task.title}</span>
       <span className="tm-card-meta">
@@ -33,8 +34,8 @@ export function TaskCard({ task, lang, onOpen, mine, draggable, onDragStart, onD
           <span className="tm-who" title={task.assignee.name}><span className="tm-avatar">{initials(task.assignee.name)}</span>{task.assignee.name.split(" ")[0]}</span>
         ) : <span className="tm-who is-none">—</span>}
         <span className="tm-card-right">
-          {task.commentCount > 0 && <span className="tm-steps" title={SHARED_COPY[lang].comments}>💬 {task.commentCount}</span>}
-          {task.steps.length > 0 && <span className="tm-steps">☑ {stepsDone(task)}</span>}
+          {task.commentCount > 0 && <span className="tm-steps" title={SHARED_COPY[lang].comments}><ChatIcon size={13} className="ui-icon" /> {task.commentCount}</span>}
+          {task.steps.length > 0 && <span className="tm-steps"><CheckSquareIcon size={13} className="ui-icon" /> {stepsDone(task)}</span>}
           {task.dueDate && <span className={`tm-due ${overdue ? "is-late" : ""}`}>{formatDue(task.dueDate, lang)}</span>}
         </span>
       </span>

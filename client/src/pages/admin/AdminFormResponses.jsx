@@ -49,7 +49,7 @@ export default function AdminFormResponses() {
       <h1>{form.titleEn || form.titleAr} — answers</h1>
       <div className="admin-toolbar">
         <button className="admin-btn admin-btn-primary" onClick={exportExcel} disabled={responses.length === 0 || exporting}>
-          {exporting ? t("Preparing…") : t("⬇ Download Excel")}
+          {exporting ? t("Preparing…") : t("Download Excel")}
         </button>
         <Link className="admin-btn" to={`/admin/forms/${id}`}>{t("Edit form")}</Link>
         <span style={{ opacity: 0.75 }}>{t("{n} answer(s)", { n: responses.length })}</span>

@@ -8,6 +8,7 @@
 // value in the dashboard hides that row.
 import { useState } from "react";
 import { useSite } from "../context/SiteContext";
+import { CheckIcon } from "./team/icons";
 import { useReveal } from "../hooks/useReveal";
 import { api } from "../lib/api";
 import { pick, linkLabel, youtubeHandle } from "../lib/pick";
@@ -64,7 +65,7 @@ export default function Contact({ settings }) {
           <div ref={formRef} className={`contact-form-card ${formVisible ? "visible" : ""}`} data-ao>
             {status === "success" ? (
               <div className="form-success" style={{ display: "flex" }}>
-                <div className="success-icon">✓</div>
+                <div className="success-icon"><CheckIcon size={26} /></div>
                 <p>{t.contact.success}</p>
               </div>
             ) : (

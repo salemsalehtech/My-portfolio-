@@ -64,7 +64,7 @@ export const SHARED_COPY = {
     overdue: "Overdue", dueToday: "Due today", dueTomorrow: "Due tomorrow", markRead: "Mark all as read",
     note: {
       assigned: (a, d) => `${a} assigned you “${d}”`,
-      approved: (a, d) => `${a} approved “${d}” ✓`,
+      approved: (a, d) => `${a} approved “${d}”`,
       returned: (a, d) => `${a} sent “${d}” back with notes`,
       submitted: (a, d) => `${a} sent “${d}” for review`,
       comment: (a, d) => `${a} commented on “${d}”`,
@@ -74,7 +74,7 @@ export const SHARED_COPY = {
     standup: "Daily standup", standupIntro: "Three quick lines for the team — takes a minute.",
     yesterday: "What did you do yesterday?", todayQ: "What will you do today?", blockers: "Anything blocking you?",
     yesterdayShort: "Yesterday", todayShort: "Today", blockersShort: "Blockers", none: "None",
-    saveStandup: "Post standup", edit: "Edit", saved: "Posted ✓", standupDone: "Today's standup is posted.",
+    saveStandup: "Post standup", edit: "Edit", saved: "Posted", standupDone: "Today's standup is posted.",
   },
   ar: {
     owner: "سالم (المدير)", formerMember: "عضو سابق",
@@ -87,7 +87,7 @@ export const SHARED_COPY = {
     overdue: "متأخرة", dueToday: "موعدها اليوم", dueTomorrow: "موعدها غدًا", markRead: "تعليم الكل كمقروء",
     note: {
       assigned: (a, d) => `${a} أسند إليك «${d}»`,
-      approved: (a, d) => `${a} وافق على «${d}» ✓`,
+      approved: (a, d) => `${a} وافق على «${d}»`,
       returned: (a, d) => `${a} أعاد «${d}» مع ملاحظات`,
       submitted: (a, d) => `${a} أرسل «${d}» للمراجعة`,
       comment: (a, d) => `${a} علّق على «${d}»`,
@@ -97,6 +97,6 @@ export const SHARED_COPY = {
     standup: "الاجتماع اليومي", standupIntro: "ثلاثة أسطر سريعة للفريق — دقيقة واحدة.",
     yesterday: "ماذا أنجزت أمس؟", todayQ: "ماذا ستعمل اليوم؟", blockers: "هل يعطّلك شيء؟",
     yesterdayShort: "أمس", todayShort: "اليوم", blockersShort: "العوائق", none: "لا شيء",
-    saveStandup: "نشر", edit: "تعديل", saved: "تم النشر ✓", standupDone: "تم نشر اجتماع اليوم.",
+    saveStandup: "نشر", edit: "تعديل", saved: "تم النشر", standupDone: "تم نشر اجتماع اليوم.",
   },
 };

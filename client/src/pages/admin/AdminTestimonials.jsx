@@ -97,7 +97,7 @@ export default function AdminTestimonials() {
           <div className="admin-linkrow" key={lang}>
             <span>{t(label)}</span>
             <input className="form-input" readOnly value={feedbackLink(lang)} onFocus={(e) => e.target.select()} />
-            <button className="admin-btn" onClick={() => copyLink(lang)}>{copied === lang ? t("Copied ✓") : t("Copy")}</button>
+            <button className="admin-btn" onClick={() => copyLink(lang)}>{copied === lang ? t("Copied") : t("Copy")}</button>
             <a className="admin-btn" href={feedbackLink(lang)} target="_blank" rel="noreferrer">{t("Open")}</a>
           </div>
         ))}

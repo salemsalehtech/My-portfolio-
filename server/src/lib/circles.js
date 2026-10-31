@@ -159,9 +159,9 @@ function logCircle({ circle = null, actor = "owner", action, detail = "" }) {
 // Push texts (Arabic — the members' language); the portal words the in-app list itself.
 const PUSH_TEXT = {
   submitted: (a, d) => `${a} أرسل دفعة: ${d}`,
-  confirmed: (a, d) => `تم تأكيد دفعتك ✓ ${d}`,
+  confirmed: (a, d) => `تم تأكيد دفعتك ${d}`,
   rejected: (a, d) => `دفعتك لم تُقبل: ${d}`,
-  handed: (a, d) => `تم تسليمك مبلغ دورك 🎉 ${d}`,
+  handed: (a, d) => `تم تسليمك مبلغ دورك ${d}`,
   received: (a, d) => `${a} أكد استلام دوره ${d}`,
   request: (a, d) => `${a} طلب دوره بدري: ${d}`,
   answered: (a, d) => `تم الرد على طلبك: ${d}`,

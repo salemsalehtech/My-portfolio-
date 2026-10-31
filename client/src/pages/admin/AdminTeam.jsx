@@ -94,7 +94,7 @@ function Overview() {
             <div className="actions">
               <Link className="admin-btn" to={`/admin/team/projects/${task.project}?task=${task.id}`}>{t("Open")}</Link>
               <button className="admin-btn" onClick={() => sendBack(task)}>{t("Send back")}</button>
-              <button className="admin-btn admin-btn-primary" onClick={() => approve(task)}>{t("Approve ✓")}</button>
+              <button className="admin-btn admin-btn-primary" onClick={() => approve(task)}>{t("Approve")}</button>
             </div>
           </div>
         ))}
@@ -272,7 +272,7 @@ function Members() {
         <div className="admin-notice">
           <strong>{t("Login for {name}", { name: created.name })}</strong> — {t("Username")} <code>{created.username}</code>, {t("Temporary password")} <code>{created.password}</code>.{" "}
           {t("It is shown only now; {name} must choose a new password on first login.", { name: created.name.split(" ")[0] })}{" "}
-          <button className="admin-btn" onClick={copyLogin}>{copied ? t("Copied ✓") : t("Copy login details")}</button>{" "}
+          <button className="admin-btn" onClick={copyLogin}>{copied ? t("Copied") : t("Copy login details")}</button>{" "}
           <button className="admin-btn" onClick={() => setCreated(null)}>{t("Done")}</button>
         </div>
       )}
@@ -293,7 +293,7 @@ function Members() {
               <td className="actions">
                 {m.pending ? (
                   <>
-                    <button className="admin-btn admin-btn-primary" onClick={() => approve(m)}>{t("Approve ✓")}</button>
+                    <button className="admin-btn admin-btn-primary" onClick={() => approve(m)}>{t("Approve")}</button>
                     <button className="admin-btn admin-btn-danger" onClick={() => reject(m)}>{t("Reject")}</button>
                   </>
                 ) : (<>
@@ -453,7 +453,7 @@ function Invites() {
           <strong>{t("Your invite link{label}", { label: fresh.label ? ` — ${fresh.label}` : "" })}</strong>
           <div className="admin-linkrow">
             <input className="form-input" dir="ltr" readOnly value={fresh.link} onFocus={(e) => e.target.select()} />
-            <button className="admin-btn admin-btn-primary" onClick={copy}>{copied ? t("Copied ✓") : t("Copy")}</button>
+            <button className="admin-btn admin-btn-primary" onClick={copy}>{copied ? t("Copied") : t("Copy")}</button>
           </div>
           <p className="admin-sub">{t("Copy it now — for safety it is shown only once.")}</p>
         </div>

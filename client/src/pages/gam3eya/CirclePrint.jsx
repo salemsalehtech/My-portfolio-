@@ -9,12 +9,13 @@ import { api } from "../../lib/api";
 import { COMPANY } from "../../lib/brand";
 import { money, day, monthName, METHOD_LABEL } from "../../lib/circles";
 import { useCircle } from "./CirclePortal";
+import { PrinterIcon, AwardIcon } from "../../components/team/icons";
 
 const T = {
   en: { receipt: "Payment receipt", no: "Receipt no.", member: "Member", phone: "Phone", circle: "Circle", month: "For the month of", amount: "Amount", method: "Paid by", sent: "Sent on", confirmed: "Confirmed on", by: "by", owner: "the organizer", note: "Note",
-    cert: "Circle completed", certText: (n, c) => `This certifies that ${n} completed the savings circle “${c}”.`, paid: "Total paid", received: "Total received", onTime: "Months paid on time", thanks: "Thank you for your commitment 🤝" },
+    cert: "Circle completed", certText: (n, c) => `This certifies that ${n} completed the savings circle “${c}”.`, paid: "Total paid", received: "Total received", onTime: "Months paid on time", thanks: "Thank you for your commitment." },
   ar: { receipt: "إيصال دفع", no: "رقم الإيصال", member: "العضو", phone: "الموبايل", circle: "الجمعية", month: "عن شهر", amount: "المبلغ", method: "طريقة الدفع", sent: "تاريخ الإرسال", confirmed: "تاريخ التأكيد", by: "بواسطة", owner: "المنظّم", note: "ملاحظة",
-    cert: "إتمام جمعية", certText: (n, c) => `نشهد بأن ${n} أتمّ جمعية «${c}» بنجاح.`, paid: "إجمالي المدفوع", received: "إجمالي المقبوض", onTime: "شهور اتدفعت في ميعادها", thanks: "شكرًا على التزامك 🤝" },
+    cert: "إتمام جمعية", certText: (n, c) => `نشهد بأن ${n} أتمّ جمعية «${c}» بنجاح.`, paid: "إجمالي المدفوع", received: "إجمالي المقبوض", onTime: "شهور اتدفعت في ميعادها", thanks: "شكرًا على التزامك." },
 };
 
 function Sheet({ children }) {
@@ -23,7 +24,7 @@ function Sheet({ children }) {
     <main className="tm-page gm-print-page">
       <div className="gm-noprint gm-print-tools">
         <Link className="tm-back" to="/gam3eya">{t.back}</Link>
-        <button className="fp-btn" onClick={() => window.print()}>🖨 {t.print}</button>
+        <button className="fp-btn" onClick={() => window.print()}><PrinterIcon size={16} /> {t.print}</button>
       </div>
       <article className="gm-sheet">
         <header className="gm-sheet-head"><span className="tm-logo">SS</span><strong>{COMPANY}</strong></header>
@@ -74,7 +75,7 @@ export function CircleCertificate() {
   return (
     <Sheet>
       <div className="gm-cert">
-        <span className="gm-cert-medal">🏅</span>
+        <span className="gm-cert-medal"><AwardIcon size={28} /></span>
         <h1>{t.cert}</h1>
         <p className="gm-cert-text">{t.certText(member.name, c.name)}</p>
         <dl className="gm-cert-stats">

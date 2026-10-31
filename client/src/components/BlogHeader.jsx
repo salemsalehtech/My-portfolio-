@@ -3,6 +3,7 @@
 // own Navbar with section links; on the blog pages there are no sections to scroll to.
 import { Link } from "react-router-dom";
 import { useSite } from "../context/SiteContext";
+import { SunIcon, MoonIcon } from "./team/icons";
 
 export default function BlogHeader() {
   const { t, theme, lang, toggleTheme, toggleLang } = useSite();
@@ -18,7 +19,7 @@ export default function BlogHeader() {
       </nav>
       <div className="blog-header-actions">
         <button className="btn-lang" onClick={toggleLang}>{lang === "en" ? "AR" : "EN"}</button>
-        <button className="btn-theme" onClick={toggleTheme}>{theme === "dark" ? "☀" : "☾"}</button>
+        <button className="btn-theme" onClick={toggleTheme} aria-label="Theme">{theme === "dark" ? <SunIcon size={17} /> : <MoonIcon size={17} />}</button>
       </div>
     </header>
   );

@@ -14,6 +14,7 @@ import { pick } from "../lib/pick";
 import { renderMarkdown } from "../lib/markdown";
 import { youtubeId, youtubeEmbedUrl } from "../lib/youtube";
 import { COMPANY } from "../lib/brand";
+import { SunIcon, MoonIcon } from "../components/team/icons";
 import { formatPrice, productCoverUrl, productImageUrl } from "../lib/products";
 
 export default function ProductPage() {
@@ -53,7 +54,7 @@ export default function ProductPage() {
       </nav>
       <div className="blog-header-actions">
         <button className="btn-lang" onClick={toggleLang}>{lang === "en" ? "AR" : "EN"}</button>
-        <button className="btn-theme" onClick={toggleTheme}>{theme === "dark" ? "☀" : "☾"}</button>
+        <button className="btn-theme" onClick={toggleTheme} aria-label="Theme">{theme === "dark" ? <SunIcon size={17} /> : <MoonIcon size={17} />}</button>
       </div>
     </header>
   );

@@ -44,7 +44,7 @@ async function runOnce() {
     for (const month of st.months) {
       if (month.payoutDate !== tomorrow) continue;
       for (const h of month.holders) {
-        if (subscribed.has(h.member)) await once(`${h.member}:${month.index}:payout`, h.member, `بكرة معاد قبض دورك 🎉 (${h.amount} جنيه)`);
+        if (subscribed.has(h.member)) await once(`${h.member}:${month.index}:payout`, h.member, `بكرة معاد قبض دورك (${h.amount} جنيه)`);
       }
     }
     if (circle.isModified("remindedAt")) await circle.save();

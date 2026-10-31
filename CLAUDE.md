@@ -4,6 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Plan & standing rules:** read [ROADMAP.md](ROADMAP.md) before starting any task — it holds the project constitution, current phase, and prioritized backlog.
 
+## Design system
+
+Tokens live at the top of `client/src/index.css`; a "DESIGN SYSTEM v2" layer at the end restyles shared classes. One accent (saffron, `--gold`) for the brand mark, active states and focus only; primary buttons are ink (`--ink` / `--on-ink`). Fonts: Alexandria (display), IBM Plex Sans Arabic (text), IBM Plex Mono (labels, numbers; falls back to Plex Sans Arabic for Arabic). Corners `--radius-sm` 6px / `--radius` 10px. No emoji in the UI — use the line icons in `components/team/icons.jsx`.
+
 ## Project overview
 
 A bilingual (English/Arabic) personal portfolio site for Salem Saleh, split into two apps:

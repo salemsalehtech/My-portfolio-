@@ -62,7 +62,7 @@ export default function AdminProductEditor() {
     setStatus(t("Saving…"));
     try {
       take(await api.put(`/admin/products/${id}`, form));
-      setStatus(t("Saved ✓"));
+      setStatus(t("Saved"));
     } catch (err) {
       setStatus("");
       setError(err.message);

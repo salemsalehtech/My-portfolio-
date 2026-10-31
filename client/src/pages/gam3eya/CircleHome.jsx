@@ -14,6 +14,7 @@ import { money, day, monthName, daysUntil, downloadCalendar, METHOD_LABEL, STATE
 import { pushSupported, pushState, enablePush, isIos, isStandalone } from "../../lib/webPush";
 import { useCircle } from "./CirclePortal";
 import PayModal from "./PayModal";
+import { HourglassIcon, CalendarIcon, AwardIcon, WalletIcon, TargetIcon, ForwardIcon, BellIcon, PhoneIcon } from "../../components/team/icons";
 
 export default function CircleHome() {
   const { t, msg, member, setMember } = useCircle();
@@ -75,7 +76,7 @@ function CircleCard({ circle, onPay, onChange, reload }) {
                 <span className={`gm-count ${next.state === "late" ? "is-late" : ""}`}>
                   {next.state === "late" ? t.daysLate(-daysUntil(next.dueDate, today)) : next.state === "review" ? STATE_LABEL[lang].review : t.daysLeft(daysUntil(next.dueDate, today))}
                 </span>
-                {checking > 0 && next.state !== "review" && <span className="tm-small tm-muted">⏳ {STATE_LABEL[lang].review}: {checking}</span>}
+                {checking > 0 && next.state !== "review" && <span className="tm-small tm-muted"><HourglassIcon size={13} className="ui-icon" /> {STATE_LABEL[lang].review}: {checking}</span>}
                 {next.state !== "review" && <button className="fp-btn" onClick={() => onPay(next.month)}>{t.payNow}</button>}
               </>
             ) : <strong className="gm-amount">{t.allPaid}</strong>}
@@ -96,8 +97,8 @@ function CircleCard({ circle, onPay, onChange, reload }) {
       </div>
 
       <div className="gm-actions">
-        {!finished && <button className="fp-btn fp-btn-ghost" onClick={() => downloadCalendar(circle, lang)}>📅 {t.addCalendar}</button>}
-        {finished && <Link className="fp-btn fp-btn-ghost" to={`/gam3eya/certificate/${circle.id}`}>🏅 {t.certificate}</Link>}
+        {!finished && <button className="fp-btn fp-btn-ghost" onClick={() => downloadCalendar(circle, lang)}><CalendarIcon size={16} /> {t.addCalendar}</button>}
+        {finished && <Link className="fp-btn fp-btn-ghost" to={`/gam3eya/certificate/${circle.id}`}><AwardIcon size={16} /> {t.certificate}</Link>}
       </div>
       {!finished && <EarlyTurn circle={circle} reload={reload} />}
 
@@ -149,7 +150,7 @@ function TurnBox({ circle, turn, onChange }) {
   };
   return (
     <div className={`gm-box gm-turn ${turn.receivedAt ? "is-ok" : ""}`}>
-      <span className="gm-box-label">🎉 {t.myTurn} · {monthName(turn.payoutDate, lang)}</span>
+      <span className="gm-box-label"><WalletIcon size={14} className="ui-icon" /> {t.myTurn} · {monthName(turn.payoutDate, lang)}</span>
       <strong className="gm-amount">{money(turn.amount, lang)}</strong>
       <span className="tm-small">{day(turn.payoutDate, lang)}{turn.shared ? ` · ${t.sharedWith}` : ""}</span>
       {turn.receivedAt ? <span className="gm-count is-ok">{t.receivedOk}</span>
@@ -165,8 +166,8 @@ function Goal({ member, onChange }) {
   const [editing, setEditing] = useState(false);
   const [goal, setGoal] = useState(member.goal);
   const save = async (e) => { e.preventDefault(); onChange(await api.put("/circle/me", { goal })); setEditing(false); };
-  if (!editing && member.goal) return <p className="gm-goal">🎯 {t.goal}: <strong dir="auto">{member.goal}</strong> <button className="tm-link-btn" onClick={() => setEditing(true)}>{t.editGoal}</button></p>;
-  if (!editing) return <button className="tm-link-btn gm-goal" onClick={() => setEditing(true)}>🎯 {t.goal}…</button>;
+  if (!editing && member.goal) return <p className="gm-goal"><TargetIcon size={14} className="ui-icon" /> {t.goal}: <strong dir="auto">{member.goal}</strong> <button className="tm-link-btn" onClick={() => setEditing(true)}>{t.editGoal}</button></p>;
+  if (!editing) return <button className="tm-link-btn gm-goal" onClick={() => setEditing(true)}><TargetIcon size={14} className="ui-icon" /> {t.goal}…</button>;
   return (
     <form className="gm-inline" onSubmit={save}>
       <input className="fp-input" dir="auto" value={goal} onChange={(e) => setGoal(e.target.value)} maxLength={120} placeholder={t.goalPlaceholder} autoFocus />
@@ -181,7 +182,7 @@ function EarlyTurn({ circle, reload }) {
   const [reason, setReason] = useState("");
   const [error, setError] = useState("");
   const last = circle.requests[0];
-  if (last?.status === "open") return <p className="tm-note gm-request">⏳ {t.requestOpen}</p>;
+  if (last?.status === "open") return <p className="tm-note gm-request"><HourglassIcon size={14} className="ui-icon" /> {t.requestOpen}</p>;
   const send = async (e) => {
     e.preventDefault();
     setError("");
@@ -190,7 +191,7 @@ function EarlyTurn({ circle, reload }) {
   return (
     <div className="gm-request">
       {last && <p className="tm-small tm-muted">{t.earlyTurn}: {t.requestAnswered(last.status === "accepted", last.reply)}</p>}
-      {!open ? <button className="tm-link-btn" onClick={() => setOpen(true)}>⏩ {t.earlyTurn}</button> : (
+      {!open ? <button className="tm-link-btn" onClick={() => setOpen(true)}><ForwardIcon size={14} className="ui-icon" /> {t.earlyTurn}</button> : (
         <form className="gm-inline" onSubmit={send}>
           <input className="fp-input" dir="auto" value={reason} onChange={(e) => setReason(e.target.value)} maxLength={500} placeholder={t.earlyReason} required autoFocus />
           <button className="fp-btn" type="submit">{t.send}</button>
@@ -255,7 +256,7 @@ function PushCard() {
   const [state, setState] = useState("checking");
   const [error, setError] = useState("");
   useEffect(() => { pushState().then(setState).catch(() => setState("unsupported")); }, []);
-  if (state === "checking" || state === "on") return state === "on" ? <p className="tm-muted tm-small gm-push-ok">🔔 {t.pushOnDone}</p> : null;
+  if (state === "checking" || state === "on") return state === "on" ? <p className="tm-muted tm-small gm-push-ok"><BellIcon size={14} className="ui-icon" /> {t.pushOnDone}</p> : null;
   const turnOn = async () => {
     setError("");
     try { await enablePush("/circle"); setState("on"); } catch (err) { setState(err.message === "blocked" ? "blocked" : "off"); if (err.message !== "blocked") setError(t.error); }
@@ -263,8 +264,8 @@ function PushCard() {
   return (
     <section className="gm-push">
       {state === "blocked" ? <p className="tm-muted">{t.pushBlocked}</p>
-        : !pushSupported() || (isIos() && !isStandalone()) ? <p className="tm-muted">📲 {t.pushIos}</p>
-          : <button className="fp-btn" onClick={turnOn}>🔔 {t.pushOn}</button>}
+        : !pushSupported() || (isIos() && !isStandalone()) ? <p className="tm-muted"><PhoneIcon size={15} className="ui-icon" /> {t.pushIos}</p>
+          : <button className="fp-btn" onClick={turnOn}><BellIcon size={16} /> {t.pushOn}</button>}
       {error && <p className="tm-error tm-small">{error}</p>}
     </section>
   );

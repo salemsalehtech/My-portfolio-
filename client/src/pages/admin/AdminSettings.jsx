@@ -118,7 +118,7 @@ export default function AdminSettings() {
         <div className="admin-form-actions">
           <button type="button" className="admin-btn" onClick={reset}>{t("Reset to original")}</button>
           <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
-          {saved && <span>{t("Saved ✓")}</span>}
+          {saved && <span>{t("Saved")}</span>}
         </div>
       </form>
     </div>

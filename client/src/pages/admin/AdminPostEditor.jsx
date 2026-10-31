@@ -59,7 +59,7 @@ export default function AdminPostEditor() {
       const post = isNew ? await api.post("/admin/posts", payload) : await api.put(`/admin/posts/${id}`, payload);
       setForm({ ...EMPTY, ...post });
       setSlugTouched(true);
-      setSaved(post.published ? t("Published ✓") : t("Draft saved ✓"));
+      setSaved(post.published ? t("Published") : t("Draft saved"));
       if (isNew) navigate(`/admin/posts/${post.id}`, { replace: true });
     } catch (err) {
       setError(err.message);
@@ -101,7 +101,7 @@ export default function AdminPostEditor() {
           <button type="button" className={`admin-btn ${tab === "en" ? "admin-btn-primary" : ""}`} onClick={() => setTab("en")}>{t("English text")}</button>
           <button type="button" className={`admin-btn ${tab === "ar" ? "admin-btn-primary" : ""}`} onClick={() => setTab("ar")}>{t("Arabic text")}</button>
           <span className="editor-spacer" />
-          <button type="button" className="admin-btn" onClick={() => setPreview(!preview)}>{preview ? t("✎ Write") : t("👁 Preview")}</button>
+          <button type="button" className="admin-btn" onClick={() => setPreview(!preview)}>{preview ? t("Write") : t("Preview")}</button>
           <span className="admin-sub">{t("~{n} min read", { n: readingMinutes(form[bodyKey]) })}</span>
         </div>
         {preview ? (

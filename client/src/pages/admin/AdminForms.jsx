@@ -77,7 +77,7 @@ export default function AdminForms() {
             <div className="admin-linkrow" key={lang}>
               <span>{lang === "ar" ? t("Arabic link") : t("English link")}</span>
               <input className="form-input" readOnly value={formLink(form.slug, lang)} onFocus={(e) => e.target.select()} />
-              <button className="admin-btn" onClick={() => copy(form, lang)}>{copied === `${form.id}-${lang}` ? t("Copied ✓") : t("Copy")}</button>
+              <button className="admin-btn" onClick={() => copy(form, lang)}>{copied === `${form.id}-${lang}` ? t("Copied") : t("Copy")}</button>
               <a className="admin-btn" href={formLink(form.slug, lang)} target="_blank" rel="noreferrer">{t("Open")}</a>
             </div>
           ))}

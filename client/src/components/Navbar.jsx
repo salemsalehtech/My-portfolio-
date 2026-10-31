@@ -13,6 +13,7 @@
 // Link labels come from t.nav[id] in i18n/translations.js.
 import { useState } from "react";
 import { useSite } from "../context/SiteContext";
+import { SunIcon, MoonIcon, MenuIcon, XIcon } from "./team/icons";
 import { scrollToSection } from "../lib/scrollToSection";
 
 export default function Navbar({ scrolled, activeSection, sections }) {
@@ -48,14 +49,14 @@ export default function Navbar({ scrolled, activeSection, sections }) {
         </ul>
         <div className="nav-actions">
           <button className="btn-lang" onClick={toggleLang}>{lang === "en" ? "AR" : "EN"}</button>
-          <button className="btn-theme" onClick={toggleTheme}>{theme === "dark" ? "☀" : "☾"}</button>
+          <button className="btn-theme" onClick={toggleTheme} aria-label="Theme">{theme === "dark" ? <SunIcon size={17} /> : <MoonIcon size={17} />}</button>
         </div>
-        <button className="btn-menu" onClick={() => setMenuOpen(true)}>☰</button>
+        <button className="btn-menu" onClick={() => setMenuOpen(true)} aria-label="Menu"><MenuIcon size={18} /></button>
       </nav>
 
       <div className={`mobile-overlay ${menuOpen ? "open" : ""}`} onClick={() => setMenuOpen(false)}></div>
       <div className={`mobile-panel ${menuOpen ? "open" : ""}`}>
-        <button className="mobile-close" onClick={() => setMenuOpen(false)}>✕</button>
+        <button className="mobile-close" onClick={() => setMenuOpen(false)}><XIcon size={16} /></button>
         <ul className="mobile-links">
           {sections.map((id) => (
             <li key={id}>
@@ -71,7 +72,7 @@ export default function Navbar({ scrolled, activeSection, sections }) {
         </ul>
         <div className="mobile-footer">
           <button className="btn-lang" onClick={toggleLang}>{lang === "en" ? "AR" : "EN"}</button>
-          <button className="btn-theme" onClick={toggleTheme}>{theme === "dark" ? "☀" : "☾"}</button>
+          <button className="btn-theme" onClick={toggleTheme} aria-label="Theme">{theme === "dark" ? <SunIcon size={17} /> : <MoonIcon size={17} />}</button>
         </div>
       </div>
     </>

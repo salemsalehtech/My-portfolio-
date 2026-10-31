@@ -132,7 +132,7 @@ export default function AdminFormEditor() {
 
         {error && <p className="admin-error">{error}</p>}
         <div className="admin-form-actions">
-          {saved && <span style={{ alignSelf: "center", opacity: 0.8 }}>{t("Saved ✓")}</span>}
+          {saved && <span style={{ alignSelf: "center", opacity: 0.8 }}>{t("Saved")}</span>}
           <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
         </div>
       </form>

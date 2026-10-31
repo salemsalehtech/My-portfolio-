@@ -13,6 +13,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../../lib/api";
 import { money, day, monthName, METHOD_LABEL, METHODS, STATE_LABEL, PARTS, shareText, equalParts, whatsappLink } from "../../lib/circles";
 import { timeAgo } from "../../lib/team";
+import { MessageIcon, PrinterIcon, DownloadIcon, CheckIcon, ClockIcon, BellIcon } from "../../components/team/icons";
 import { useAdminT } from "../../lib/adminI18n";
 import { ProofImage, reviewPayment, LOG_ACTIONS } from "./AdminCircles";
 
@@ -60,9 +61,9 @@ export default function AdminCircle() {
         </div>
         <div className="gm-head-actions">
           {circle.status === "draft" && <button className="admin-btn admin-btn-primary" onClick={start}>▶ {t("Start circle")}</button>}
-          {circle.status === "active" && <button className="admin-btn" onClick={() => setSummary(true)}>💬 {t("Group summary")}</button>}
-          {circle.status !== "draft" && <button className="admin-btn" onClick={() => downloadStatement(data, nameOf, lang, t)}>⬇ {t("Excel")}</button>}
-          <button className="admin-btn" onClick={() => window.print()}>🖨 {t("Print schedule")}</button>
+          {circle.status === "active" && <button className="admin-btn" onClick={() => setSummary(true)}><MessageIcon size={15} /> {t("Group summary")}</button>}
+          {circle.status !== "draft" && <button className="admin-btn" onClick={() => downloadStatement(data, nameOf, lang, t)}><DownloadIcon size={15} /> {t("Excel")}</button>}
+          <button className="admin-btn" onClick={() => window.print()}><PrinterIcon size={15} /> {t("Print schedule")}</button>
           <button className="admin-btn" onClick={clone}>⧉ {t("New circle, same members")}</button>
           {circle.status === "active" && <button className="admin-btn" onClick={finish}>{t("Finish")}</button>}
           <button className="admin-btn admin-btn-danger" onClick={remove}>{t("Delete")}</button>
@@ -104,7 +105,7 @@ function Board({ data, nameOf, reload }) {
     <div>
       {late.length > 0 && (
         <section className="admin-linkbox gm-late">
-          <h2 className="tm-admin-h">⏰ {t("Remind the late ones")} <span className="tm-count">{late.length}</span></h2>
+          <h2 className="tm-admin-h"><BellIcon size={16} className="ui-icon" /> {t("Remind the late ones")} <span className="tm-count">{late.length}</span></h2>
           <div className="gm-late-list">
             {late.map(({ m, d }) => (
               <a key={`${m.member}-${d.month}`} className="admin-btn" href={whatsappLink(nameOf[m.member]?.phone, remindText(m, d))} target="_blank" rel="noreferrer">
@@ -135,8 +136,8 @@ function Board({ data, nameOf, reload }) {
                   return (
                     <td key={d.month} className={d.month === cur ? "is-current" : ""}>
                       <button type="button" className={`gm-cell is-${d.state}`} onClick={() => setCell({ member: m.member, month: d.month })} title={STATE_LABEL[lang][d.state]}>
-                        {d.state === "paid" ? (d.onTime === false ? "✓⏱" : "✓") : d.state === "review" ? "?" : d.state === "late" ? "!" : ""}
-                        {turn && <span className="gm-cell-turn" title={t("Receives this month")}>★</span>}
+                        {d.state === "paid" ? (d.onTime === false ? <ClockIcon size={14} /> : <CheckIcon size={15} />) : d.state === "review" ? "?" : d.state === "late" ? "!" : ""}
+                        {turn && <span className="gm-cell-turn" title={t("Receives this month")} />}
                       </button>
                     </td>
                   );
@@ -147,7 +148,7 @@ function Board({ data, nameOf, reload }) {
           </tbody>
         </table>
       </div>
-      <p className="tm-small tm-muted gm-legend">✓ {STATE_LABEL[lang].paid} · ✓⏱ {t("paid late")} · ? {STATE_LABEL[lang].review} · ! {STATE_LABEL[lang].late} · ★ {t("receives this month")}</p>
+      <p className="tm-small tm-muted gm-legend"><span className="gm-cell is-paid gm-key"><CheckIcon size={12} /></span> {STATE_LABEL[lang].paid} <span className="gm-cell is-paid gm-key"><ClockIcon size={12} /></span> {t("paid late")} <span className="gm-cell is-review gm-key">?</span> {STATE_LABEL[lang].review} <span className="gm-cell is-late gm-key">!</span> {STATE_LABEL[lang].late} <span className="gm-key gm-key-turn" /> {t("receives this month")}</p>
       {cell && <CellPanel data={data} cell={cell} nameOf={nameOf} onClose={() => setCell(null)} reload={reload} />}
     </div>
   );
@@ -174,11 +175,11 @@ function CellPanel({ data, cell, nameOf, onClose, reload }) {
             {p.hasProof ? <ProofImage paymentId={p.id} /> : <span className="gm-proof is-empty">{METHOD_LABEL[lang][p.method]}</span>}
             <div className="gm-review-info">
               <strong>{money(p.amount, lang)} · {METHOD_LABEL[lang][p.method]}</strong>
-              <span className="tm-small">{p.status === "confirmed" ? `✓ ${t("confirmed")}${p.reviewedBy && p.reviewedBy !== "owner" ? ` (${p.reviewedBy})` : ""}` : p.status === "pending" ? t("waiting for you") : `✕ ${p.rejectReason}`}</span>
+              <span className="tm-small">{p.status === "confirmed" ? `${t("confirmed")}${p.reviewedBy && p.reviewedBy !== "owner" ? ` (${p.reviewedBy})` : ""}` : p.status === "pending" ? t("waiting for you") : `${t("Rejected")}: ${p.rejectReason}`}</span>
               <span className="tm-small tm-muted">{timeAgo(p.createdAt, lang)}{p.note ? ` · “${p.note}”` : ""}</span>
             </div>
             <div className="actions">
-              {p.status === "pending" && <button className="admin-btn admin-btn-primary" onClick={() => run(() => reviewPayment(p, "confirm", t))}>{t("Confirm ✓")}</button>}
+              {p.status === "pending" && <button className="admin-btn admin-btn-primary" onClick={() => run(() => reviewPayment(p, "confirm", t))}>{t("Confirm")}</button>}
               {p.status === "pending" && <button className="admin-btn" onClick={() => run(() => reviewPayment(p, "reject", t))}>{t("Reject")}</button>}
               <button className="admin-btn admin-btn-danger" onClick={() => run(async () => { if (!confirm(t("Delete this payment?"))) return false; await api.del(`/admin/circles/payments/${p.id}`); })}>✕</button>
             </div>
@@ -307,7 +308,7 @@ function Months({ data, members, nameOf, reload, setError }) {
                       {!draft && mo && h.member && (() => {
                         const real = mo.holders.find((x) => x.member === h.member);
                         if (!real) return null;
-                        return real.receivedAt ? <span className="gm-state is-paid">{t("received ✓")}</span>
+                        return real.receivedAt ? <span className="gm-state is-paid">{t("received")}</span>
                           : real.handedAt ? (<><span className="gm-state is-review">{t("handed — waiting for the member")}</span><button className="tm-link-btn" onClick={() => hand(i, h.member, false)}>{t("Undo")}</button></>)
                             : <button className="admin-btn" onClick={() => hand(i, h.member, true)}>{t("Mark handed over")} ({money(real.amount, lang)})</button>;
                       })()}
@@ -430,12 +431,12 @@ function GroupSummary({ data, nameOf, onClose }) {
   const missing = statement.members.filter((m) => m.dues[month].state !== "paid");
   const holders = mo.holders.map((h) => nameOf[h.member]?.name).join(lang === "ar" ? " و" : " & ");
   const text = lang === "ar"
-    ? [`📊 جمعية «${circle.name}» — ${monthName(mo.dueDate, "ar")}`, `✅ دفع ${paid.length} من ${statement.members.length}`,
-      names && missing.length ? `⏳ لسه: ${missing.map((m) => nameOf[m.member]?.name).join("، ")}` : null,
-      `🎉 القبض لـ ${holders} يوم ${day(mo.payoutDate, "ar")}`, `💳 ادفع وارفع صورة التحويل: ${portal()}`].filter(Boolean).join("\n")
-    : [`📊 "${circle.name}" — ${monthName(mo.dueDate, "en")}`, `✅ ${paid.length} of ${statement.members.length} paid`,
-      names && missing.length ? `⏳ Still to pay: ${missing.map((m) => nameOf[m.member]?.name).join(", ")}` : null,
-      `🎉 ${holders} receive(s) on ${day(mo.payoutDate, "en")}`, `💳 Pay and upload the screenshot: ${portal()}`].filter(Boolean).join("\n");
+    ? [`جمعية «${circle.name}» — ${monthName(mo.dueDate, "ar")}`, `- دفع ${paid.length} من ${statement.members.length}`,
+      names && missing.length ? `- لسه: ${missing.map((m) => nameOf[m.member]?.name).join("، ")}` : null,
+      `- القبض لـ ${holders} يوم ${day(mo.payoutDate, "ar")}`, `- ادفع وارفع صورة التحويل: ${portal()}`].filter(Boolean).join("\n")
+    : [`"${circle.name}" — ${monthName(mo.dueDate, "en")}`, `- ${paid.length} of ${statement.members.length} paid`,
+      names && missing.length ? `- Still to pay: ${missing.map((m) => nameOf[m.member]?.name).join(", ")}` : null,
+      `- ${holders} receive(s) on ${day(mo.payoutDate, "en")}`, `- Pay and upload the screenshot: ${portal()}`].filter(Boolean).join("\n");
   const copy = async () => { try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch { window.prompt(t("Copy:"), text); } };
   return (
     <div className="admin-modal-overlay" onClick={onClose}>
@@ -448,7 +449,7 @@ function GroupSummary({ data, nameOf, onClose }) {
         <textarea className="form-input" dir="auto" rows={7} readOnly value={text} />
         <div className="admin-form-actions">
           <button className="admin-btn" onClick={onClose}>{t("Close")}</button>
-          <button className="admin-btn" onClick={copy}>{copied ? t("Copied ✓") : t("Copy")}</button>
+          <button className="admin-btn" onClick={copy}>{copied ? t("Copied") : t("Copy")}</button>
           <a className="admin-btn admin-btn-primary" href={`https://wa.me/?text=${encodeURIComponent(text)}`} target="_blank" rel="noreferrer">{t("Send on WhatsApp")}</a>
         </div>
       </div>
