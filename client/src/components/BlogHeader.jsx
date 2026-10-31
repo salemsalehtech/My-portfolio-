@@ -4,13 +4,14 @@
 import { Link } from "react-router-dom";
 import { useSite } from "../context/SiteContext";
 import { SunIcon, MoonIcon } from "./team/icons";
+import BrandMark from "./BrandMark";
 
 export default function BlogHeader() {
   const { t, theme, lang, toggleTheme, toggleLang } = useSite();
   return (
     <header className="blog-header">
       <Link to="/" className="nav-logo">
-        <div className="nav-badge">SS</div>
+        <BrandMark height={26} className="nav-badge" />
         <span className="nav-name">Salem Saleh</span>
       </Link>
       <nav className="blog-header-links">

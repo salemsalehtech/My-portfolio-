@@ -23,6 +23,7 @@ import TeamHome from "./TeamHome";
 import TeamProject from "./TeamProject";
 import TeamJoin from "./TeamJoin";
 import Bell from "../../components/team/Bell";
+import BrandMark from "../../components/BrandMark";
 
 const TeamContext = createContext(null);
 export const useTeam = () => useContext(TeamContext);
@@ -93,7 +94,7 @@ export default function TeamPortal() {
 function Brand({ subtitle }) {
   return (
     <Link to="/" className="tm-brand" title={COMPANY}>
-      <span className="tm-logo">SS</span>
+      <BrandMark height={24} className="tm-logo" />
       <span className="tm-brand-text">
         <span className="tm-brand-name">{COMPANY}</span>
         {subtitle && <span className="tm-brand-sub">{subtitle}</span>}

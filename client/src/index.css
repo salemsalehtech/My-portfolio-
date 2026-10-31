@@ -1605,3 +1605,71 @@ body.ar .process-step { padding: 22px 0 6px 22px; }
   .process-num { grid-row: span 2; margin: 3px 0 0; }
 }
 .hero-portrait img { height: auto; }
+
+/* ---- Brand mark (components/BrandMark.jsx) replaces the old "SS" boxes ---- */
+.nav-badge, .footer-badge, .tm-logo { background: none !important; width: auto !important; height: auto !important; border-radius: 0 !important; color: var(--text-primary); display: inline-block; flex-shrink: 0; }
+.tm-logo { color: var(--text-primary); }
+.brand-mark { display: block; overflow: visible; }
+.brand-mark.is-drawing path { stroke-dasharray: 100; stroke-dashoffset: 100; animation: trace-draw 1.1s cubic-bezier(.6,0,.2,1) forwards; }
+.brand-mark.is-drawing path + path { animation-delay: .25s; }
+@keyframes trace-draw { to { stroke-dashoffset: 0; } }
+.nav-link:focus-visible { outline-offset: -2px; }
+
+/* ---- Hero v3: identity on one side, a live bilingual demo on the other ---- */
+.hero-container { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center; gap: clamp(32px, 5vw, 80px); }
+.hero-id { display: flex; align-items: center; gap: 12px; margin-bottom: 26px; }
+.hero-avatar-img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; object-position: 50% 18%; background: var(--card); border: 1px solid var(--card-border); }
+.hero-id .hero-status { margin: 0; }
+.hero-place { margin: 2px 0 0; font-family: var(--font-mono); font-size: 12.5px; color: var(--text-muted); }
+.hero-name { font-size: clamp(44px, 6.4vw, 88px); }
+
+.demo { margin: 0; position: relative; }
+.demo::before { /* blueprint dots behind the window */
+  content: ""; position: absolute; inset: -28px -28px -10px; z-index: 0; border-radius: 18px;
+  background-image: radial-gradient(color-mix(in srgb, var(--text-muted) 38%, transparent) 1px, transparent 1.2px);
+  background-size: 18px 18px; mask-image: radial-gradient(70% 70% at 50% 45%, #000 40%, transparent 100%);
+}
+.demo-window { position: relative; z-index: 1; border-radius: 14px; background: var(--surface); border: 1px solid var(--card-border); box-shadow: 0 1px 2px rgba(0,0,0,.06), 0 24px 60px -24px rgba(0,0,0,.35); overflow: hidden; font-family: var(--font-body); }
+.demo-bar { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--card-border); background: var(--bg); }
+.demo-dots { display: flex; gap: 6px; }
+.demo-dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--card-border); }
+.demo-url { flex: 1; min-width: 0; font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.demo-lang { display: flex; padding: 2px; border: 1px solid var(--card-border); border-radius: 6px; }
+.demo-lang button { padding: 4px 10px; border: none; border-radius: 4px; background: none; color: var(--text-secondary); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.demo-lang button.is-on { background: var(--gold); color: #12161B; }
+.demo-body { padding: 20px 20px 22px; animation: demo-swap .35s ease; min-height: 380px; display: flex; flex-direction: column; }
+@keyframes demo-swap { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.demo-head { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid var(--card-border); }
+.demo-logo { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; background: #1F8A5B; color: #fff; font-family: var(--font-heading); font-weight: 700; }
+.demo-head div { display: flex; flex-direction: column; }
+.demo-head strong { font-size: 15px; }
+.demo-head span { font-size: 12.5px; color: var(--text-muted); }
+.demo-body h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+.demo-label { font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin: 6px 0 8px; }
+.demo-days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 10px; }
+.demo-days button, .demo-slots button { border: 1px solid var(--card-border); background: var(--card); color: var(--text-primary); border-radius: 8px; font: inherit; cursor: pointer; transition: border-color .15s, background .15s; }
+.demo-days button { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0; }
+.demo-days span { font-size: 11.5px; color: var(--text-muted); }
+.demo-days strong { font-size: 17px; font-family: var(--font-heading); }
+.demo-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 16px; }
+.demo-slots button { padding: 9px 0; font-size: 14px; font-weight: 500; }
+.demo-days button:hover, .demo-slots button:hover:not(:disabled) { border-color: var(--line-strong); }
+.demo-days button.is-on, .demo-slots button.is-on { border-color: #1F8A5B; background: color-mix(in srgb, #1F8A5B 12%, var(--card)); }
+.demo-days button.is-on span { color: #1F8A5B; }
+.demo-slots button:disabled { color: var(--text-muted); text-decoration: line-through; cursor: not-allowed; opacity: .6; }
+.demo-confirm { margin-top: auto; min-height: 44px; border: none; border-radius: 8px; background: #1F8A5B; color: #fff; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.demo-confirm:hover { background: #197A50; }
+.demo-done { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; }
+.demo-done-icon { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, #1F8A5B 14%, transparent); color: #1F8A5B; }
+.demo-done strong { font-size: 20px; }
+.demo-done p { font-size: 14px; color: var(--text-secondary); max-width: 300px; line-height: 1.6; }
+.demo-link { border: none; background: none; color: #1F8A5B; font: inherit; font-weight: 600; cursor: pointer; padding: 6px; }
+.demo-caption { position: relative; z-index: 1; margin-top: 12px; font-family: var(--font-mono); font-size: 12.5px; color: var(--text-muted); text-align: center; }
+@media (max-width: 860px) {
+  .hero-container { grid-template-columns: 1fr; }
+  .demo-body { min-height: 0; }
+  .demo::before { inset: -14px; }
+}
+.hero-name { width: fit-content; max-width: 100%; font-size: clamp(40px, 5.3vw, 80px); }
+.hero-name > span:first-child { white-space: nowrap; }
+@media (max-width: 420px) { .hero-name > span:first-child { white-space: normal; } }

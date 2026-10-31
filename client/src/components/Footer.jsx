@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { useSite } from "../context/SiteContext";
 import { pick } from "../lib/pick";
 import { GithubIcon, LinkedinIcon, YoutubeIcon } from "../lib/socialIcons";
+import BrandMark from "./BrandMark";
 
 export default function Footer({ settings }) {
   const { t, lang } = useSite();
@@ -22,7 +23,7 @@ export default function Footer({ settings }) {
     <footer>
       <div className="footer-inner">
         <div className="footer-brand">
-          <div className="footer-badge">SS</div>
+          <BrandMark height={24} className="footer-badge" />
           <div>
             <div className="footer-name">{pick(lang, settings.nameEn, settings.nameAr)}</div>
             <div className="footer-role">{pick(lang, settings.roleEn, settings.roleAr)}</div>

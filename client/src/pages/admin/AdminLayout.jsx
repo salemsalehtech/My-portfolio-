@@ -15,6 +15,7 @@ import { COMPANY } from "../../lib/brand";
 import { NAV_ICONS } from "../../components/admin/navIcons";
 import Bell from "../../components/team/Bell";
 import CircleBell from "../../components/circles/CircleBell";
+import BrandMark from "../../components/BrandMark";
 
 // Where a click on a notification 🔔 leads: the task in its project, today's standups, or the
 // members list (a new sign-up to approve).
@@ -88,7 +89,7 @@ export default function AdminLayout() {
       <aside className="admin-sidebar" aria-label={t("Menu")}>
         <div className="admin-sidebar-head">
           <Link to="/" className="admin-brand">
-            <span className="tm-logo">SS</span>
+            <BrandMark height={24} className="tm-logo" />
             <span><strong>{COMPANY}</strong><small>{t("Dashboard")}</small></span>
           </Link>
           <button type="button" className="admin-icon-btn admin-only-mobile" onClick={() => setMenuOpen(false)} aria-label={t("Close menu")}>{NAV_ICONS.close}</button>
@@ -112,7 +113,7 @@ export default function AdminLayout() {
       <div className="admin-body">
         <header className="admin-topbar">
           <button type="button" className="admin-icon-btn admin-only-mobile" onClick={() => setMenuOpen(true)} aria-label={t("Open menu")}>{NAV_ICONS.menu}</button>
-          <Link to="/" className="admin-brand admin-only-mobile"><span className="tm-logo">SS</span></Link>
+          <Link to="/" className="admin-brand admin-only-mobile"><BrandMark height={24} className="tm-logo" /></Link>
           <div className="admin-topbar-actions">
             <Bell base="/admin/team" lang={lang} link={bellLink} className="is-admin" />
             <CircleBell path="/admin/circles/notifications/all" readPath="/admin/circles/notifications/read" lang={lang} className="is-admin"

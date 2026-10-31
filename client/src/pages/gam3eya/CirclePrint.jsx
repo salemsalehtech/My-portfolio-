@@ -10,6 +10,7 @@ import { COMPANY } from "../../lib/brand";
 import { money, day, monthName, METHOD_LABEL } from "../../lib/circles";
 import { useCircle } from "./CirclePortal";
 import { PrinterIcon, AwardIcon } from "../../components/team/icons";
+import BrandMark from "../../components/BrandMark";
 
 const T = {
   en: { receipt: "Payment receipt", no: "Receipt no.", member: "Member", phone: "Phone", circle: "Circle", month: "For the month of", amount: "Amount", method: "Paid by", sent: "Sent on", confirmed: "Confirmed on", by: "by", owner: "the organizer", note: "Note",
@@ -27,7 +28,7 @@ function Sheet({ children }) {
         <button className="fp-btn" onClick={() => window.print()}><PrinterIcon size={16} /> {t.print}</button>
       </div>
       <article className="gm-sheet">
-        <header className="gm-sheet-head"><span className="tm-logo">SS</span><strong>{COMPANY}</strong></header>
+        <header className="gm-sheet-head"><BrandMark height={24} className="tm-logo" /><strong>{COMPANY}</strong></header>
         {children}
       </article>
     </main>

@@ -1,11 +1,11 @@
 // Hero.jsx — the top of the public portfolio (id="home").
 //
-// The name is set in BOTH scripts — the current language large, the other one beneath it in the
-// accent colour — because building bilingual (Arabic / English) software is the point of the
-// work. Then the roles as one line, the tagline, the optional USP, the calls to action ("Book a
-// call" when a booking link is set) and the social links. The portrait (uploaded in Profile &
-// Links, or the built-in one) sits in a plain frame with a caption: whether new projects are
-// being taken, the location and the local time in Cairo.
+// One side: who you are — the portrait as a small avatar with the "taking new projects" status
+// and Cairo time, then the name in BOTH scripts (the current language large, the other beneath
+// it in the accent colour), the roles, the tagline, the optional USP, the calls to action ("Book a
+// call" when a booking link is set) and the social links.
+// Other side: HeroDemo.jsx — a small booking app the visitor can play with, switching between
+// Arabic and English, because that is exactly what the work is.
 //
 // Props: `settings` — the profile content from Admin → "Profile & Links" (loaded once in
 // pages/Portfolio.jsx; never empty, it falls back to defaults). A link left empty hides its button.
@@ -16,6 +16,7 @@ import { useReveal } from "../hooks/useReveal";
 import { pick } from "../lib/pick";
 import { GithubIcon, LinkedinIcon, YoutubeIcon } from "../lib/socialIcons";
 import { API_BASE } from "../lib/api";
+import HeroDemo from "./HeroDemo";
 
 const cairoTime = (lang) =>
   new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Cairo" }).format(new Date());
@@ -50,6 +51,13 @@ export default function Hero({ settings }) {
     <section id="home" className="hero">
       <div className="hero-container">
         <div ref={textRef} className={`hero-text ${textVisible ? "visible" : ""}`} data-ao>
+          <div className="hero-id">
+            <img className="hero-avatar-img" src={photo} alt="" width="56" height="56" />
+            <div>
+              <p className={`hero-status ${available ? "is-available" : "is-busy"}`}><span aria-hidden="true" />{availability}</p>
+              <p className="hero-place">{location} · <span dir="ltr">{time}</span></p>
+            </div>
+          </div>
           <p className="hero-greeting">{pick(lang, settings.greetingEn, settings.greetingAr)}</p>
           <h1 className="hero-name">
             <span>{name}</span>
@@ -74,14 +82,7 @@ export default function Hero({ settings }) {
             </div>
           )}
         </div>
-        <figure className="hero-portrait">
-          <img src={photo} alt={name} width="760" height="950" fetchpriority="high" />
-          <p className={`hero-status ${available ? "is-available" : "is-busy"}`}><span aria-hidden="true" />{availability}</p>
-          <figcaption>
-            <span>{location}</span>
-            <span dir="ltr">{time} <abbr title="Cairo time">EET</abbr></span>
-          </figcaption>
-        </figure>
+        <HeroDemo caption={t.demoCaption} />
       </div>
     </section>
   );

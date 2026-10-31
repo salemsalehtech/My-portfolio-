@@ -21,6 +21,7 @@ import { SunIcon, MoonIcon, GlobeIcon, KeyIcon, LogoutIcon, ExternalIcon, CheckC
 import CircleBell from "../../components/circles/CircleBell";
 import CircleHome from "./CircleHome";
 import { CircleReceipt, CircleCertificate } from "./CirclePrint";
+import BrandMark from "../../components/BrandMark";
 
 const CircleContext = createContext(null);
 export const useCircle = () => useContext(CircleContext);
@@ -83,7 +84,7 @@ export default function CirclePortal() {
 function Brand({ subtitle }) {
   return (
     <Link to="/" className="tm-brand" title={COMPANY}>
-      <span className="tm-logo">SS</span>
+      <BrandMark height={24} className="tm-logo" />
       <span className="tm-brand-text"><span className="tm-brand-name">{COMPANY}</span>{subtitle && <span className="tm-brand-sub">{subtitle}</span>}</span>
     </Link>
   );

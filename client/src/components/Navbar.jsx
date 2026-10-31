@@ -15,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { SunIcon, MoonIcon, MenuIcon, XIcon } from "./team/icons";
 import { scrollToSection } from "../lib/scrollToSection";
+import BrandMark from "./BrandMark";
 
 export default function Navbar({ scrolled, activeSection, sections }) {
   const { t, theme, lang, toggleTheme, toggleLang } = useSite();
@@ -38,7 +39,7 @@ export default function Navbar({ scrolled, activeSection, sections }) {
     <>
       <nav id="navbar" className={`${scrolled || menuOpen ? "scrolled" : ""} ${menuOpen ? "is-open" : ""}`}>
         <a href="#" className="nav-logo" onClick={(e) => { e.preventDefault(); go("home"); }}>
-          <span className="nav-badge">SS</span>
+          <BrandMark height={26} className="nav-badge" />
           <span className="nav-name">{lang === "ar" ? "سالم صالح" : "Salem Saleh"}</span>
         </a>
         <ul className="nav-links">

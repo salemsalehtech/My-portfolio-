@@ -16,6 +16,7 @@ import { youtubeId, youtubeEmbedUrl } from "../lib/youtube";
 import { COMPANY } from "../lib/brand";
 import { SunIcon, MoonIcon } from "../components/team/icons";
 import { formatPrice, productCoverUrl, productImageUrl } from "../lib/products";
+import BrandMark from "../components/BrandMark";
 
 export default function ProductPage() {
   const { slug } = useParams();
@@ -45,7 +46,7 @@ export default function ProductPage() {
   const header = (
     <header className="blog-header">
       <Link to="/" className="nav-logo">
-        <div className="nav-badge">SS</div>
+        <BrandMark height={26} className="nav-badge" />
         <span className="nav-name">{COMPANY}</span>
       </Link>
       <nav className="blog-header-links">
