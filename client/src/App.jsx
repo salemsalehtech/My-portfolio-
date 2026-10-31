@@ -57,6 +57,10 @@ const AdminTeamProject = lazy(() => import("./pages/admin/AdminTeamProject"));
 const ProductPage = lazy(() => import("./pages/ProductPage"));
 const AdminProducts = lazy(() => import("./pages/admin/AdminProducts"));
 const AdminProductEditor = lazy(() => import("./pages/admin/AdminProductEditor"));
+// Savings circles (جمعيات): the member portal and the owner's pages.
+const CirclePortal = lazy(() => import("./pages/gam3eya/CirclePortal"));
+const AdminCircles = lazy(() => import("./pages/admin/AdminCircles"));
+const AdminCircle = lazy(() => import("./pages/admin/AdminCircle"));
 const loading = <p style={{ padding: 40, textAlign: "center" }}>…</p>;
 
 export default function App() {
@@ -74,6 +78,7 @@ export default function App() {
             <Route path="/form/:slug" element={<PublicForm />} />
             <Route path="/form/:slug/:lang" element={<PublicForm />} />
             <Route path="/p/:slug" element={<Suspense fallback={loading}><ProductPage /></Suspense>} />
+            <Route path="/gam3eya/*" element={<Suspense fallback={loading}><CirclePortal /></Suspense>} />
             <Route path="/team/*" element={<Suspense fallback={loading}><TeamPortal /></Suspense>} />
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminLayout />}>
@@ -92,6 +97,8 @@ export default function App() {
               <Route path="team/projects/:id" element={<Suspense fallback={loading}><AdminTeamProject /></Suspense>} />
               <Route path="products" element={<Suspense fallback={loading}><AdminProducts /></Suspense>} />
               <Route path="products/:id" element={<Suspense fallback={loading}><AdminProductEditor /></Suspense>} />
+              <Route path="circles" element={<Suspense fallback={loading}><AdminCircles /></Suspense>} />
+              <Route path="circles/:id" element={<Suspense fallback={loading}><AdminCircle /></Suspense>} />
               <Route path="forms" element={<AdminForms />} />
               <Route path="forms/:id" element={<AdminFormEditor />} />
               <Route path="forms/:id/responses" element={<AdminFormResponses />} />

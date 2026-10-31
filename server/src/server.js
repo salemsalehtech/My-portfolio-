@@ -8,6 +8,7 @@ require("dotenv").config();
 const app = require("./app");
 const { connectMongo } = require("./lib/mongo");
 const { startKeepAlive } = require("./lib/keepAlive");
+const { startCircleReminders } = require("./lib/circleReminders");
 
 // Without a database address or the secret that signs login tokens, nothing would work —
 // better to fail loudly at startup than to start "half working".
@@ -38,6 +39,7 @@ connectMongo()
     app.listen(PORT, () => {
       console.log(`API listening on http://localhost:${PORT}`);
       startKeepAlive(); // only does something on Render (see lib/keepAlive.js)
+      startCircleReminders(); // daily phone reminders for the savings circles
     });
   })
   .catch((error) => {

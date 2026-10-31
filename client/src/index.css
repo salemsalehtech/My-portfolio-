@@ -1185,3 +1185,149 @@ body.ar .pp-final h2 { font-family: var(--font-ar); }
 .pd-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .pd-add .form-input { width: auto; min-width: 240px; }
 .pd-save-bar { position: sticky; bottom: 0; padding: 12px 0; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(6px); }
+
+/* ---- Savings circles — جمعيات (gm-*): member portal, owner pages, print ---- */
+.gm-page { max-width: 880px; }
+.gm-circle { margin-bottom: 26px; padding: clamp(16px, 3vw, 24px); border-radius: 18px; background: var(--surface); border: 1px solid var(--card-border); }
+.gm-circle.is-finished { opacity: .92; }
+.gm-circle-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.gm-circle-head h2 { font-size: 20px; font-weight: 800; margin-bottom: 2px; }
+.gm-boxes { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.gm-box { display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--card-border); }
+.gm-box .fp-btn { margin-top: 6px; }
+.gm-box.is-late { border-color: rgba(229,62,62,.5); background: rgba(229,62,62,.06); }
+.gm-box.is-ok { border-color: rgba(56,161,105,.45); }
+.gm-turn { background: linear-gradient(135deg, var(--gold-dim), var(--card)); border-color: color-mix(in srgb, var(--gold) 40%, var(--card-border)); }
+.gm-box-label { font-size: 12.5px; font-weight: 700; color: var(--text-muted); }
+.gm-amount { font-family: var(--font-heading); font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
+.tm[lang="ar"] .gm-amount { font-family: var(--font-ar); letter-spacing: 0; }
+.gm-count { align-self: flex-start; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 700; background: var(--gold-dim); color: var(--gold); }
+.gm-count.is-late { background: rgba(229,62,62,.12); color: #E53E3E; }
+.gm-count.is-ok { background: rgba(56,161,105,.14); color: #2F855A; }
+.gm-progress { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.gm-progress-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.gm-goal { font-size: 14px; margin: 0; align-self: flex-start; }
+.gm-inline { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.gm-inline .fp-input { flex: 1 1 200px; width: auto; }
+.gm-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.gm-request { margin: 4px 0 10px; }
+.gm-details { margin-top: 10px; border-top: 1px solid var(--card-border); padding-top: 10px; }
+.gm-details summary { cursor: pointer; font-weight: 700; font-size: 14.5px; padding: 6px 0; display: flex; align-items: center; gap: 8px; }
+.gm-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+.gm-table th, .gm-table td { padding: 9px 8px; text-align: start; border-bottom: 1px solid var(--card-border); }
+.gm-table th { font-size: 12.5px; color: var(--text-muted); }
+.gm-state { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--card-border); color: var(--text-secondary); }
+.gm-state.is-paid { background: rgba(56,161,105,.14); color: #2F855A; }
+.gm-state.is-review { background: rgba(66,153,225,.15); color: #3182CE; }
+.gm-state.is-late { background: rgba(229,62,62,.12); color: #E53E3E; }
+.gm-state.is-due { background: var(--gold-dim); color: var(--gold); }
+.gm-payments { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.gm-payments li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border-radius: 10px; background: var(--card); border: 1px solid var(--card-border); font-size: 14px; }
+.gm-payments li > :first-child { flex: 1 1 200px; }
+.gm-helper { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--card-border); }
+.gm-helper h3 { font-size: 15px; font-weight: 700; }
+.gm-review-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--card-border); }
+.gm-review-row:last-child { border-bottom: none; }
+.gm-review-info { flex: 1 1 220px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.gm-proof { flex-shrink: 0; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; border: 1px solid var(--card-border); background: var(--card); font-size: 11px; color: var(--text-muted); }
+.gm-proof img { width: 100%; height: 100%; object-fit: cover; }
+.gm-push, .gm-wait { margin-bottom: 18px; padding: 16px; border-radius: 14px; background: var(--surface); border: 1px dashed var(--card-border); }
+.gm-wait h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+.gm-push-ok { text-align: center; }
+
+.gm-pay { max-height: calc(100vh - 32px); overflow-y: auto; }
+.gm-payto { display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 12px; background: var(--gold-dim); }
+.gm-copy { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.gm-copy span { min-width: 90px; }
+.gm-copy code { flex: 1; font-size: 15px; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: var(--surface); }
+.gm-copy .fp-btn { padding: 6px 14px; }
+.gm-qr-wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.gm-qr { width: 120px; height: 120px; padding: 6px; border-radius: 10px; background: #fff; }
+.gm-qr svg { width: 100%; height: 100%; display: block; }
+.gm-pay-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.gm-methods { border: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.gm-methods legend { font-size: 14px; font-weight: 600; margin-bottom: 6px; padding: 0; }
+.gm-methods label { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--card-border); cursor: pointer; font-size: 14px; }
+.gm-methods label.is-on { border-color: var(--gold); background: var(--gold-dim); font-weight: 700; }
+.gm-methods input { accent-color: var(--gold); }
+.gm-preview { max-height: 180px; width: auto; max-width: 100%; border-radius: 10px; border: 1px solid var(--card-border); align-self: flex-start; }
+
+.gm-print-page { max-width: 760px; }
+.gm-print-tools { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.gm-sheet { padding: clamp(20px, 5vw, 40px); border-radius: 16px; background: var(--surface); border: 1px solid var(--card-border); }
+.gm-sheet-head { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 2px solid var(--gold); }
+.gm-sheet h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+.gm-sheet-amount { font-family: var(--font-heading); font-size: 40px; font-weight: 800; color: var(--gold); margin-bottom: 16px; }
+.gm-sheet-rows { display: grid; gap: 0; margin: 0; }
+.gm-sheet-rows > div { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--card-border); font-size: 15px; }
+.gm-sheet-rows dt { color: var(--text-muted); }
+.gm-sheet-rows dd { margin: 0; font-weight: 600; text-align: end; }
+.gm-cert { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px 0; }
+.gm-cert-medal { font-size: 64px; line-height: 1; }
+.gm-cert-text { font-size: 18px; line-height: 1.7; max-width: 520px; }
+.gm-cert-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; margin: 8px 0; }
+.gm-cert-stats > div { padding: 14px 8px; border-radius: 12px; background: var(--gold-dim); }
+.gm-cert-stats dt { font-size: 12.5px; color: var(--text-muted); }
+.gm-cert-stats dd { margin: 4px 0 0; font-size: 20px; font-weight: 800; }
+.gm-cert-thanks { font-weight: 700; color: var(--gold); }
+.gm-print-only { display: none; }
+
+/* owner pages */
+.gm-admin-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.gm-admin-card { display: flex; flex-direction: column; gap: 8px; margin: 0; color: var(--text-primary); text-decoration: none; transition: border-color .2s; }
+.gm-admin-card:hover { border-color: var(--gold); }
+.gm-admin-card.is-draft { border-style: dashed; }
+.gm-admin-card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.gm-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.gm-head h1 { margin-bottom: 4px !important; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.gm-head-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.gm-late-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.gm-board-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--card-border); background: var(--surface); }
+.gm-board { border-collapse: collapse; min-width: 100%; font-size: 13.5px; }
+.gm-board th, .gm-board td { padding: 8px 6px; border-bottom: 1px solid var(--card-border); text-align: center; white-space: nowrap; }
+.gm-board thead th { font-size: 12px; color: var(--text-muted); font-weight: 700; }
+.gm-board tbody th { text-align: start; position: sticky; inset-inline-start: 0; background: var(--surface); z-index: 1; }
+.gm-board tbody th span { display: block; }
+.gm-board .is-current { background: var(--gold-dim); }
+.gm-cell { position: relative; width: 38px; height: 34px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--card); color: var(--text-muted); font: inherit; font-weight: 800; cursor: pointer; }
+.gm-cell:hover { border-color: var(--gold); }
+.gm-cell.is-paid { background: rgba(56,161,105,.16); border-color: rgba(56,161,105,.4); color: #2F855A; }
+.gm-cell.is-review { background: rgba(66,153,225,.16); border-color: rgba(66,153,225,.4); color: #3182CE; }
+.gm-cell.is-late { background: rgba(229,62,62,.14); border-color: rgba(229,62,62,.45); color: #E53E3E; }
+.gm-cell.is-due { border-color: var(--gold); }
+.gm-cell-turn { position: absolute; top: -7px; inset-inline-end: -6px; font-size: 12px; color: var(--gold); }
+.gm-legend { margin-top: 8px; }
+.gm-record { white-space: normal; }
+.gm-score { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 800; font-size: 13px; margin-inline-end: 6px; }
+.gm-score.is-good { background: rgba(56,161,105,.14); color: #2F855A; }
+.gm-score.is-mid { background: var(--gold-dim); color: var(--gold); }
+.gm-score.is-bad { background: rgba(229,62,62,.12); color: #E53E3E; }
+.gm-slots { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.gm-slot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--bg); border: 1px solid var(--card-border); }
+.gm-slot.is-locked { opacity: .85; border-style: dashed; }
+.gm-slot-month { display: flex; flex-direction: column; min-width: 92px; }
+.gm-slot-month strong { font-size: 18px; color: var(--gold); }
+.gm-slot-holders { flex: 1 1 260px; display: flex; flex-direction: column; gap: 6px; }
+.gm-holder { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gm-holder .form-input { flex: 1 1 180px; width: auto; }
+.gm-record-form { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--card-border); }
+.tm-bell-dot.is-soon, .tm-bell-dot.is-handed, .tm-bell-dot.is-added { background: #3182CE; }
+.tm-bell-dot.is-confirmed, .tm-bell-dot.is-received { background: #38A169; }
+.tm-bell-dot.is-rejected, .tm-bell-dot.is-request { background: #E53E3E; }
+.tm-bell.is-admin + .tm-bell.is-admin { margin-inline-start: -2px; }
+
+@media (max-width: 600px) {
+  .gm-pay-grid { grid-template-columns: 1fr; }
+  .gm-cert-stats { grid-template-columns: 1fr; }
+  .gm-table th:nth-child(2), .gm-table td:nth-child(2) { display: none; }
+}
+
+@media print {
+  .gm-noprint, .tm-topbar, .tm-footer, .admin-sidebar, .admin-topbar, .admin-backdrop { display: none !important; }
+  .gm-print-only { display: block !important; }
+  .admin-main { padding: 0 !important; max-width: none !important; }
+  .gm-sheet { border: none; padding: 0; background: #fff; color: #000; }
+  body, .tm, .admin-shell { background: #fff !important; color: #000 !important; }
+  .gm-print-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 12px; }
+  .gm-print-table th, .gm-print-table td { border: 1px solid #999; padding: 6px; text-align: start; }
+}

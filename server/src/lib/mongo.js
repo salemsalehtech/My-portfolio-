@@ -655,6 +655,162 @@ const teamStandupSchema = new mongoose.Schema(
 teamStandupSchema.index({ member: 1, date: 1 }, { unique: true });
 teamStandupSchema.index({ date: 1 });
 
+// ---- Savings circles — جمعيات (Admin → Circles, member portal /#/gam3eya) ----
+// The app only RECORDS money: members transfer to the owner by InstaPay / Vodafone Cash / cash as
+// usual, upload a screenshot, and the owner (or a helper) confirms it. Members log in with their
+// phone number at /#/gam3eya (routes/circles.js) — a login separate from the admin's and the team's.
+const objectId = mongoose.Schema.Types.ObjectId;
+
+// A member account. `notes` and the guarantor are the owner's private notes (never sent to the
+// member). `waitlist` = "I want to join the next circle".
+const circleMemberSchema = new mongoose.Schema(
+  {
+    phone: { type: String, required: [true, "A phone number is required"], unique: true, trim: true, match: [/^\d{8,15}$/, "Write the phone number with digits only"] },
+    name: { type: String, required: [true, "A name is required"], trim: true, maxlength: 80 },
+    passwordHash: { type: String, required: true, select: false },
+    mustChangePassword: { type: Boolean, default: false },
+    pending: { type: Boolean, default: false }, // signed up with an invite, waiting for approval
+    active: { type: Boolean, default: true },
+    invite: { type: objectId, ref: "CircleInvite", default: null },
+    goal: { type: String, default: "", trim: true, maxlength: 120 }, // what they are saving for
+    waitlist: {
+      on: { type: Boolean, default: false },
+      note: { type: String, default: "", maxlength: 300 },
+      at: { type: Date, default: null },
+    },
+    notes: { type: String, default: "", maxlength: 2000 },
+    guarantorName: { type: String, default: "", trim: true, maxlength: 80 },
+    guarantorPhone: { type: String, default: "", trim: true, maxlength: 20 },
+    lastLoginAt: { type: Date, default: null },
+  },
+  { timestamps: true }
+);
+
+// Invite links for self sign-up (same idea as TeamInvite: only a hash of the token is stored).
+const circleInviteSchema = new mongoose.Schema(
+  {
+    tokenHash: { type: String, required: true, unique: true, select: false },
+    label: { type: String, default: "", trim: true, maxlength: 80 },
+    maxUses: { type: Number, default: 1, min: 1, max: 50 },
+    uses: { type: Number, default: 0 },
+    expiresAt: { type: Date, required: true },
+    revoked: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+
+// A circle. Each slot is one month's payout ("دور"): its holders share it — one holder with a full
+// share, or two holders with half a share each. A member with two shares holds two slots.
+// The number of months = the number of slots; everyone pays shareAmount × their shares every
+// month, and the slot of month i receives shareAmount × the number of slots.
+const circleHolderSchema = new mongoose.Schema(
+  {
+    member: { type: objectId, ref: "CircleMember", required: true },
+    share: { type: Number, enum: [0.5, 1], default: 1 },
+    handedAt: { type: Date, default: null }, // the owner handed the money over
+    receivedAt: { type: Date, default: null }, // the member confirmed receiving it
+  },
+  { _id: false }
+);
+const circleSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: [true, "A name is required"], trim: true, maxlength: 80 },
+    shareAmount: { type: Number, required: [true, "The monthly amount is required"], min: [1, "The monthly amount must be at least 1"], max: 10000000 },
+    startMonth: { type: String, required: [true, "The first month is required"], match: [/^\d{4}-(0[1-9]|1[0-2])$/, "The first month must look like 2026-11"] },
+    payDay: { type: Number, default: 1, min: 1, max: 28 }, // members pay by this day of each month
+    payoutDay: { type: Number, default: 5, min: 1, max: 28 }, // the month's holder receives on this day
+    status: { type: String, enum: ["draft", "active", "finished"], default: "draft" },
+    slots: { type: [{ holders: { type: [circleHolderSchema], default: [] } }], default: [] },
+    helpers: [{ type: objectId, ref: "CircleMember" }], // may confirm payments of this circle
+    remindedAt: { type: Map, of: String, default: {} }, // "memberId:month:kind" -> date, so a push goes once
+  },
+  { timestamps: true }
+);
+
+// One payment a member made (or the owner recorded). Several payments can cover one month
+// (paying in two parts). Only `confirmed` payments count.
+const circlePaymentSchema = new mongoose.Schema(
+  {
+    circle: { type: objectId, ref: "Circle", required: true, index: true },
+    member: { type: objectId, ref: "CircleMember", required: true, index: true },
+    month: { type: Number, required: true, min: 0, max: 600 },
+    amount: { type: Number, required: [true, "Write the amount"], min: [1, "The amount must be at least 1"], max: 10000000 },
+    method: { type: String, enum: ["instapay", "vodafone", "cash", "other"], default: "instapay" },
+    note: { type: String, default: "", trim: true, maxlength: 500 }, // the member's comment
+    proof: {
+      data: { type: Buffer, select: false },
+      contentType: { type: String, default: "" },
+      size: { type: Number, default: 0 },
+    },
+    status: { type: String, enum: ["pending", "confirmed", "rejected"], default: "pending" },
+    rejectReason: { type: String, default: "", maxlength: 300 },
+    reviewedBy: { type: String, default: "" }, // "owner" or the helper's name
+    reviewedAt: { type: Date, default: null },
+  },
+  { timestamps: true }
+);
+
+// "I need my turn early" — the owner decides (and reorders the slots himself).
+const circleRequestSchema = new mongoose.Schema(
+  {
+    circle: { type: objectId, ref: "Circle", required: true, index: true },
+    member: { type: objectId, ref: "CircleMember", required: true },
+    reason: { type: String, required: [true, "Write the reason"], trim: true, maxlength: 500 },
+    status: { type: String, enum: ["open", "accepted", "declined"], default: "open" },
+    reply: { type: String, default: "", maxlength: 500 },
+  },
+  { timestamps: true }
+);
+
+// Everything that happened in a circle, for settling any disagreement later.
+const circleLogSchema = new mongoose.Schema(
+  {
+    circle: { type: objectId, ref: "Circle", index: true, default: null },
+    actor: { type: String, default: "owner", maxlength: 80 }, // "owner" or a member's name
+    action: { type: String, required: true, maxlength: 40 },
+    detail: { type: String, default: "", maxlength: 300 },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } }
+);
+
+// Notifications for the bell 🔔 (recipient null = the owner); deleted after 60 days.
+const circleNotificationSchema = new mongoose.Schema(
+  {
+    recipient: { type: objectId, ref: "CircleMember", default: null, index: true },
+    kind: { type: String, required: true, maxlength: 30 },
+    actor: { type: String, default: "", maxlength: 80 },
+    circle: { type: objectId, ref: "Circle", default: null },
+    detail: { type: String, default: "", maxlength: 300 },
+    read: { type: Boolean, default: false },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } }
+);
+circleNotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 24 * 60 * 60 });
+
+// Phone push subscriptions (Web Push) — one per device that turned notifications on.
+const pushSubscriptionSchema = new mongoose.Schema(
+  {
+    member: { type: objectId, ref: "CircleMember", default: null, index: true }, // null = the owner
+    endpoint: { type: String, required: true, unique: true, maxlength: 1000 },
+    keys: { p256dh: { type: String, required: true }, auth: { type: String, required: true } },
+  },
+  { timestamps: true }
+);
+
+// Single-document settings: where members send money, and the Web Push keys (made once, on
+// first use, so nothing has to be added to Render's environment).
+const circleSettingsSchema = new mongoose.Schema(
+  {
+    instapay: { type: String, default: "", trim: true, maxlength: 120 }, // e.g. name@instapay
+    instapayLink: { type: String, default: "", trim: true, maxlength: 300 }, // ipn.eg/… link (shown as a QR code)
+    vodafone: { type: String, default: "", trim: true, maxlength: 20 },
+    payNote: { type: String, default: "", maxlength: 500 },
+    vapidPublic: { type: String, default: "" },
+    vapidPrivate: { type: String, default: "", select: false },
+  },
+  { timestamps: true }
+);
+
 // One submission of a Form: `answers` maps each field key to the text the person typed.
 const formResponseSchema = new mongoose.Schema(
   {
@@ -690,6 +846,15 @@ const models = {
   TeamProject: mongoose.models.TeamProject || mongoose.model("TeamProject", teamProjectSchema),
   TeamTask: mongoose.models.TeamTask || mongoose.model("TeamTask", teamTaskSchema),
   TeamActivity: mongoose.models.TeamActivity || mongoose.model("TeamActivity", teamActivitySchema),
+  CircleMember: mongoose.models.CircleMember || mongoose.model("CircleMember", circleMemberSchema),
+  CircleInvite: mongoose.models.CircleInvite || mongoose.model("CircleInvite", circleInviteSchema),
+  Circle: mongoose.models.Circle || mongoose.model("Circle", circleSchema),
+  CirclePayment: mongoose.models.CirclePayment || mongoose.model("CirclePayment", circlePaymentSchema),
+  CircleRequest: mongoose.models.CircleRequest || mongoose.model("CircleRequest", circleRequestSchema),
+  CircleLog: mongoose.models.CircleLog || mongoose.model("CircleLog", circleLogSchema),
+  CircleNotification: mongoose.models.CircleNotification || mongoose.model("CircleNotification", circleNotificationSchema),
+  PushSubscription: mongoose.models.PushSubscription || mongoose.model("PushSubscription", pushSubscriptionSchema),
+  CircleSettings: mongoose.models.CircleSettings || mongoose.model("CircleSettings", circleSettingsSchema),
   TeamInvite: mongoose.models.TeamInvite || mongoose.model("TeamInvite", teamInviteSchema),
   TeamComment: mongoose.models.TeamComment || mongoose.model("TeamComment", teamCommentSchema),
   TeamNotification: mongoose.models.TeamNotification || mongoose.model("TeamNotification", teamNotificationSchema),
@@ -701,7 +866,7 @@ const models = {
 for (const model of Object.values(models)) {
   model.schema.set("toJSON", {
     transform: (_document, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString(); // (sub-documents without an _id, e.g. circle slot holders, have none)
       delete ret._id;
       delete ret.__v;
       return ret;
@@ -714,7 +879,7 @@ for (const model of Object.values(models)) {
 for (const model of [models.Project, models.Certificate, models.Course, models.Product]) {
   model.schema.set("toJSON", {
     transform: (_document, ret) => {
-      ret.id = ret._id.toString();
+      if (ret._id) ret.id = ret._id.toString();
       ret.hasImage = Boolean(ret.image && ret.image.size);
       delete ret._id;
       delete ret.__v;
@@ -727,7 +892,7 @@ for (const model of [models.Project, models.Certificate, models.Course, models.P
 // Team members: never send the password hash, even when a route loaded it to check a password.
 models.TeamMember.schema.set("toJSON", {
   transform: (_document, ret) => {
-    ret.id = ret._id.toString();
+    if (ret._id) ret.id = ret._id.toString();
     delete ret._id;
     delete ret.__v;
     delete ret.passwordHash;
@@ -735,10 +900,31 @@ models.TeamMember.schema.set("toJSON", {
   },
 });
 
+// Circle members: never the password hash. Circle payments: the screenshot becomes `hasProof`.
+models.CircleMember.schema.set("toJSON", {
+  transform: (_document, ret) => {
+    if (ret._id) ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    delete ret.passwordHash;
+    return ret;
+  },
+});
+models.CirclePayment.schema.set("toJSON", {
+  transform: (_document, ret) => {
+    if (ret._id) ret.id = ret._id.toString();
+    ret.hasProof = Boolean(ret.proof && ret.proof.size);
+    delete ret._id;
+    delete ret.__v;
+    delete ret.proof;
+    return ret;
+  },
+});
+
 // Blog posts: the cover picture becomes `hasCover` (fetched from GET /api/posts/:slug/cover).
 models.Post.schema.set("toJSON", {
   transform: (_document, ret) => {
-    ret.id = ret._id.toString();
+    if (ret._id) ret.id = ret._id.toString();
     ret.hasCover = Boolean(ret.cover && ret.cover.size);
     delete ret._id;
     delete ret.__v;

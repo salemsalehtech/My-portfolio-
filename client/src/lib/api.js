@@ -13,15 +13,18 @@ export const API_BASE = BASE;
 
 // Internal helper that every api.* method funnels through. It:
 //  1. attaches a JWT as a Bearer header: the team member's token for the member portal's
-//     /team/* calls (pages/team/), otherwise the admin's (if logged in — see AdminContext.jsx),
+//     /team/* calls (pages/team/), the circle member's for /circle/* (pages/gam3eya/),
+//     otherwise the admin's (if logged in — see AdminContext.jsx),
 //  2. sends the request and parses the JSON response,
 //  3. throws an Error with the server's message whenever the response isn't 2xx, so
 //     callers can just try/catch instead of checking res.ok themselves every time.
 //  4. if the server says the login token is no longer valid (401 — it expires after 7 days),
-//     forgets it and fires "admin-session-expired" (or "team-session-expired"); AdminContext.jsx
-//     and the team portal listen for it and send the person back to their login page.
+//     forgets it and fires "admin-session-expired" (or "team-" / "circle-session-expired");
+//     AdminContext.jsx and the portals listen for it and send the person back to their login page.
+const tokenKind = (path) => (path.startsWith("/team/") ? "team" : path.startsWith("/circle/") ? "circle" : "admin");
+
 async function request(path, options = {}) {
-  const kind = path.startsWith("/team/") ? "team" : "admin";
+  const kind = tokenKind(path);
   const storageKey = `${kind}Token`;
   const token = localStorage.getItem(storageKey);
   const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
@@ -46,3 +49,12 @@ export const api = {
   patch: (path, body) => request(path, { method: "PATCH", body: JSON.stringify(body) }),
   del: (path) => request(path, { method: "DELETE" }),
 };
+
+// Fetches a protected picture (e.g. a payment screenshot) with the right login and returns a
+// temporary object URL for an <img>. Call URL.revokeObjectURL() when done with it.
+export async function fetchImageUrl(path) {
+  const token = localStorage.getItem(`${tokenKind(path)}Token`);
+  const res = await fetch(`${BASE}${path}`, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+  if (!res.ok) throw new Error(`Request failed (${res.status})`);
+  return URL.createObjectURL(await res.blob());
+}

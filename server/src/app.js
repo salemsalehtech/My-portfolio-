@@ -28,6 +28,8 @@ const formsRouter = require("./routes/forms");
 const teamRouter = require("./routes/team");
 const productsRouter = require("./routes/products");
 const adminProductsRouter = require("./routes/adminProducts");
+const circlesRouter = require("./routes/circles");
+const adminCirclesRouter = require("./routes/adminCircles");
 const adminTeamRouter = require("./routes/adminTeam");
 const { requireAuth } = require("./middleware/auth");
 const authRouter = require("./routes/auth");
@@ -63,6 +65,8 @@ app.use("/api/admin/courses", express.json({ limit: "4mb" }));
 app.use("/api/admin/projects", express.json({ limit: "4mb" }));
 // Product pages: many blocks of text in two languages, plus pictures (max 2 MB each).
 app.use("/api/admin/products", express.json({ limit: "4mb" }));
+// Savings circles: members upload a screenshot of each transfer (max 2 MB).
+app.use("/api/circle", express.json({ limit: "4mb" }));
 // Team project docs are long Markdown pages (up to 60,000 characters, Arabic takes more bytes).
 app.use("/api/admin/team", express.json({ limit: "1mb" }));
 // Reads JSON request bodies into req.body (max 100 KB by default — plenty for every form).
@@ -95,6 +99,9 @@ app.use("/api/auth", authRouter);
 app.use("/api/team", teamRouter);
 app.use("/api/admin/team", requireAuth, adminTeamRouter);
 app.use("/api/admin/products", requireAuth, adminProductsRouter);
+// Savings circles (جمعيات): members log in with their phone at /#/gam3eya (routes/circles.js).
+app.use("/api/circle", circlesRouter);
+app.use("/api/admin/circles", requireAuth, adminCirclesRouter);
 app.use("/api/admin", adminRouter);
 
 // Error handler — Express recognises it by its 4 parameters (err, req, res, next). Any error

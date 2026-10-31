@@ -1,0 +1,16 @@
+{
+  "name": "الجمعيات — Salem Saleh Tech",
+  "short_name": "الجمعيات",
+  "description": "جمعيتك واضحة وفي ميعادها: دورك، أقساطك، والتذكير.",
+  "start_url": "./#/gam3eya",
+  "scope": "./",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#141414",
+  "theme_color": "#E8A020",
+  "icons": [
+    { "src": "gam3eya-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "gam3eya-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

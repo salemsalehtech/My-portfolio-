@@ -163,4 +163,11 @@ Build order:
 1d. ✓ **Workspace efficiency** *(owner picked 2026-10-30, shipped 2026-10-30)* — drag & drop on the board + search / filters, task comments, notifications 🔔 + due-date reminders, daily standup.
 4. **Workspace phase 2** — time logging + Excel, project templates, email notifications, points / badges / "star of the week" (can be turned off), a client progress page (read-only link).
 
+### Savings circles — جمعيات (owner request 2026-10-31) ✓ shipped 2026-10-31
+
+Paper circles made digital, at `/#/gam3eya` (members) and Admin → Savings circles (owner). The app **records** money only — members transfer by InstaPay / Vodafone Cash / cash as usual.
+Owner decisions: invite link + phone number + password, then owner approval; the member uploads a transfer screenshot and the owner (or a helper) confirms; reminders in the app + ready WhatsApp messages (free) + phone push; **only the owner orders the turns**; **each member sees only their own data**; monthly only; half / double shares; receipts + Excel statement; payout hand-over confirmed by the member; private notes + guarantor.
+Also built (all suggestions accepted): "Pay here" card with copy buttons + InstaPay QR, calendar file (.ics), commitment record per member, full log, clone a circle, waiting list, "I need my turn early" requests, helpers, monthly group summary for WhatsApp, savings goal, certificate at the end, printable schedule, installable app (PWA) with phone notifications (Web Push; VAPID keys made once and stored in CircleSettings) and daily reminders (`lib/circleReminders.js`).
+Later: sell it as a product (SaaS) for other organizers; automatic WhatsApp/SMS (paid API).
+
 ⚠ Only sell projects the owner has the rights to (not client work unless the contract or client allows it); each product gets license / terms of use.

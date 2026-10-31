@@ -14,6 +14,7 @@ import { useAdminT } from "../../lib/adminI18n";
 import { COMPANY } from "../../lib/brand";
 import { NAV_ICONS } from "../../components/admin/navIcons";
 import Bell from "../../components/team/Bell";
+import CircleBell from "../../components/circles/CircleBell";
 
 // Where a click on a notification 🔔 leads: the task in its project, today's standups, or the
 // members list (a new sign-up to approve).
@@ -53,8 +54,21 @@ const GROUPS = [
       { to: "/admin/forms", label: "Forms", icon: "forms" },
     ],
   },
-  { title: "Work", links: [{ to: "/admin/team", label: "Team", icon: "team" }] },
+  {
+    title: "Work",
+    links: [
+      { to: "/admin/team", label: "Team", icon: "team" },
+      { to: "/admin/circles", label: "Savings circles", icon: "circles" },
+    ],
+  },
 ];
+
+// The owner's savings-circle notifications: their wording and where a click leads.
+const CIRCLE_NOTES = {
+  submitted: "{a} sent a payment: {d}", received: "{a} confirmed receiving their turn: {d}", request: "{a} asked for an early turn: {d}",
+  signup: "{a} signed up — approve the account", waitlist: "{a} wants to join the next circle",
+};
+const CIRCLE_NOTE_LINK = { submitted: "/admin/circles?tab=inbox", request: "/admin/circles?tab=inbox", signup: "/admin/circles?tab=members", waitlist: "/admin/circles?tab=members" };
 
 export default function AdminLayout() {
   const { isAuthed, logout } = useAdmin();
@@ -101,6 +115,10 @@ export default function AdminLayout() {
           <Link to="/" className="admin-brand admin-only-mobile"><span className="tm-logo">SS</span></Link>
           <div className="admin-topbar-actions">
             <Bell base="/admin/team" lang={lang} link={bellLink} className="is-admin" />
+            <CircleBell path="/admin/circles/notifications/all" readPath="/admin/circles/notifications/read" lang={lang} className="is-admin"
+              icon={NAV_ICONS.circles} title={t("Savings circles")} empty={t("Nothing new.")} remindersTitle={t("To review")}
+              reminder={(r) => ({ text: t("{n} payment(s) waiting for your confirmation", { n: r.count }), tone: "today", to: "/admin/circles?tab=inbox" })}
+              note={(n) => ({ text: t(CIRCLE_NOTES[n.kind] || n.kind, { a: n.actor, d: n.detail }), to: CIRCLE_NOTE_LINK[n.kind] || (n.circle ? `/admin/circles/${n.circle}` : "/admin/circles") })} />
             <a className="admin-icon-btn admin-view-site" href="#/" target="_blank" rel="noreferrer" title={t("View site")}>{NAV_ICONS.external}<span>{t("View site")}</span></a>
             <button type="button" className="admin-icon-btn" onClick={toggleTheme} title={theme === "dark" ? t("Light mode") : t("Dark mode")} aria-label={theme === "dark" ? t("Light mode") : t("Dark mode")}>
               {theme === "dark" ? NAV_ICONS.sun : NAV_ICONS.moon}
