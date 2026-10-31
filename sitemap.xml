@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The site uses hash links (#/blog …), which search engines treat as one page, so the sitemap
+     lists the home page. Update the address here when the custom domain arrives. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://salemsalehtech.github.io/My-portfolio-/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+</urlset>
