@@ -32,7 +32,7 @@ export default function FormShell({ lang, switchLink, children }) {
   const role = pick(lang, s.roleEn, s.roleAr);
   const tagline = pick(lang, s.taglineEn, s.taglineAr);
   const location = pick(lang, s.locationEn, s.locationAr);
-  const photo = `${import.meta.env.BASE_URL}uploads/imagr.png`;
+  const photo = `${import.meta.env.BASE_URL}uploads/portrait.webp`;
   const socials = [
     s.githubUrl && { href: s.githubUrl, label: "GitHub", icon: <GithubIcon size={16} /> },
     s.linkedinUrl && { href: s.linkedinUrl, label: "LinkedIn", icon: <LinkedinIcon size={16} /> },

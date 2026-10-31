@@ -12,6 +12,7 @@ import About from "../components/About";
 import Skills from "../components/Skills";
 import Projects from "../components/Projects";
 import Products from "../components/Products";
+import Process from "../components/Process";
 import Testimonials from "../components/Testimonials";
 import Services from "../components/Services";
 import Certificates from "../components/Certificates";
@@ -77,6 +78,7 @@ export default function Portfolio() {
       <Hero settings={settings} />
       <About />
       <Services items={services.data} loading={services.loading} />
+      <Process settings={settings} />
       <Skills />
       <Projects />
       <Products items={products.data} loading={products.loading} />

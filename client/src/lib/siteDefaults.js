@@ -19,5 +19,8 @@ export function siteDefaults() {
     locationEn: en.about.location, locationAr: ar.about.location,
     roleEn: "Software Engineer", roleAr: "مهندس برمجيات",
     channelDescEn: en.youtube.channelDesc, channelDescAr: ar.youtube.channelDesc,
+    availableForWork: true, availabilityEn: "", availabilityAr: "", bookingUrl: "",
+    process: [], // empty = the built-in steps (T.process.steps)
+    hasPhoto: false,
   };
 }

@@ -85,7 +85,9 @@ export default function Projects() {
             const desc = lang === "ar" ? project.descAr : project.descEn;
             const cat = lang === "ar" ? project.catLabelAr : project.catLabelEn;
             return (
-              <div className="project-card" key={project.id} onClick={() => { setSelected(project); track("project", project.id); }}>
+              <div className="project-card" key={project.id} role="button" tabIndex={0}
+                onClick={() => { setSelected(project); track("project", project.id); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(project); track("project", project.id); } }}>
                 <div className="project-thumb" style={{ background: project.gradient }}>
                   {project.hasImage && <img className="project-thumb-img" src={projectImageUrl(project)} alt="" loading="lazy" />}
                   <div className="project-tags">
@@ -97,6 +99,13 @@ export default function Projects() {
                 <div className="project-body">
                   <h3 className="project-title">{title}</h3>
                   <p className="project-desc">{desc}</p>
+                  {project.metrics?.length > 0 && (
+                    <dl className="project-metrics">
+                      {project.metrics.slice(0, 2).map((m, i) => (
+                        <div key={i}><dt>{m.value}</dt><dd>{lang === "ar" ? m.labelAr || m.labelEn : m.labelEn || m.labelAr}</dd></div>
+                      ))}
+                    </dl>
+                  )}
                   <div className="project-footer">
                     <span className="project-cat">{cat}</span>
                     <span className="project-more">{t.projects.details}</span>

@@ -92,6 +92,14 @@ export default function Contact({ settings }) {
           </div>
 
           <div ref={infoRef} className={`contact-info ${infoVisible ? "visible" : ""}`} data-ao="right">
+            {(settings.bookingUrl || settings.availableForWork === false) && (
+              <div className="connect-card booking-card">
+                <p className={`hero-status ${settings.availableForWork === false ? "is-busy" : "is-available"}`}><span aria-hidden="true" />
+                  {(lang === "ar" ? settings.availabilityAr || settings.availabilityEn : settings.availabilityEn || settings.availabilityAr) || (settings.availableForWork === false ? t.busy : t.available)}
+                </p>
+                {settings.bookingUrl && <a className="btn-primary" href={settings.bookingUrl} target="_blank" rel="noopener noreferrer">{t.bookCall}</a>}
+              </div>
+            )}
             <div className="connect-card">
               <h3>{t.contact.connectTitle}</h3>
               <div className="contact-links">

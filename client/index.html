@@ -9,10 +9,11 @@
   <title>Salem Saleh | Portfolio</title>
 
   <!-- ===== SEO ===== -->
-  <meta name="description" content="Salem Saleh - Full-Stack Software Engineer & YouTube Educator from Alexandria, Egypt">
+  <meta name="description" content="Salem Saleh — full-stack software engineer in Alexandria, Egypt. I build web apps in Arabic and English for businesses, and teach web development in Arabic on YouTube.">
   <meta name="author" content="Salem Saleh">
   <meta name="robots" content="index, follow">
-  <meta name="theme-color" content="#F0F5FC">
+  <meta name="theme-color" content="#F3F5F7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0F1215" media="(prefers-color-scheme: dark)">
   <!-- NOTE: the URLs below are absolute because social networks require it. When a custom
        domain replaces github.io (ROADMAP task 2.6), update canonical, og:url and og:image. -->
   <link rel="canonical" href="https://salemsalehtech.github.io/My-portfolio-/">
@@ -32,6 +33,25 @@
   <meta property="og:locale" content="en_US">
   <meta property="og:locale:alternate" content="ar_EG">
 
+
+  <!-- Structured data: tells search engines who this site is about (Google "knowledge panel"). -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Salem Saleh",
+    "alternateName": "سالم صالح",
+    "jobTitle": "Full-Stack Software Engineer",
+    "url": "https://salemsalehtech.github.io/My-portfolio-/",
+    "image": "https://salemsalehtech.github.io/My-portfolio-/uploads/portrait.webp",
+    "address": { "@type": "PostalAddress", "addressLocality": "Alexandria", "addressCountry": "EG" },
+    "alumniOf": "Borg Al-Arab Technological University",
+    "knowsLanguage": ["ar", "en"],
+    "worksFor": { "@type": "Organization", "name": "Salem Saleh Tech" },
+    "sameAs": ["https://github.com/salemsalehtech", "https://www.linkedin.com/in/salemsalehtech", "https://www.youtube.com/@SalemSaleh1"]
+  }
+  </script>
+
   <!-- ===== Twitter / X card ===== -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Salem Saleh | Full-Stack Developer & YouTube Educator">
@@ -42,7 +62,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E8A020'/%3E%3Ctext x='32' y='43' font-family='Arial,sans-serif' font-size='30' font-weight='800' text-anchor='middle' fill='%23161616'%3ESS%3C/text%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="root"></div>

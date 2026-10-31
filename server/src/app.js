@@ -63,6 +63,7 @@ app.use("/api/admin/posts", express.json({ limit: "4mb" }));
 // Course and project pictures (max 2 MB).
 app.use("/api/admin/courses", express.json({ limit: "4mb" }));
 app.use("/api/admin/projects", express.json({ limit: "4mb" }));
+app.use("/api/admin/settings", express.json({ limit: "4mb" })); // the hero portrait (max 2 MB)
 // Product pages: many blocks of text in two languages, plus pictures (max 2 MB each).
 app.use("/api/admin/products", express.json({ limit: "4mb" }));
 // Savings circles: members upload a screenshot of each transfer (max 2 MB).

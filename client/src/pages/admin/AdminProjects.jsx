@@ -19,10 +19,12 @@ import { api } from "../../lib/api";
 import { readAsBase64 } from "../../lib/readAsBase64";
 import { projectImageUrl } from "../../components/Projects";
 import { useAdminT } from "../../lib/adminI18n";
+import { ListEditor } from "./FormParts";
 
 // ---- Blank form shape, used both for a fresh "New Project" and as the shape `form` state
 //      always has ----
 const EMPTY = {
+  metrics: [],
   titleEn: "", titleAr: "", descEn: "", descAr: "", tags: "", category: "web",
   githubUrl: "", demoUrl: "", gradient: "linear-gradient(135deg,#1E3A5F,#2E5B9A)",
   catLabelEn: "", catLabelAr: "", order: 0,
@@ -202,6 +204,21 @@ export default function AdminProjects() {
               <p style={{ opacity: 0.7, fontSize: 13, margin: 0 }}>
                 {t("Shown in the project popup as Problem → Solution → Result. Leave a part empty to skip it.")}
               </p>
+              <ListEditor
+                title={t("Results in numbers (up to 4, real numbers only)")}
+                items={form.metrics || []}
+                onChange={(metrics) => setForm({ ...form, metrics })}
+                blank={{ value: "", labelEn: "", labelAr: "" }}
+                max={4}
+                emptyText={t("No numbers yet — e.g. “40%” · “fewer missed appointments”.")}
+                renderRow={(m, update) => (
+                  <>
+                    <label>{t("Number")}<input className="form-input" dir="ltr" value={m.value} onChange={(e) => update({ value: e.target.value })} maxLength={20} placeholder="40%" /></label>
+                    <label>{t("What it measures (EN)")}<input className="form-input" value={m.labelEn} onChange={(e) => update({ labelEn: e.target.value })} maxLength={60} /></label>
+                    <label>{t("What it measures (AR)")}<input className="form-input" dir="rtl" value={m.labelAr} onChange={(e) => update({ labelAr: e.target.value })} maxLength={60} /></label>
+                  </>
+                )}
+              />
               {CASE_STUDY.map(({ key, label: caseLabel }) => (
                 <div className="admin-form-row" key={key}>
                   <label>{t(caseLabel)} ({t("EN")})

@@ -13,6 +13,7 @@
 // shown as three steps under the description. The "Live Demo" / "Source Code" buttons only
 // appear when the project has a real http(s) link for them.
 import { useSite } from "../context/SiteContext";
+import { XIcon } from "./team/icons";
 import { pick } from "../lib/pick";
 import { GithubIcon } from "../lib/socialIcons";
 import { projectImageUrl } from "./Projects";
@@ -38,7 +39,7 @@ export default function ProjectModal({ project, onClose }) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className={`modal-header ${project.hasImage ? "has-image" : ""}`} style={{ background: project.gradient }}>
           {project.hasImage && <img className="modal-header-img" src={projectImageUrl(project)} alt="" />}
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={onClose} aria-label="Close"><XIcon size={16} /></button>
           <div className="modal-tags">
             {project.tags.map((tag) => (
               <span className="modal-tag" key={tag}>{tag}</span>
@@ -48,6 +49,17 @@ export default function ProjectModal({ project, onClose }) {
         <div className="modal-body">
           <h2>{title}</h2>
           <p>{desc}</p>
+
+          {project.metrics?.length > 0 && (
+            <div className="modal-metrics">
+              <div className="case-study-title">{t.projects.results}</div>
+              <dl>
+                {project.metrics.map((m, i) => (
+                  <div key={i}><dt>{m.value}</dt><dd>{pick(lang, m.labelEn, m.labelAr)}</dd></div>
+                ))}
+              </dl>
+            </div>
+          )}
 
           {steps.length > 0 && (
             <div className="case-study">

@@ -29,7 +29,7 @@ export default function Footer({ settings }) {
             <Link to="/team" className="footer-team">{t.footer.team}</Link>
           </div>
         </div>
-        <div className="footer-copy">{t.footer.rights}</div>
+        <div className="footer-copy">© {new Date().getFullYear()} {lang === "ar" ? "سالم صالح" : "Salem Saleh"}</div>
         <div className="footer-socials">
           {socials.map(({ url, label, Icon }) => (
             <a key={label} href={url} target="_blank" rel="noopener noreferrer" className="footer-social" aria-label={label}>

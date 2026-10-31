@@ -164,6 +164,7 @@ const SETTINGS_TEXT_FIELDS = [
   "greetingEn", "greetingAr", "nameEn", "nameAr", "taglineEn", "taglineAr", "uspEn", "uspAr",
   "email", "githubUrl", "linkedinUrl", "youtubeUrl",
   "locationEn", "locationAr", "roleEn", "roleAr", "channelDescEn", "channelDescAr",
+  "availabilityEn", "availabilityAr", "bookingUrl",
 ];
 
 router.get("/settings", async (req, res) => {
@@ -176,6 +177,11 @@ router.put("/settings", async (req, res) => {
   const clean = {};
   for (const field of SETTINGS_TEXT_FIELDS) clean[field] = String(body[field] ?? "").trim();
   clean.titles = asList(body.titles, 6).map((t) => ({ en: String(t.en ?? "").trim(), ar: String(t.ar ?? "").trim() }));
+  clean.availableForWork = body.availableForWork !== false;
+  clean.process = asList(body.process, 6).map((p) => ({
+    titleEn: String(p.titleEn ?? "").trim(), titleAr: String(p.titleAr ?? "").trim(),
+    textEn: String(p.textEn ?? "").trim(), textAr: String(p.textAr ?? "").trim(),
+  })).filter((p) => p.titleEn || p.titleAr);
   const settings = await SiteSettings.findOneAndUpdate({}, { $set: clean }, { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true });
   res.json({ exists: true, ...settings.toJSON() });
 });
@@ -183,6 +189,17 @@ router.put("/settings", async (req, res) => {
 router.delete("/settings", async (req, res) => {
   await SiteSettings.deleteMany({});
   res.status(204).end();
+});
+// PUT /api/admin/settings/photo { data: "<base64>" } — the hero portrait (PNG, JPEG or WebP, max 2 MB).
+router.put("/settings/photo", async (req, res) => {
+  const { image, error } = readImageUpload(req.body);
+  if (error) return res.status(400).json({ error });
+  const settings = await SiteSettings.findOneAndUpdate({}, { photo: image }, { upsert: true, new: true, setDefaultsOnInsert: true });
+  res.json({ exists: true, ...settings.toJSON() });
+});
+router.delete("/settings/photo", async (req, res) => {
+  const settings = await SiteSettings.findOneAndUpdate({}, { photo: { contentType: "", size: 0 } }, { new: true });
+  res.json(settings ? { exists: true, ...settings.toJSON() } : { exists: false });
 });
 
 // ---- Services ----

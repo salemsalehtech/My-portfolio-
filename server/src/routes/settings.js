@@ -12,4 +12,17 @@ router.get("/", async (req, res) => {
   res.json({ exists: true, ...settings.toJSON() });
 });
 
+// GET /api/settings/photo — the hero portrait (cached; the site adds ?v=<updatedAt>).
+router.get("/photo", async (req, res) => {
+  const settings = await SiteSettings.findOne().select("+photo.data");
+  if (!settings || !settings.photo || !settings.photo.size) return res.status(404).json({ error: "Not found" });
+  res.set({
+    "Content-Type": settings.photo.contentType,
+    "Content-Length": settings.photo.data.length,
+    "Cache-Control": "public, max-age=86400",
+    "Cross-Origin-Resource-Policy": "cross-origin",
+  });
+  res.send(settings.photo.data);
+});
+
 module.exports = router;

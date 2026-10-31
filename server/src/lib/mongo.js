@@ -43,6 +43,12 @@ const projectSchema = new mongoose.Schema(
     solutionAr: { type: String, default: "", maxlength: 1500 },
     resultEn: { type: String, default: "", maxlength: 1500 },
     resultAr: { type: String, default: "", maxlength: 1500 },
+    // Up to 4 results with numbers ("40%" — "fewer missed appointments"), shown on the card and
+    // in the case study. Only real, measured numbers belong here.
+    metrics: {
+      type: [{ _id: false, value: { type: String, default: "", maxlength: 20 }, labelEn: { type: String, default: "", maxlength: 60 }, labelAr: { type: String, default: "", maxlength: 60 } }],
+      default: [],
+    },
     // Optional screenshot / cover picture (like the certificate picture: stored in the document,
     // never sent in JSON — the site reads `hasImage` and loads GET /api/projects/:id/image).
     image: {
@@ -220,6 +226,22 @@ const siteSettingsSchema = new mongoose.Schema(
     locationEn: shortText, locationAr: shortText,
     roleEn: shortText, roleAr: shortText,
     channelDescEn: { type: String, default: "", maxlength: 500 }, channelDescAr: { type: String, default: "", maxlength: 500 },
+    // "Taking new projects" / "Fully booked" next to the photo, with an optional text of your own
+    // and a link to book a call (Calendly, WhatsApp, a Form Builder form…).
+    availableForWork: { type: Boolean, default: true },
+    availabilityEn: shortText, availabilityAr: shortText,
+    bookingUrl: httpUrl,
+    // "How a project goes": up to 6 steps, shown in order (empty = the built-in 4 steps).
+    process: {
+      type: [{ _id: false, titleEn: shortText, titleAr: shortText, textEn: { type: String, default: "", maxlength: 300 }, textAr: { type: String, default: "", maxlength: 300 } }],
+      default: [],
+    },
+    // The portrait in the hero (served by GET /api/settings/photo; JSON only says hasPhoto).
+    photo: {
+      data: { type: Buffer, select: false },
+      contentType: { type: String, default: "" },
+      size: { type: Number, default: 0 },
+    },
   },
   { timestamps: true }
 );
@@ -920,6 +942,18 @@ models.CirclePayment.schema.set("toJSON", {
     delete ret._id;
     delete ret.__v;
     delete ret.proof;
+    return ret;
+  },
+});
+
+// Site settings: the portrait becomes `hasPhoto` (fetched from GET /api/settings/photo).
+models.SiteSettings.schema.set("toJSON", {
+  transform: (_document, ret) => {
+    if (ret._id) ret.id = ret._id.toString();
+    ret.hasPhoto = Boolean(ret.photo && ret.photo.size);
+    delete ret._id;
+    delete ret.__v;
+    delete ret.photo;
     return ret;
   },
 });
