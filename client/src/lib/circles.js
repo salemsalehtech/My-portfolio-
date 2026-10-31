@@ -22,6 +22,19 @@ export const whatsappLink = (phone, text) => {
   return `https://wa.me/${intl}?text=${encodeURIComponent(text)}`;
 };
 
+// The parts a month can be split into, and how a number of shares reads: 1.5 → "1½", 0.333 → "⅓".
+export const PARTS = [[1, "1"], [0.75, "¾"], [2 / 3, "⅔"], [0.5, "½"], [1 / 3, "⅓"], [0.25, "¼"], [0.2, "⅕"]];
+const FRACTION = [[0.75, "¾"], [2 / 3, "⅔"], [0.5, "½"], [1 / 3, "⅓"], [0.25, "¼"], [0.2, "⅕"]];
+export function shareText(shares) {
+  const whole = Math.floor(shares + 0.001);
+  const rest = shares - whole;
+  const frac = FRACTION.find(([v]) => Math.abs(v - rest) < 0.01);
+  if (rest < 0.01) return String(whole);
+  return frac ? `${whole || ""}${frac[1]}` : String(Math.round(shares * 100) / 100);
+}
+// Splits a month equally between n people (the last one takes what's left, so it adds up to 1).
+export const equalParts = (n) => Array.from({ length: n }, (_, i) => (i < n - 1 ? Math.round((1 / n) * 10000) / 10000 : Math.round((1 - Math.round((1 / n) * 10000) / 10000 * (n - 1)) * 10000) / 10000));
+
 export const METHODS = ["instapay", "vodafone", "cash", "other"];
 export const METHOD_LABEL = {
   en: { instapay: "InstaPay", vodafone: "Vodafone Cash", cash: "Cash", other: "Other" },
@@ -76,9 +89,9 @@ export const CIRCLE_COPY = {
     savePass: "Save password", mismatch: "The two new passwords do not match", changePass: "Change password",
     cancel: "Cancel", logout: "Log out", switchTo: "عربي", themeDark: "Dark mode", themeLight: "Light mode", visitSite: "Visit the website",
     hello: (n) => `Hi, ${n}`, loading: "Loading…", noCircles: "You're not in a circle yet. When the organizer adds you, it shows here.",
-    perMonth: "a month", shares: (s) => (s === 0.5 ? "half a share" : s === 1 ? "one share" : `${s} shares`),
+    perMonth: "a month", shares: (s) => (s === 1 ? "one share" : s < 1 ? `${shareText(s)} of a share` : `${shareText(s)} shares`),
     nextPayment: "Next payment", allPaid: "All paid ✓", payNow: "Pay now", due: "Due", late: "Late", daysLeft: (n) => (n === 0 ? "today" : n === 1 ? "tomorrow" : `in ${n} days`), daysLate: (n) => `${n} day(s) late`,
-    myTurn: "My turn", receive: "You receive", sharedWith: "shared (half share)", handed: "Handed over — did you receive it?", confirmReceived: "Yes, I received it ✓", receivedOk: "Received ✓",
+    myTurn: "My turn", receive: "You receive", sharedWith: "shared month", handed: "Handed over — did you receive it?", confirmReceived: "Yes, I received it ✓", receivedOk: "Received ✓",
     progress: "Saved so far", of: "of", goal: "Saving for", goalPlaceholder: "e.g. a new car", setGoal: "Set", editGoal: "Edit",
     months: "Month by month", month: "Month", amount: "Amount", status: "Status", receipt: "Receipt", payments: "My payments",
     noPayments: "No payments yet.", rejected: "Not accepted", why: "Reason",
@@ -116,9 +129,9 @@ export const CIRCLE_COPY = {
     savePass: "حفظ كلمة المرور", mismatch: "كلمتين المرور الجداد مش متطابقين", changePass: "تغيير كلمة المرور",
     cancel: "إلغاء", logout: "تسجيل الخروج", switchTo: "English", themeDark: "الوضع الداكن", themeLight: "الوضع الفاتح", visitSite: "زيارة الموقع",
     hello: (n) => `أهلًا، ${n}`, loading: "جارٍ التحميل…", noCircles: "إنت لسه مش في جمعية. أول ما المنظّم يضيفك هتظهر هنا.",
-    perMonth: "في الشهر", shares: (s) => (s === 0.5 ? "نص سهم" : s === 1 ? "سهم واحد" : `${s} أسهم`),
+    perMonth: "في الشهر", shares: (s) => (s === 1 ? "سهم واحد" : s === 0.5 ? "نص سهم" : s < 1 ? `${shareText(s)} سهم` : s === 2 ? "سهمين" : `${shareText(s)} أسهم`),
     nextPayment: "القسط الجاي", allPaid: "كله مدفوع ✓", payNow: "ادفع دلوقتي", due: "الميعاد", late: "متأخر", daysLeft: (n) => (n === 0 ? "النهارده" : n === 1 ? "بكرة" : `بعد ${n} يوم`), daysLate: (n) => `متأخر ${n} يوم`,
-    myTurn: "دوري", receive: "هتقبض", sharedWith: "مشترك (نص سهم)", handed: "اتسلّمت الفلوس — استلمتها؟", confirmReceived: "أيوه، استلمت ✓", receivedOk: "تم الاستلام ✓",
+    myTurn: "دوري", receive: "هتقبض", sharedWith: "دور مشترك", handed: "اتسلّمت الفلوس — استلمتها؟", confirmReceived: "أيوه، استلمت ✓", receivedOk: "تم الاستلام ✓",
     progress: "اللي حوّشته لحد دلوقتي", of: "من", goal: "بحوّش عشان", goalPlaceholder: "مثلًا: عربية جديدة", setGoal: "حفظ", editGoal: "تعديل",
     months: "شهر بشهر", month: "الشهر", amount: "المبلغ", status: "الحالة", receipt: "إيصال", payments: "دفعاتي",
     noPayments: "مفيش دفعات لسه.", rejected: "لم تُقبل", why: "السبب",

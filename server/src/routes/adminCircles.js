@@ -18,6 +18,14 @@ const { vapid, saveSubscription } = require("../lib/push");
 
 const router = express.Router();
 const isId = (id) => mongoose.isValidObjectId(id);
+// 0.3333 → exactly 1/3 (any k/d with d up to 12), so three thirds of a month add up to the pot.
+const snapShare = (share) => {
+  for (let d = 1; d <= 12; d++) {
+    const k = Math.round(share * d);
+    if (k > 0 && Math.abs(k / d - share) < 0.0006) return k / d;
+  }
+  return Math.round(share * 10000) / 10000;
+};
 
 // Mongoose errors as one readable sentence; a taken phone number gets its own message.
 async function saving(res, work) {
@@ -83,8 +91,11 @@ router.put("/:id", (req, res) => saving(res, async () => {
 
   if (Array.isArray(req.body?.slots)) {
     const slots = req.body.slots.slice(0, 120).map((holders) => ({
-      holders: (Array.isArray(holders) ? holders : []).slice(0, 2).filter((h) => isId(h?.member))
-        .map((h) => ({ member: h.member, share: Number(h.share) === 0.5 ? 0.5 : 1 })),
+      holders: (Array.isArray(holders) ? holders : []).slice(0, 10).filter((h) => isId(h?.member))
+        .map((h) => {
+          const share = Number(h.share);
+          return { member: h.member, share: share > 0 && share <= 1 ? snapShare(share) : 1 };
+        }),
     }));
     const ids = [...new Set(slots.flatMap((s) => s.holders.map((h) => String(h.member))))];
     const found = await CircleMember.countDocuments({ _id: { $in: ids }, pending: false });
@@ -226,7 +237,7 @@ router.post("/:id/payouts/:month/:memberId", async (req, res) => {
   if (!handed) holder.receivedAt = null;
   await circle.save();
   const member = await CircleMember.findById(holder.member).select("name");
-  const amount = circle.shareAmount * circle.slots.length * holder.share;
+  const amount = Math.round(circle.shareAmount * circle.slots.length * holder.share);
   if (handed) notifyCircle({ to: holder.member, kind: "handed", circle: circle._id, detail: `${amount} — ${circle.name}`, url: "/gam3eya" });
   logCircle({ circle: circle._id, action: handed ? "payout_handed" : "payout_unmarked", detail: `${member?.name}: ${amount} · month ${Number(req.params.month) + 1}` });
   res.json(circle);

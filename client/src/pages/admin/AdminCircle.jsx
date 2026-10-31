@@ -11,7 +11,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../../lib/api";
-import { money, day, monthName, METHOD_LABEL, METHODS, STATE_LABEL, whatsappLink } from "../../lib/circles";
+import { money, day, monthName, METHOD_LABEL, METHODS, STATE_LABEL, PARTS, shareText, equalParts, whatsappLink } from "../../lib/circles";
 import { timeAgo } from "../../lib/team";
 import { useAdminT } from "../../lib/adminI18n";
 import { ProofImage, reviewPayment, LOG_ACTIONS } from "./AdminCircles";
@@ -128,7 +128,7 @@ function Board({ data, nameOf, reload }) {
               <tr key={m.member}>
                 <th scope="row">
                   <span>{nameOf[m.member]?.name || "—"}</span>
-                  <span className="tm-small tm-muted">{m.share === 1 ? "" : m.share === 0.5 ? t("½ share") : `${m.share} ${t("shares")}`} {money(m.monthlyDue, lang)}</span>
+                  <span className="tm-small tm-muted">{m.share === 1 ? "" : `${shareText(m.share)} ${t("shares")} · `}{money(m.monthlyDue, lang)}</span>
                 </th>
                 {m.dues.map((d) => {
                   const turn = statement.months[d.month].holders.some((h) => h.member === m.member);
@@ -218,15 +218,30 @@ function Months({ data, members, nameOf, reload, setError }) {
   const paidOut = (i) => slots[i].some((h) => h.handedAt);
   const move = (i, step) => { const n = slots.map((s) => [...s]); [n[i], n[i + step]] = [n[i + step], n[i]]; change(n); };
   const setHolder = (i, j, patch) => change(slots.map((s, a) => (a === i ? s.map((h, b) => (b === j ? { ...h, ...patch } : h)) : s)));
-  const split = (i) => change(slots.map((s, a) => (a === i ? [{ ...s[0], share: 0.5 }, { member: "", share: 0.5 }] : s)));
-  const unsplit = (i) => change(slots.map((s, a) => (a === i ? [{ ...s[0], share: 1 }] : s)));
+  // A month can be shared by several people: adding a partner splits it equally; each part can
+  // then be changed (½ + ¼ + ¼ …) as long as they add up to one share.
+  const addPartner = (i) => change(slots.map((s, a) => {
+    if (a !== i || s.length >= 10) return s;
+    const parts = equalParts(s.length + 1);
+    return [...s, { member: "", share: 1 }].map((h, b) => ({ ...h, share: parts[b] }));
+  }));
+  const removePartner = (i, j) => change(slots.map((s, a) => {
+    if (a !== i) return s;
+    const rest = s.filter((_, b) => b !== j);
+    const parts = equalParts(rest.length);
+    return rest.map((h, b) => ({ ...h, share: parts[b] }));
+  }));
+  const sumOf = (holders) => holders.reduce((x, h) => x + Number(h.share), 0);
+  const [saving, setSaving] = useState(false);
 
   const save = async () => {
+    if (saving) return;
     setError("");
+    setSaving(true);
     try {
       await api.put(`/admin/circles/${circle.id}`, { ...settings, shareAmount: Number(settings.shareAmount), slots: slots.map((s) => s.filter((h) => h.member).map(({ member, share }) => ({ member, share }))) });
       reload();
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(err.message); } finally { setSaving(false); }
   };
   const hand = async (i, member, handed) => {
     setError("");
@@ -260,11 +275,13 @@ function Months({ data, members, nameOf, reload, setError }) {
 
       <section className="admin-linkbox">
         <h2 className="tm-admin-h">{t("Who receives which month")}</h2>
-        <p className="admin-sub">{draft ? t("One row per month. A member with two shares takes two months; two people with half a share each share one month.") : t("Months already paid out can't move. Changes are saved with “Save”.")}</p>
+        <p className="admin-sub">{draft ? t("One row per month. A member with several shares takes several months (choose them in each); a month can also be shared by several people — “+ Partner”.") : t("Months already paid out can't move. Changes are saved with “Save”.")}</p>
         <div className="gm-slots">
           {slots.map((holders, i) => {
             const mo = statement.months[i];
             const locked = !draft && paidOut(i);
+            const total = sumOf(holders);
+            const bad = Math.abs(total - 1) > 0.001;
             return (
               <div className={`gm-slot ${locked ? "is-locked" : ""}`} key={i}>
                 <div className="gm-slot-month">
@@ -279,7 +296,14 @@ function Months({ data, members, nameOf, reload, setError }) {
                         <option value="">{t("— choose a member —")}</option>
                         {approved.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
                       </select>
-                      {h.share === 0.5 && <span className="tm-pill">½</span>}
+                      {holders.length > 1 && (
+                        <select className="form-input gm-part" value={PARTS.find(([v]) => Math.abs(v - h.share) < 0.001)?.[0] ?? h.share} disabled={locked} onChange={(e) => setHolder(i, j, { share: Number(e.target.value) })} aria-label={t("Part of the month")}>
+                          {PARTS.map(([v, label]) => <option key={label} value={v}>{label}</option>)}
+                          {!PARTS.some(([v]) => Math.abs(v - h.share) < 0.001) && <option value={h.share}>{shareText(h.share)}</option>}
+                        </select>
+                      )}
+                      {holders.length > 1 && <span className="tm-small tm-muted">{money(Math.round(statement.pot * h.share), lang)}</span>}
+                      {holders.length > 1 && !locked && <button type="button" className="tm-icon-btn" onClick={() => removePartner(i, j)} aria-label={t("Remove partner")}>✕</button>}
                       {!draft && mo && h.member && (() => {
                         const real = mo.holders.find((x) => x.member === h.member);
                         if (!real) return null;
@@ -289,10 +313,11 @@ function Months({ data, members, nameOf, reload, setError }) {
                       })()}
                     </div>
                   ))}
+                  {bad && <span className="admin-error tm-small">{t("The parts add up to {n} — they must make one full share.", { n: shareText(total) })}</span>}
                 </div>
                 {!locked && (
                   <div className="actions">
-                    {holders.length === 1 ? <button className="admin-btn" onClick={() => split(i)} title={t("Split into two halves")}>½</button> : <button className="admin-btn" onClick={() => unsplit(i)} title={t("One full share")}>1</button>}
+                    {holders.length < 10 && <button className="admin-btn" onClick={() => addPartner(i)} title={t("Share this month with another member")}>{t("+ Partner")}</button>}
                     <button className="admin-btn" onClick={() => move(i, -1)} disabled={i === 0 || (!draft && paidOut(i - 1))}>↑</button>
                     <button className="admin-btn" onClick={() => move(i, 1)} disabled={i === slots.length - 1 || (!draft && paidOut(i + 1))}>↓</button>
                     {draft && <button className="admin-btn admin-btn-danger" onClick={() => change(slots.filter((_, a) => a !== i))}>✕</button>}
@@ -307,7 +332,7 @@ function Months({ data, members, nameOf, reload, setError }) {
       </section>
       <div className="admin-form-actions pd-save-bar">
         {dirty && <span className="admin-sub">{t("You have unsaved changes.")}</span>}
-        <button className="admin-btn admin-btn-primary" onClick={save}>{t("Save")}</button>
+        <button className="admin-btn admin-btn-primary" onClick={save} disabled={saving}>{saving ? t("Saving…") : t("Save")}</button>
       </div>
     </div>
   );
@@ -374,7 +399,7 @@ function PrintSchedule({ data, nameOf }) {
               <td>{m.index + 1}</td>
               <td>{monthName(m.dueDate, lang)}</td>
               <td>{day(m.dueDate, lang)}</td>
-              <td>{m.holders.map((h) => `${nameOf[h.member]?.name || "—"}${h.share === 0.5 ? " (½)" : ""}`).join(" + ")}</td>
+              <td>{m.holders.map((h) => `${nameOf[h.member]?.name || "—"}${h.share < 1 ? ` (${shareText(h.share)})` : ""}`).join(" + ")}</td>
               <td>{day(m.payoutDate, lang)}</td>
               <td>{m.holders.map((h) => money(h.amount, lang)).join(" + ")}</td>
             </tr>
@@ -385,7 +410,7 @@ function PrintSchedule({ data, nameOf }) {
         <thead><tr><th>{t("Member")}</th><th>{t("Shares")}</th><th>{t("Pays a month")}</th><th>{t("Receives in total")}</th></tr></thead>
         <tbody>
           {statement.members.map((m) => (
-            <tr key={m.member}><td>{nameOf[m.member]?.name}</td><td>{m.share}</td><td>{money(m.monthlyDue, lang)}</td><td>{money(m.totalToReceive, lang)}</td></tr>
+            <tr key={m.member}><td>{nameOf[m.member]?.name}</td><td>{shareText(m.share)}</td><td>{money(m.monthlyDue, lang)}</td><td>{money(m.totalToReceive, lang)}</td></tr>
           ))}
         </tbody>
       </table>

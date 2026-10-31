@@ -3,7 +3,8 @@
 //
 // Money words used here:
 //   share     — one "سهم": a member with a full share pays shareAmount every month and receives
-//               one month's pot; half a share pays half and shares a month with another member
+//               one month's pot; a part of a share (½, ⅓, ¼ …) pays that part and shares a month
+//               with others whose parts add up to one
 //   month i   — the i-th month of the circle (0 = startMonth); there are as many months as slots
 //   pot       — what the month's holders receive together: shareAmount × number of slots
 // Only CONFIRMED payments count as paid. Dates are Cairo dates as "YYYY-MM-DD" strings.
@@ -46,12 +47,22 @@ function sharesByMember(circle) {
   return shares;
 }
 
+// A month's pot split between its holders in whole pounds that add up to the pot exactly
+// (the pounds left by rounding down go to the biggest remainders).
+function splitPot(pot, holders) {
+  const raw = holders.map((h) => pot * h.share);
+  const amounts = raw.map(Math.floor);
+  let left = Math.round(pot * holders.reduce((s, h) => s + h.share, 0)) - amounts.reduce((s, a) => s + a, 0);
+  raw.map((r, i) => [r - Math.floor(r), i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (left > 0) { amounts[i] += 1; left -= 1; } });
+  return amounts;
+}
+
 // What's wrong with the slots before a circle can start (null = fine).
 function slotsProblem(circle) {
   if (circle.slots.length < 2) return "A circle needs at least 2 months (slots)";
   for (const [i, slot] of circle.slots.entries()) {
     const total = slot.holders.reduce((sum, h) => sum + h.share, 0);
-    if (total !== 1) return `Month ${i + 1} must be one full share (one person, or two halves)`;
+    if (Math.abs(total - 1) > 0.001) return `Month ${i + 1}: the parts must add up to one full share`;
     const ids = slot.holders.map((h) => String(h.member?._id || h.member));
     if (new Set(ids).size !== ids.length) return `Month ${i + 1} has the same person twice`;
   }
@@ -69,17 +80,17 @@ function buildStatement(circle, payments, today = cairoDate()) {
     slotId: String(slot._id),
     dueDate: monthDate(circle.startMonth, i, circle.payDay),
     payoutDate: monthDate(circle.startMonth, i, circle.payoutDay),
-    holders: slot.holders.map((h) => ({
-      member: String(h.member?._id || h.member),
-      share: h.share,
-      amount: pot * h.share,
-      handedAt: h.handedAt,
-      receivedAt: h.receivedAt,
+    holders: splitPot(pot, slot.holders).map((amount, j) => ({
+      member: String(slot.holders[j].member?._id || slot.holders[j].member),
+      share: slot.holders[j].share,
+      amount,
+      handedAt: slot.holders[j].handedAt,
+      receivedAt: slot.holders[j].receivedAt,
     })),
   }));
 
   const members = Object.entries(shares).map(([memberId, share]) => {
-    const due = circle.shareAmount * share;
+    const due = Math.round(circle.shareAmount * share); // whole pounds (⅓ of 1000 → 333)
     const mine = payments.filter((p) => String(p.member?._id || p.member) === memberId);
     const dues = months.map((m) => {
       const ofMonth = mine.filter((p) => p.month === m.index);
@@ -107,7 +118,7 @@ function buildStatement(circle, payments, today = cairoDate()) {
       monthlyDue: due,
       totalToPay: due * n,
       paidSoFar: dues.reduce((s, d) => s + Math.min(d.paid, d.due), 0),
-      totalToReceive: pot * share,
+      totalToReceive: Math.round(pot * share),
       lateCount: dues.filter((d) => d.state === "late").length,
       dues,
     };

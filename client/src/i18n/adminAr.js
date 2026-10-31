@@ -719,4 +719,10 @@ export const ADMIN_AR = {
   "{a} asked for an early turn: {d}": "{a} طلب دوره بدري: {d}",
   "{a} signed up — approve the account": "{a} سجّل — وافق على الحساب",
   "{a} wants to join the next circle": "{a} عايز يدخل الجمعية الجاية",
+  "One row per month. A member with several shares takes several months (choose them in each); a month can also be shared by several people — “+ Partner”.": "صف لكل شهر. العضو اللي داخل بأكتر من سهم بياخد أكتر من شهر (اختاره في كل شهر منهم)، والشهر الواحد ممكن يشترك فيه أكتر من عضو — «+ شريك».",
+  "Part of the month": "نصيبه من الشهر",
+  "Remove partner": "شيل الشريك",
+  "The parts add up to {n} — they must make one full share.": "مجموع الأنصبة {n} — لازم يكمّلوا سهم واحد بالظبط.",
+  "Share this month with another member": "شارك الشهر ده مع عضو تاني",
+  "+ Partner": "+ شريك",
 };

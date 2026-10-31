@@ -700,13 +700,14 @@ const circleInviteSchema = new mongoose.Schema(
 );
 
 // A circle. Each slot is one month's payout ("دور"): its holders share it — one holder with a full
-// share, or two holders with half a share each. A member with two shares holds two slots.
+// share, or several holders whose parts add up to one (½ + ½, ⅓ + ⅓ + ⅓, ½ + ¼ + ¼ …). A member with
+// two shares holds two slots.
 // The number of months = the number of slots; everyone pays shareAmount × their shares every
 // month, and the slot of month i receives shareAmount × the number of slots.
 const circleHolderSchema = new mongoose.Schema(
   {
     member: { type: objectId, ref: "CircleMember", required: true },
-    share: { type: Number, enum: [0.5, 1], default: 1 },
+    share: { type: Number, min: 0.01, max: 1, default: 1 }, // this holder's part of the month
     handedAt: { type: Date, default: null }, // the owner handed the money over
     receivedAt: { type: Date, default: null }, // the member confirmed receiving it
   },
@@ -724,7 +725,9 @@ const circleSchema = new mongoose.Schema(
     helpers: [{ type: objectId, ref: "CircleMember" }], // may confirm payments of this circle
     remindedAt: { type: Map, of: String, default: {} }, // "memberId:month:kind" -> date, so a push goes once
   },
-  { timestamps: true }
+  // No version key: the whole slots list is replaced on every save, and Mongoose's array version
+  // check then refused a save after another one ("No matching document found … modifiedPaths slots").
+  { timestamps: true, versionKey: false }
 );
 
 // One payment a member made (or the owner recorded). Several payments can cover one month
