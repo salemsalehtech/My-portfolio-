@@ -1,6 +1,8 @@
 // images.js — checks a picture uploaded from the dashboard as base64 JSON ({ data: "<base64>" }).
 // Used by routes/admin.js (certificates, blog covers, courses, projects) and
-// routes/adminProducts.js (product covers and gallery pictures).
+// routes/adminProducts.js (product covers and gallery pictures). sendImage serves the saved
+// pictures to the public site (routes/projects.js, certificates.js, courses.js, posts.js,
+// settings.js, products.js).
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 
 // The real file type, read from the first bytes (never trust the file name or the browser).
@@ -24,4 +26,18 @@ function readImageUpload(body) {
   return { image: { data: buffer, contentType, size: buffer.length } };
 }
 
-module.exports = { readImageUpload, MAX_IMAGE_BYTES };
+// Sends a saved picture ({ data, contentType }) to the public site. Cached for a day: the site adds
+// ?v=<updatedAt> (or uses a new id), so a changed picture always gets a new address. helmet() sets
+// Cross-Origin-Resource-Policy: same-origin, which would stop the github.io site from showing a
+// picture served by the API (onrender.com), so it is allowed here.
+function sendImage(res, image) {
+  res.set({
+    "Content-Type": image.contentType,
+    "Content-Length": image.data.length,
+    "Cache-Control": "public, max-age=86400",
+    "Cross-Origin-Resource-Policy": "cross-origin",
+  });
+  res.send(image.data);
+}
+
+module.exports = { readImageUpload, sendImage, MAX_IMAGE_BYTES };

@@ -1,5 +1,6 @@
 const express = require("express");
 const { SiteSettings } = require("../lib/mongo");
+const { sendImage } = require("../lib/images");
 
 // Public, read-only endpoint for the site-wide profile content (Hero texts, contact links,
 // location, footer role, YouTube channel description). Editing lives in routes/admin.js.
@@ -16,13 +17,7 @@ router.get("/", async (req, res) => {
 router.get("/photo", async (req, res) => {
   const settings = await SiteSettings.findOne().select("+photo.data");
   if (!settings || !settings.photo || !settings.photo.size) return res.status(404).json({ error: "Not found" });
-  res.set({
-    "Content-Type": settings.photo.contentType,
-    "Content-Length": settings.photo.data.length,
-    "Cache-Control": "public, max-age=86400",
-    "Cross-Origin-Resource-Policy": "cross-origin",
-  });
-  res.send(settings.photo.data);
+  sendImage(res, settings.photo);
 });
 
 module.exports = router;

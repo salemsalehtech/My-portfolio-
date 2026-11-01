@@ -4,20 +4,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const { Product, ProductImage } = require("../lib/mongo");
+const { sendImage } = require("../lib/images");
 
 const router = express.Router();
-
-// Pictures are cached for a day; the site adds ?v=<updatedAt> (cover) or uses a new id (gallery),
-// so a changed picture always gets a new address. CORP lets the github.io site show them.
-function sendImage(res, image) {
-  res.set({
-    "Content-Type": image.contentType,
-    "Content-Length": image.data.length,
-    "Cache-Control": "public, max-age=86400",
-    "Cross-Origin-Resource-Policy": "cross-origin",
-  });
-  res.send(image.data);
-}
 
 // GET /api/products — the published products as cards (no page blocks).
 router.get("/", async (req, res) => {
