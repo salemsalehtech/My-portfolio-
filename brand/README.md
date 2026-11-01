@@ -3,8 +3,9 @@
 - **اللوجو:** حرفين SS مرسومين كخطوط دايرة إلكترونية (خطوط مستقيمة، زوايا 45°، ودايرة في آخر كل خط). أول دايرة دايمًا زعفراني.
 - **الألوان:** حبر `#0F1215` + زعفراني `#E3A21A` + ورقي `#F3F5F7`. الزعفراني مساحة واحدة في التصميم، مش في كل حتة.
 - **الخطوط:** Alexandria للعناوين (عربي وإنجليزي)، IBM Plex Sans Arabic للنص، IBM Plex Mono للعناوين الصغيرة والأرقام.
-- **الشكل:** خلفية حبر عليها نقط خفيفة، لوحة زعفراني مقصوصة بزاوية 45°، وصورتك أبيض وإسود من غير خلفية.
+- **الشكل:** خلفية حبر عليها نقط خفيفة، لوحة زعفراني مقصوصة بزاوية 45°، وصورتك بالألوان من غير خلفية.
 - **الكلام:** عربي مصري بسيط على السوشيال، وعربي واضح ومحترم في مستندات العملاء. من غير إيموجي.
+- **الاستوديو:** كل الهوية في صفحة واحدة، وتنزّل منها اللوجو والصور والأغلفة والبوستات: https://claude.ai/artifact/YUftQZjsPtHCsWTbVtavgG
 
 ---
 
@@ -62,7 +63,7 @@ Three identity colours carry everything. Weight on any one design: about **70% `
 - **The 45° cut:** panels and corners are cut, never rounded. A saffron panel with one diagonal edge, or a chamfered corner, is the brand's signature shape.
 - **Dot grid:** 1.3px dots every 24–36px at 7% paper on ink (13% ink on saffron). Background texture only.
 - **Pads:** a saffron dot before a label or list item replaces bullets and icons.
-- **Photos:** the cut-out portrait, grayscale, standing on a saffron panel with the mark behind it — exactly as in the website hero. No stock photos, no colour photos on brand surfaces.
+- **Photos:** the cut-out portrait, in colour, standing on a saffron panel with the mark behind it — exactly as in the website hero. No stock photos.
 - **No emoji** anywhere: posts, documents, the site, video titles.
 
 ## Layout

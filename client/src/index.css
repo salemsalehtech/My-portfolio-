@@ -1754,10 +1754,9 @@ body.ar .stage { clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%); animation-na
   position: absolute; inset: 0; width: 100%; height: 100%;
   mask-image: linear-gradient(to right, transparent, #000 14%);
   transform: translate(calc(var(--px) * 8px), calc(var(--py) * 5px));
-  filter: grayscale(1) contrast(1.08); transition: transform .6s cubic-bezier(.2,.7,.2,1), filter .6s ease;
+  transition: transform .6s cubic-bezier(.2,.7,.2,1);
   animation: stage-rise 1s .2s cubic-bezier(.2,.7,.2,1) both;
 }
-.stage:hover .stage-photo { filter: grayscale(0) contrast(1.02); }
 body.ar .stage-photo { mask-image: linear-gradient(to left, transparent, #000 14%); }
 .stage.is-photo .stage-photo { object-fit: cover; border-radius: var(--radius) var(--radius) 0 0; }
 .stage-status {
@@ -1779,7 +1778,6 @@ body.ar .stage-photo { mask-image: linear-gradient(to left, transparent, #000 14
   .stage-mark path { animation: none; stroke-dashoffset: 0; }
   .stage-mark, .stage-photo { transition: none; }
 }
-@media (hover: none) { .stage-photo { filter: grayscale(.15) contrast(1.04); } }
 
 /* phone and tablet: the stage goes first as a full-width band with a slanted bottom edge */
 @media (max-width: 860px) {
