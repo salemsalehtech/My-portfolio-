@@ -1909,40 +1909,52 @@ body.ar .service-title { letter-spacing: 0; }
 .post-read { color: var(--text-primary); font-weight: 600; }
 .cert-card { background: var(--card); }
 
-/* ---- reviews: equal cards. A saffron trace runs along the top from the start corner, ending in a pad;
-   on hover it runs on to the cut. The quote mark, the rating pads and the cut avatar repeat the brand shapes. ---- */
+/* ---- reviews: equal cards on the brand panel, like the skills band — saffron with ink in dark mode,
+   ink with saffron in light mode — dotted, cut at 45°. A trace in the mark colour runs along the top
+   from the start corner and, on hover, on to the cut. The quote mark, rating pads and cut avatar repeat the brand shapes. ---- */
 .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; justify-content: stretch; align-items: stretch; }
-.testimonial-card { max-width: none; display: flex; flex-direction: column; gap: 18px; padding: 30px 28px 24px; background: var(--card); }
+.testimonial-card {
+  --panel: #E3A21A; --mark: #0F1215; --on-panel: #0F1215; --cut: 30px;
+  position: relative; max-width: none; display: flex; flex-direction: column; gap: 18px; padding: clamp(26px, 3vw, 36px);
+  border: none; border-radius: 0; box-shadow: none; transform: none;
+  background-color: var(--panel); color: var(--on-panel);
+  background-image: radial-gradient(color-mix(in srgb, var(--mark) 16%, transparent) 1px, transparent 1.5px); background-size: 18px 18px;
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+}
+.light .testimonial-card { --panel: #12161B; --mark: #E3A21A; --on-panel: #F3F5F7; }
+body.ar .testimonial-card { clip-path: polygon(var(--cut) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut)); }
+.testimonial-card:hover { transform: none; box-shadow: none; }
 .testimonial-card::before {
-  content: ""; position: absolute; top: 0; inset-inline-start: 0; height: 3px; width: 64px; background: #E3A21A;
+  content: ""; position: absolute; top: 0; inset-inline-start: 0; height: 4px; width: 64px; background: var(--mark);
   transition: width .45s cubic-bezier(.6,0,.2,1);
 }
 .testimonial-card:hover::before { width: calc(100% - var(--cut)); }
 .testimonial-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.testimonial-mark { font-family: var(--font-heading); font-weight: 700; font-size: 64px; line-height: 1; height: 30px; overflow: visible; color: #E3A21A; display: block; margin-top: -6px; }
+.testimonial-mark { font-family: var(--font-heading); font-weight: 700; font-size: 72px; line-height: 1; height: 32px; overflow: visible; color: var(--mark); display: block; margin-top: -6px; }
 body.ar .testimonial-mark { transform: scaleX(-1); }
-.testimonial-text { flex: 1; margin: 0; color: var(--text-primary); font-size: 16px; line-height: 1.8; }
+.testimonial-text { flex: 1; margin: 0; color: var(--on-panel); font-size: clamp(16px, 1.3vw, 17.5px); line-height: 1.8; font-weight: 500; }
 .testimonial-project {
   align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; cursor: pointer;
-  background: transparent; border: 1px dashed var(--line-strong); border-radius: 4px; color: var(--text-primary); font: 500 13px var(--font-body);
+  background: transparent; border: 1px dashed color-mix(in srgb, var(--on-panel) 45%, transparent); border-radius: 4px;
+  color: var(--on-panel); font: 600 13px var(--font-body);
 }
-.testimonial-project span { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
-.testimonial-project:hover { border-style: solid; border-color: var(--text-primary); }
+.testimonial-project span { font-family: var(--font-mono); font-weight: 500; font-size: 12px; color: color-mix(in srgb, var(--on-panel) 70%, transparent); }
+.testimonial-project:hover { border-style: solid; border-color: var(--on-panel); }
 .testimonial-project:hover .arrow-icon { transform: translateX(3px); }
 body.ar .testimonial-project:hover .arrow-icon { transform: scaleX(-1) translateX(3px); }
-.testimonial-author { gap: 12px; padding-top: 16px; border-top: 1px solid var(--card-border); }
+.testimonial-author { gap: 12px; padding-top: 16px; border-top: 1px solid color-mix(in srgb, var(--on-panel) 22%, transparent); }
 .testimonial-who { flex: 1; min-width: 0; }
-/* A name in the other script still lines up with the avatar side of the page. */
-.testimonial-name, .testimonial-role { text-align: match-parent; }
+.testimonial-name { color: var(--on-panel); }
+.testimonial-role { color: color-mix(in srgb, var(--on-panel) 72%, transparent); }
 .testimonial-avatar {
-  width: 42px; height: 42px; border-radius: 0; background: var(--ink); color: var(--on-ink); font-family: var(--font-heading); font-weight: 700; font-size: 17px;
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  width: 42px; height: 42px; border-radius: 0; background: var(--on-panel); color: var(--panel); font-family: var(--font-heading); font-weight: 700; font-size: 17px;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%); transition: background .2s, color .2s;
 }
 body.ar .testimonial-avatar { clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px); }
-.testimonial-card:hover .testimonial-avatar { background: #E3A21A; color: #0F1215; }
+.testimonial-card:hover .testimonial-avatar { background: var(--mark); color: var(--panel); }
 .testimonial-rating { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
-.testimonial-rating span { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--line-strong); }
-.testimonial-rating span.on { background: #E3A21A; border-color: #E3A21A; }
+.testimonial-rating span { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--on-panel) 40%, transparent); }
+.testimonial-rating span.on { background: var(--mark); border-color: var(--mark); }
 /* the dashboard's live preview */
 .testimonial-preview { margin: 4px 0 8px; }
 .testimonial-preview .testimonial-card { max-width: 420px; }

@@ -40,7 +40,7 @@ export function TestimonialCard({ item }) {
   const name = (item.authorName || "").trim();
 
   return (
-    <figure className="testimonial-card cut-card">
+    <figure className="testimonial-card">
       <div className="testimonial-head">
         <span className="testimonial-mark" aria-hidden="true">“</span>
         <Rating rating={Number(item.rating) || 5} label={t.testimonials.rating} />
@@ -54,8 +54,8 @@ export function TestimonialCard({ item }) {
       <figcaption className="testimonial-author">
         <div className="testimonial-avatar" aria-hidden="true">{name.charAt(0).toUpperCase()}</div>
         <div className="testimonial-who">
-          <div className="testimonial-name" dir="auto">{name}</div>
-          {pick(item.roleEn, item.roleAr) && <div className="testimonial-role" dir="auto">{pick(item.roleEn, item.roleAr)}</div>}
+          <div className="testimonial-name"><bdi>{name}</bdi></div>
+          {pick(item.roleEn, item.roleAr) && <div className="testimonial-role"><bdi>{pick(item.roleEn, item.roleAr)}</bdi></div>}
         </div>
       </figcaption>
     </figure>
