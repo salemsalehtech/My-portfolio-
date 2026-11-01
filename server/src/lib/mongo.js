@@ -896,86 +896,29 @@ const models = {
 
 // When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and
 // drop the internal `__v` version field — so the client always works with `item.id`.
-for (const model of Object.values(models)) {
+// Some models also hide fields:
+//   - `picture: { field: flag }` never sends a stored picture, only `flag` = "is there one?"
+//     (the picture itself is fetched from its own route, e.g. GET /api/<resource>/:id/image),
+//   - `secret` fields are never sent, even when a route loaded them to check a password.
+function jsonOf(model, { picture = {}, secret = [] } = {}) {
   model.schema.set("toJSON", {
     transform: (_document, ret) => {
       if (ret._id) ret.id = ret._id.toString(); // (sub-documents without an _id, e.g. circle slot holders, have none)
+      for (const [field, flag] of Object.entries(picture)) ret[flag] = Boolean(ret[field] && ret[field].size);
       delete ret._id;
       delete ret.__v;
+      for (const field of [...Object.keys(picture), ...secret]) delete ret[field];
       return ret;
     },
   });
 }
 
-// Projects, certificates, courses and products: same as above, plus never send the image itself in JSON —
-// just `hasImage`. The picture is fetched separately from GET /api/<resource>/:id/image.
-for (const model of [models.Project, models.Certificate, models.Course, models.Product]) {
-  model.schema.set("toJSON", {
-    transform: (_document, ret) => {
-      if (ret._id) ret.id = ret._id.toString();
-      ret.hasImage = Boolean(ret.image && ret.image.size);
-      delete ret._id;
-      delete ret.__v;
-      delete ret.image;
-      return ret;
-    },
-  });
-}
-
-// Team members: never send the password hash, even when a route loaded it to check a password.
-models.TeamMember.schema.set("toJSON", {
-  transform: (_document, ret) => {
-    if (ret._id) ret.id = ret._id.toString();
-    delete ret._id;
-    delete ret.__v;
-    delete ret.passwordHash;
-    return ret;
-  },
-});
-
-// Circle members: never the password hash. Circle payments: the screenshot becomes `hasProof`.
-models.CircleMember.schema.set("toJSON", {
-  transform: (_document, ret) => {
-    if (ret._id) ret.id = ret._id.toString();
-    delete ret._id;
-    delete ret.__v;
-    delete ret.passwordHash;
-    return ret;
-  },
-});
-models.CirclePayment.schema.set("toJSON", {
-  transform: (_document, ret) => {
-    if (ret._id) ret.id = ret._id.toString();
-    ret.hasProof = Boolean(ret.proof && ret.proof.size);
-    delete ret._id;
-    delete ret.__v;
-    delete ret.proof;
-    return ret;
-  },
-});
-
-// Site settings: the portrait becomes `hasPhoto` (fetched from GET /api/settings/photo).
-models.SiteSettings.schema.set("toJSON", {
-  transform: (_document, ret) => {
-    if (ret._id) ret.id = ret._id.toString();
-    ret.hasPhoto = Boolean(ret.photo && ret.photo.size);
-    delete ret._id;
-    delete ret.__v;
-    delete ret.photo;
-    return ret;
-  },
-});
-
-// Blog posts: the cover picture becomes `hasCover` (fetched from GET /api/posts/:slug/cover).
-models.Post.schema.set("toJSON", {
-  transform: (_document, ret) => {
-    if (ret._id) ret.id = ret._id.toString();
-    ret.hasCover = Boolean(ret.cover && ret.cover.size);
-    delete ret._id;
-    delete ret.__v;
-    delete ret.cover;
-    return ret;
-  },
-});
+for (const model of Object.values(models)) jsonOf(model);
+for (const model of [models.Project, models.Certificate, models.Course, models.Product]) jsonOf(model, { picture: { image: "hasImage" } });
+jsonOf(models.SiteSettings, { picture: { photo: "hasPhoto" } });
+jsonOf(models.Post, { picture: { cover: "hasCover" } });
+jsonOf(models.CirclePayment, { picture: { proof: "hasProof" } });
+jsonOf(models.TeamMember, { secret: ["passwordHash"] });
+jsonOf(models.CircleMember, { secret: ["passwordHash"] });
 
 module.exports = { connectMongo, ...models };
