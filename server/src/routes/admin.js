@@ -9,6 +9,7 @@
 const express = require("express");
 const { readImageUpload } = require("../lib/images");
 const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, Post, Course, Form, FormResponse } = require("../lib/mongo");
+const { only } = require("../lib/fields");
 const { requireAuth } = require("../middleware/auth");
 const { analyticsReport } = require("../lib/analytics");
 
@@ -136,7 +137,10 @@ router.delete("/about", async (req, res) => {
 // instead of passing req.body straight to Mongoose. Schema limits (rating 1-5, text length)
 // are enforced by Mongoose and come back as a 400 error.
 const TESTIMONIAL_FIELDS = ["authorName", "roleEn", "roleAr", "textEn", "textAr", "rating", "visible", "pending", "order"];
-const pickTestimonial = (body = {}) => Object.fromEntries(TESTIMONIAL_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+const pickTestimonial = (body = {}) => only(body, TESTIMONIAL_FIELDS);
+// The schemas require an English or an Arabic text on create; an update checks the same rule here
+// when it sends both: true = both are being emptied.
+const clearsBoth = (data, en, ar) => en in data && ar in data && !data[en] && !data[ar];
 
 router.get("/testimonials", async (req, res) => {
   // Pending ones (sent by clients, waiting for review) first.
@@ -147,8 +151,7 @@ router.post("/testimonials", async (req, res) => {
 });
 router.put("/testimonials/:id", async (req, res) => {
   const data = pickTestimonial(req.body);
-  // The "at least one text" rule runs on create; on update, check it here when both texts are sent.
-  if ("textEn" in data && "textAr" in data && !data.textEn && !data.textAr) {
+  if (clearsBoth(data, "textEn", "textAr")) {
     return res.status(400).json({ error: "The testimonial text is required" });
   }
   res.json(await Testimonial.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
@@ -206,7 +209,7 @@ router.delete("/settings/photo", async (req, res) => {
 // ---- Services ----
 // Same CRUD shape as testimonials: only known fields are copied from the request.
 const SERVICE_FIELDS = ["titleEn", "titleAr", "descEn", "descAr", "icon", "visible", "order"];
-const pickService = (body = {}) => Object.fromEntries(SERVICE_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+const pickService = (body = {}) => only(body, SERVICE_FIELDS);
 
 router.get("/services", async (req, res) => {
   res.json(await Service.find().sort({ order: 1, createdAt: 1 }));
@@ -216,8 +219,7 @@ router.post("/services", async (req, res) => {
 });
 router.put("/services/:id", async (req, res) => {
   const data = pickService(req.body);
-  // The "at least one title" rule runs on create; on update, check it here when both titles are sent.
-  if ("titleEn" in data && "titleAr" in data && !data.titleEn && !data.titleAr) {
+  if (clearsBoth(data, "titleEn", "titleAr")) {
     return res.status(400).json({ error: "A service title is required" });
   }
   res.json(await Service.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
@@ -230,7 +232,7 @@ router.delete("/services/:id", async (req, res) => {
 // ---- Certificates ----
 // CRUD like services, plus a separate route to upload / remove the certificate picture.
 const CERTIFICATE_FIELDS = ["titleEn", "titleAr", "issuerEn", "issuerAr", "date", "credentialUrl", "visible", "order"];
-const pickCertificate = (body = {}) => Object.fromEntries(CERTIFICATE_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+const pickCertificate = (body = {}) => only(body, CERTIFICATE_FIELDS);
 router.get("/certificates", async (req, res) => {
   res.json(await Certificate.find().sort({ order: 1, createdAt: -1 }));
 });
@@ -239,7 +241,7 @@ router.post("/certificates", async (req, res) => {
 });
 router.put("/certificates/:id", async (req, res) => {
   const data = pickCertificate(req.body);
-  if ("titleEn" in data && "titleAr" in data && !data.titleEn && !data.titleAr) {
+  if (clearsBoth(data, "titleEn", "titleAr")) {
     return res.status(400).json({ error: "A certificate title is required" });
   }
   res.json(await Certificate.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
@@ -281,7 +283,7 @@ router.delete("/projects/:id/image", async (req, res) => {
 // ---- Courses ----
 // Same as certificates: CRUD + a separate route to upload / remove the cover picture.
 const COURSE_FIELDS = ["titleEn", "titleAr", "descEn", "descAr", "platform", "detailsEn", "detailsAr", "url", "visible", "order"];
-const pickCourse = (body = {}) => Object.fromEntries(COURSE_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+const pickCourse = (body = {}) => only(body, COURSE_FIELDS);
 
 router.get("/courses", async (req, res) => {
   res.json(await Course.find().sort({ order: 1, createdAt: -1 }));
@@ -291,7 +293,7 @@ router.post("/courses", async (req, res) => {
 });
 router.put("/courses/:id", async (req, res) => {
   const data = pickCourse(req.body);
-  if ("titleEn" in data && "titleAr" in data && !data.titleEn && !data.titleAr) {
+  if (clearsBoth(data, "titleEn", "titleAr")) {
     return res.status(400).json({ error: "A course title is required" });
   }
   res.json(await Course.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
@@ -331,7 +333,7 @@ router.get("/analytics", async (req, res) => {
 // that date if it is later unpublished and published again).
 const POST_FIELDS = ["slug", "titleEn", "titleAr", "excerptEn", "excerptAr", "bodyEn", "bodyAr", "tags", "published"];
 function pickPost(body = {}) {
-  const data = Object.fromEntries(POST_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+  const data = only(body, POST_FIELDS);
   if ("slug" in data) data.slug = String(data.slug || "").trim().toLowerCase();
   if ("tags" in data) data.tags = (Array.isArray(data.tags) ? data.tags : []).map((t) => String(t).trim()).filter(Boolean);
   if ("published" in data) data.published = Boolean(data.published);
@@ -384,7 +386,7 @@ router.delete("/posts/:id/cover", async (req, res) => {
 // format, unique slug, field keys, labels, list choices). Deleting a form deletes its answers too.
 const FORM_FIELDS = ["slug", "titleEn", "titleAr", "descEn", "descAr", "fields", "open"];
 function pickForm(body = {}) {
-  const data = Object.fromEntries(FORM_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+  const data = only(body, FORM_FIELDS);
   if ("slug" in data) data.slug = String(data.slug || "").trim().toLowerCase();
   if ("open" in data) data.open = Boolean(data.open);
   if ("fields" in data) {

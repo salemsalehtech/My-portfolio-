@@ -12,6 +12,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const { Circle, CircleMember, CircleInvite, CirclePayment, CircleRequest, CircleLog, CircleNotification, CircleSettings } = require("../lib/mongo");
+const { only } = require("../lib/fields");
 const { cairoDate, normalizePhone, monthDate, slotsProblem, buildStatement, commitmentOf, logCircle, notifyCircle } = require("../lib/circles");
 const { newInviteToken, hashInviteToken } = require("../lib/team");
 const { vapid, saveSubscription } = require("../lib/push");
@@ -41,7 +42,6 @@ async function saving(res, work) {
 
 // ---- Circles ----
 const CIRCLE_FIELDS = ["name", "shareAmount", "startMonth", "payDay", "payoutDay"];
-const only = (body, fields) => Object.fromEntries(fields.filter((f) => body && f in body).map((f) => [f, body[f]]));
 
 // The list, with this month's progress for every started circle.
 router.get("/", async (req, res) => {

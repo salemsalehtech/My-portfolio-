@@ -7,6 +7,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const { Product, ProductImage, TeamProject } = require("../lib/mongo");
+const { only } = require("../lib/fields");
 const { readImageUpload } = require("../lib/images");
 
 const router = express.Router();
@@ -15,7 +16,6 @@ const PRODUCT_FIELDS = ["slug", "published", "order", "accent", "nameEn", "nameA
   "summaryEn", "summaryAr", "demoUrl", "formSlug", "sourceProject", "blocks"];
 const BLOCK_FIELDS = ["type", "titleEn", "titleAr", "bodyEn", "bodyAr", "url", "items"];
 const ITEM_FIELDS = ["titleEn", "titleAr", "subtitleEn", "subtitleAr", "textEn", "textAr", "priceEgp", "priceUsd", "highlight", "image"];
-const only = (obj, fields) => Object.fromEntries(fields.filter((f) => obj && f in obj).map((f) => [f, obj[f]]));
 
 // Keeps only the known fields of the product, its blocks and their items (the client can't sneak
 // in anything else, e.g. the cover picture).

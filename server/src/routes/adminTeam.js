@@ -12,6 +12,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const { TeamMember, TeamProject, TeamTask, TeamActivity, TeamComment, TeamNotification, TeamStandup, TeamInvite } = require("../lib/mongo");
+const { only } = require("../lib/fields");
 const { todayCairo, isOverdue, logActivity, notify, bellFor, withCommentCounts, newInviteToken, hashInviteToken, MEMBER_PUBLIC } = require("../lib/team");
 const { passwordProblem } = require("../lib/passwords");
 
@@ -154,7 +155,7 @@ router.delete("/invites/:id", async (req, res) => {
 
 // ---- Projects ----
 const PROJECT_FIELDS = ["name", "summary", "docs", "links", "dueDate", "members", "status"];
-const pickProject = (body = {}) => Object.fromEntries(PROJECT_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+const pickProject = (body = {}) => only(body, PROJECT_FIELDS);
 
 router.get("/projects", async (req, res) => {
   const projects = await TeamProject.find().select("-docs").sort({ createdAt: -1 });
@@ -194,7 +195,7 @@ router.delete("/projects/:id", async (req, res) => {
 // ---- Tasks ----
 const TASK_FIELDS = ["title", "description", "assignee", "priority", "dueDate", "status", "steps", "order"];
 function pickTask(body = {}) {
-  const data = Object.fromEntries(TASK_FIELDS.filter((f) => f in body).map((f) => [f, body[f]]));
+  const data = only(body, TASK_FIELDS);
   if ("assignee" in data && !data.assignee) data.assignee = null;
   if ("steps" in data) {
     data.steps = (Array.isArray(data.steps) ? data.steps : [])
