@@ -25,8 +25,8 @@ Client (run from `client/`):
 - `npm run preview` — preview a production build
 
 Server (run from `server/`):
-- `npm run dev` — start API with nodemon (port 4000)
-- `npm start` — start API without nodemon
+- `npm run dev` — start API with `node --watch` (restarts on every change, port 4000)
+- `npm start` — start API without watching
 - `npm run seed` — run `prisma/seed.js` to wipe and reseed `Project`/`Skill`/`YoutubeVideo`, and upsert the `AdminUser` from `ADMIN_EMAIL`/`ADMIN_PASSWORD` (the script lives under `server/prisma/` for historical reasons — the project no longer uses Prisma)
 
 There is no test suite or lint config in either app currently.
