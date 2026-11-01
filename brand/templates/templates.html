@@ -1,0 +1,182 @@
+<!doctype html>
+<!--
+  templates.html — every social and video template of the Salem Saleh identity, one file.
+  Open it with ?t=<template> and optional text, e.g.
+    templates.html?t=yt-thumb&title=بناء API بـ *Node.js*&tag=الحلقة 4
+    templates.html?t=post-tip&lang=en&title=…&body=…
+  Wrap a word in *stars* to colour it saffron. render.ps1 next to this file turns each template
+  into a PNG at its exact size. Colours and fonts come from ../tokens.json (kept in sync by hand).
+-->
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=block">
+<style>
+  :root {
+    --ink: #0F1215; --ink-2: #181D22; --line: #262C33; --paper: #F3F5F7; --muted: #A5ADB6;
+    --saffron: #E3A21A; --saffron-light: #EDB443;
+    --display: "Alexandria", "IBM Plex Sans Arabic", sans-serif;
+    --body: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", "IBM Plex Sans Arabic", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; overflow: hidden; }
+  #root { position: relative; overflow: hidden; color: var(--paper); font-family: var(--body); }
+  .ground { background-color: var(--ink); background-image: radial-gradient(rgba(243,245,247,.075) 1.3px, transparent 1.8px); background-size: var(--dot, 28px) var(--dot, 28px); }
+  .on-saffron { background-color: var(--saffron); color: var(--ink); background-image: radial-gradient(rgba(15,18,21,.13) 1.3px, transparent 1.8px); background-size: var(--dot, 28px) var(--dot, 28px); }
+  .abs { position: absolute; }
+  .display { font-family: var(--display); font-weight: 700; line-height: 1.12; letter-spacing: -.01em; text-wrap: balance; }
+  [dir="ltr"] .display { letter-spacing: -.025em; line-height: 1.02; }
+  .mono { font-family: var(--mono); font-weight: 500; letter-spacing: .02em; }
+  .hl { color: var(--saffron); }
+  .on-saffron .hl { color: var(--ink); text-decoration: underline; text-decoration-thickness: .08em; text-underline-offset: .12em; }
+  .chip { display: inline-flex; align-items: center; gap: .6em; font-family: var(--mono); font-weight: 500; }
+  .chip::before { content: ""; width: .7em; height: .7em; border-radius: 50%; background: var(--saffron); }
+  .on-saffron .chip::before { background: var(--ink); }
+  .portrait { filter: grayscale(1) contrast(1.08); }
+  svg { display: block; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const lang = q.get("lang") === "en" ? "en" : "ar";
+const AR = lang === "ar";
+const COPY = {
+  name: AR ? "سالم صالح" : "Salem Saleh",
+  roles: AR ? "مهندس برمجيات · مطور متكامل · صانع محتوى" : "Software Engineer · Full-Stack Developer · Content Creator",
+  tagline: AR ? "أبني تطبيقات ويب بتشتغل بالعربي والإنجليزي، وبشرح إزاي بتتعمل." : "I build web apps that work in Arabic and English, and I teach how they are made.",
+  site: "salemsalehtech.github.io/My-portfolio-",
+};
+const P = (k, d) => q.get(k) ?? d;
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const rich = (s) => esc(s).replace(/\*(.+?)\*/g, '<span class="hl">$1</span>').replace(/\n/g, "<br>");
+
+// the SS mark: traces + pads; `first` colours the first pad
+const TRACES = ["M40 9H13L4 18V22L13 31H31L40 40V44L31 53H4", "M90 9H63L54 18V22L63 31H81L90 40V44L81 53H54"];
+const mark = (w, ink, first = "var(--saffron)", sw = 6.5) => `<svg width="${w}" height="${w * 0.58}" viewBox="-3 2 100 58" aria-hidden="true">
+  <g fill="none" stroke="${ink}" stroke-width="${sw}" stroke-linejoin="miter">${TRACES.map((d) => `<path d="${d}"/>`).join("")}</g>
+  ${[[40, 9], [4, 53], [90, 9], [54, 53]].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${sw * 0.95}" fill="${i ? ink : first}"/>`).join("")}</svg>`;
+// the lockup: mark + name (+ the other script under it)
+const lockup = (h, ink = "var(--paper)") => `<div style="display:flex;align-items:center;gap:${h * 0.42}px;direction:ltr">
+  ${mark(h * 1.7, ink)}<div style="display:flex;flex-direction:column;gap:${h * 0.08}px">
+  <span class="display" style="font-size:${h * 0.62}px;line-height:1;color:${ink}">Salem Saleh</span>
+  <span class="display" style="font-size:${h * 0.5}px;line-height:1.1;color:var(--saffron);direction:rtl;text-align:right">سالم صالح</span></div></div>`;
+
+const T = {
+  // ---- profile covers ----
+  "yt-banner": { w: 2560, h: 1440, html: () => `
+    <div class="ground abs" style="inset:0;--dot:36px"></div>
+    <div class="abs" style="right:-120px;top:-60px;opacity:.95">${mark(1300, "var(--ink-2)", "var(--ink-2)", 6.5)}</div>
+    <div class="abs on-saffron" style="left:0;top:0;bottom:0;width:507px;clip-path:polygon(0 0,100% 0,100% calc(100% - 120px),calc(100% - 120px) 100%,0 100%)"></div>
+    <!-- everything that must show on phones sits inside YouTube's 1546×423 safe area -->
+    <div class="abs" style="left:557px;right:557px;top:508px;height:423px;display:flex;flex-direction:column;justify-content:center;gap:34px;align-items:flex-start" dir="${AR ? "rtl" : "ltr"}">
+      ${lockup(112)}
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <p class="chip" style="font-size:32px;color:var(--muted)">${esc(COPY.roles)}</p>
+        <p style="font-size:40px;line-height:1.45;font-weight:500">${esc(P("sub", COPY.tagline))}</p>
+      </div>
+    </div>` },
+  "fb-cover": { w: 1640, h: 624, html: () => coverWide(1640, 624, 92) },
+  "li-banner": { w: 1584, h: 396, html: () => coverWide(1584, 396, 70) },
+  "x-header": { w: 1500, h: 500, html: () => coverWide(1500, 500, 76) },
+
+  // ---- video ----
+  "yt-thumb": { w: 1280, h: 720, html: () => `
+    <div class="ground abs" style="inset:0;--dot:24px"></div>
+    <div class="abs on-saffron" style="${AR ? "left" : "right"}:0;top:0;bottom:0;width:520px;clip-path:${AR ? "polygon(0 0,100% 0,72% 100%,0 100%)" : "polygon(28% 0,100% 0,100% 100%,0 100%)"}"></div>
+    <div class="abs" style="${AR ? "left" : "right"}:-30px;bottom:150px">${mark(560, "var(--ink)", "var(--ink)")}</div>
+    ${P("photo", "1") !== "0" ? `<img class="abs portrait" src="portrait-cut.webp" style="${AR ? "left" : "right"}:20px;bottom:0;height:690px">` : ""}
+    <div class="abs" dir="${AR ? "rtl" : "ltr"}" style="${AR ? "right" : "left"}:64px;top:64px;bottom:64px;width:690px;display:flex;flex-direction:column;justify-content:space-between">
+      <p class="chip" style="font-size:28px;color:var(--saffron)">${esc(P("tag", AR ? "الحلقة ١" : "Episode 1"))}</p>
+      <h1 class="display" style="font-size:${AR ? 92 : 96}px">${rich(P("title", AR ? "بناء *API* كامل بـ Node.js" : "Build a full *API* with Node.js"))}</h1>
+      <div style="direction:ltr;display:flex;${AR ? "justify-content:flex-end" : ""}">${mark(96, "var(--paper)")}</div>
+    </div>` },
+  "vertical-cover": { w: 1080, h: 1920, html: () => `
+    <div class="ground abs" style="inset:0;--dot:30px"></div>
+    <div class="abs on-saffron" style="left:0;right:0;top:0;height:250px;clip-path:polygon(0 0,100% 0,100% 100%,140px 100%,0 160px)"></div>
+    <p class="abs chip" dir="${AR ? "rtl" : "ltr"}" style="top:96px;${AR ? "right" : "left"}:80px;font-size:40px;color:var(--ink)">${esc(P("tag", AR ? "معلومة في دقيقة" : "One-minute tip"))}</p>
+    <div class="abs" style="left:-80px;right:-80px;top:560px;opacity:1">${mark(1240, "var(--ink-2)", "var(--ink-2)")}</div>
+    <div class="abs" dir="${AR ? "rtl" : "ltr"}" style="left:80px;right:80px;top:420px;bottom:420px;display:flex;align-items:center"><h1 class="display" style="font-size:${AR ? 118 : 124}px">${rich(P("title", AR ? "الفرق بين *let* و const" : "*let* vs const, in a minute"))}</h1></div>
+    <div class="abs" style="left:80px;right:80px;bottom:120px;display:flex;justify-content:center">${lockup(84)}</div>` },
+  "video-title": { w: 1920, h: 1080, html: () => `
+    <div class="ground abs" style="inset:0;--dot:32px"></div>
+    <div class="abs" style="${AR ? "left" : "right"}:-160px;top:120px">${mark(1100, "var(--saffron)", "var(--saffron)")}</div>
+    <div class="abs" dir="${AR ? "rtl" : "ltr"}" style="${AR ? "right" : "left"}:140px;top:0;bottom:0;width:980px;display:flex;flex-direction:column;justify-content:center;gap:40px">
+      <p class="chip" style="font-size:36px;color:var(--saffron)">${esc(P("tag", AR ? "الحلقة ١" : "Episode 1"))}</p>
+      <h1 class="display" style="font-size:${AR ? 120 : 128}px">${rich(P("title", AR ? "بناء *API* كامل بـ Node.js" : "Build a full *API* with Node.js"))}</h1>
+    </div>` },
+  "video-end": { w: 1920, h: 1080, html: () => `
+    <div class="ground abs" style="inset:0;--dot:32px"></div>
+    <div class="abs on-saffron" style="${AR ? "right" : "left"}:0;top:0;bottom:0;width:640px;clip-path:${AR ? "polygon(0 0,100% 0,100% 100%,0 100%,120px calc(100% - 0px))" : "polygon(0 0,100% 0,calc(100% - 120px) 100%,0 100%)"}"></div>
+    <div class="abs" dir="${AR ? "rtl" : "ltr"}" style="${AR ? "right" : "left"}:100px;top:0;bottom:0;width:470px;display:flex;flex-direction:column;justify-content:center;gap:36px;color:var(--ink)">
+      ${mark(300, "var(--ink)", "var(--ink)")}
+      <h2 class="display" style="font-size:76px">${rich(P("title", AR ? "شكرًا إنك كمّلت للآخر" : "Thanks for watching"))}</h2>
+      <p style="font-size:30px;font-weight:600">${esc(P("sub", AR ? "اشترك عشان الحلقة الجاية" : "Subscribe for the next one"))}</p>
+    </div>
+    ${[0, 1].map((i) => `<div class="abs" style="${AR ? "left" : "right"}:120px;top:${150 + i * 420}px;width:640px;height:360px;border:3px dashed var(--line);border-radius:12px;display:grid;place-items:center">
+      <span class="mono" style="font-size:24px;color:var(--muted)">${AR ? "مكان فيديو مقترح" : "End-screen video"}</span></div>`).join("")}` },
+  "lower-third": { w: 1920, h: 1080, transparent: true, html: () => `
+    <div class="abs" dir="${AR ? "rtl" : "ltr"}" style="${AR ? "right" : "left"}:120px;bottom:120px;display:flex;align-items:stretch">
+      <div class="on-saffron" style="width:22px"></div>
+      <div style="background:var(--ink);padding:26px 40px 28px;display:flex;flex-direction:column;gap:10px">
+        <span class="display" style="font-size:56px;line-height:1.1">${esc(P("title", COPY.name))}</span>
+        <span class="mono" style="font-size:24px;color:var(--saffron)">${esc(P("sub", COPY.roles))}</span>
+      </div>
+    </div>` },
+
+  // ---- feed posts (1080×1350, Instagram / Facebook / LinkedIn) ----
+  "post-tip": { w: 1080, h: 1350, html: () => post(`
+      <p class="chip" style="font-size:30px;color:var(--saffron)">${esc(P("tag", AR ? "نصيحة" : "Tip"))}</p>
+      <h1 class="display" style="font-size:${AR ? 86 : 88}px">${rich(P("title", AR ? "سمّي المتغير *باللي فيه*، مش بنوعه" : "Name a variable by *what it holds*"))}</h1>
+      <p style="font-size:38px;line-height:1.6;color:var(--muted);font-weight:500">${rich(P("body", AR ? "users أوضح من arr، و isPaid أوضح من flag. اللي هيقرأ الكود بعدك هيشكرك." : "users beats arr, isPaid beats flag. Whoever reads your code next will thank you."))}</p>`) },
+  "post-code": { w: 1080, h: 1350, html: () => post(`
+      <p class="chip" style="font-size:30px;color:var(--saffron)">${esc(P("tag", AR ? "كود" : "Code"))}</p>
+      <h1 class="display" style="font-size:${AR ? 72 : 76}px">${rich(P("title", AR ? "اقرا الـ query بأمان" : "Read a query param safely"))}</h1>
+      <div style="direction:ltr;background:var(--ink-2);border:2px solid var(--line);border-radius:14px;overflow:hidden">
+        <div class="mono" style="font-size:24px;color:var(--muted);padding:18px 28px;border-bottom:2px solid var(--line)">${esc(P("file", "params.js"))}</div>
+        <pre class="mono" style="font-size:30px;line-height:1.55;padding:28px;white-space:pre-wrap;color:var(--paper)">${esc(P("code", 'const q = new URLSearchParams(location.search);\nconst page = Number(q.get("page")) || 1;'))}</pre>
+      </div>`) },
+  "post-launch": { w: 1080, h: 1350, html: () => `
+    <div class="on-saffron abs" style="inset:0;--dot:28px"></div>
+    <div class="abs" dir="${AR ? "rtl" : "ltr"}" style="inset:90px;display:flex;flex-direction:column;justify-content:space-between;color:var(--ink)">
+      <p class="chip" style="font-size:30px">${esc(P("tag", AR ? "مشروع جديد" : "New project"))}</p>
+      <div style="display:flex;flex-direction:column;gap:36px">
+        <h1 class="display" style="font-size:${AR ? 104 : 108}px">${rich(P("title", AR ? "جمعيتي" : "Gameyati"))}</h1>
+        <p style="font-size:40px;line-height:1.55;font-weight:600">${rich(P("body", AR ? "نظام لإدارة الجمعيات: مين دفع، مين عليه الدور، وإشعار لكل واحد." : "Savings circles, managed: who paid, whose turn it is, and a reminder for everyone."))}</p>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;direction:ltr">${mark(170, "var(--ink)", "var(--ink)")}<span class="mono" style="font-size:24px">${COPY.site}</span></div>
+    </div>` },
+};
+
+// a wide profile cover: lockup and roles inside the centre, a saffron chamfer and a trace on the edge
+function coverWide(w, h, lh) {
+  return `<div class="ground abs" style="inset:0"></div>
+    <div class="abs on-saffron" style="right:0;top:0;bottom:0;width:${Math.round(w * 0.26)}px;clip-path:polygon(${h * 0.6}px 0,100% 0,100% 100%,0 100%)">
+      <div class="abs" style="right:-${Math.round(w * 0.03)}px;bottom:-${Math.round(h * 0.12)}px">${mark(Math.round(Math.max(w * 0.3, h * 1.1)), "var(--ink)", "var(--ink)")}</div></div>
+    <div class="abs" dir="${AR ? "rtl" : "ltr"}" style="left:${Math.round(w * 0.2)}px;right:${Math.round(w * 0.3)}px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;gap:${lh * 0.32}px;align-items:flex-start">
+      ${lockup(lh)}
+      <p class="chip" style="font-size:${Math.max(16, lh * 0.28)}px;color:var(--muted)">${esc(COPY.roles)}</p>
+    </div>`;
+}
+// a feed post: content stacked on the ground, the lockup and site in the footer
+function post(inner) {
+  return `<div class="ground abs" style="inset:0"></div>
+    <div class="abs on-saffron" style="${AR ? "left" : "right"}:0;top:0;width:220px;height:220px;clip-path:${AR ? "polygon(0 0,100% 0,0 100%)" : "polygon(0 0,100% 0,100% 100%)"}"></div>
+    <div class="abs" dir="${AR ? "rtl" : "ltr"}" style="inset:96px 90px 90px;display:flex;flex-direction:column;justify-content:space-between">
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:44px;padding-bottom:40px">${inner}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;direction:ltr;border-top:2px solid var(--line);padding-top:36px">
+        ${lockup(52)}<span class="mono" style="font-size:22px;color:var(--muted)">${COPY.site}</span></div>
+    </div>`;
+}
+
+const t = T[q.get("t")] || T["yt-thumb"];
+const root = document.getElementById("root");
+root.style.width = t.w + "px"; root.style.height = t.h + "px";
+if (!t.transparent) document.body.style.background = "#0F1215";
+root.innerHTML = t.html();
+document.fonts.ready.then(() => document.body.setAttribute("data-ready", "1"));
+</script>
+</body>
+</html>
