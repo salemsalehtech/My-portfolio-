@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const rateLimit = require("express-rate-limit");
 const { DailyStat, Project, Post } = require("../lib/mongo");
 const { cairoDate } = require("../lib/dates");
+const { toKey } = require("../lib/analytics");
 
 // Privacy-friendly visitor analytics: POST /api/analytics/event.
 // The site (client/src/lib/analytics.js) sends tiny events — "visit", "section", "project", "post",
@@ -25,8 +26,6 @@ const SECTIONS = ["home", "about", "services", "skills", "projects", "certificat
 const MAX_REFERRERS_PER_DAY = 50; // beyond that, new sources are counted as "other"
 
 
-// Mongoose map keys can't contain "." — store "linkedin.com" as "linkedin．com" (full-width dot).
-const toKey = (host) => host.replace(/\./g, "．");
 
 // "https://www.linkedin.com/feed?x" -> "linkedin.com"; empty/invalid/own site -> "direct".
 function referrerHost(value) {
