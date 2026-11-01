@@ -8,6 +8,7 @@
 //     /admin/skills      -> AdminSkills
 //     /admin/youtube     -> AdminYoutube
 //     /admin/messages    -> AdminMessages
+//   anything else        -> NotFound (an old or mistyped link)
 //
 // SiteProvider (theme/language), AdminProvider (admin login state) and AdminI18nProvider (the
 // dashboard's own English/Arabic switch, lib/adminI18n.jsx) wrap EVERYTHING, so
@@ -41,6 +42,7 @@ import AdminForms from "./pages/admin/AdminForms";
 import AdminFormEditor from "./pages/admin/AdminFormEditor";
 import AdminFormResponses from "./pages/admin/AdminFormResponses";
 import BlogList from "./pages/BlogList";
+import NotFound from "./pages/NotFound";
 import { Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
 
@@ -106,7 +108,9 @@ export default function App() {
               <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="about" element={<AdminAbout />} />
               <Route path="cv" element={<AdminCV />} />
+              <Route path="*" element={<Navigate to="/admin/projects" replace />} />
             </Route>
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </HashRouter>
       </AdminI18nProvider>

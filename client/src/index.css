@@ -657,6 +657,8 @@ body.ar .cert-title { font-family: var(--font-ar); }
 .blog-header .nav-logo { color: inherit; }
 .blog-header-links { display: flex; gap: 4px; }
 .blog-header-actions { display: flex; gap: 8px; }
+/* Phones: the mark alone carries the brand, so the links and switches fit on one line. */
+@media (max-width: 420px) { .blog-header { gap: 10px; } .blog-header .nav-name { display: none; } }
 .blog-main { padding-top: 48px; padding-bottom: 80px; }
 .blog-page-title { font-family: var(--font-heading); font-size: clamp(30px, 4vw, 44px); font-weight: 800; color: var(--text-primary); letter-spacing: -1px; line-height: 1.2; }
 .blog-empty { text-align: center; color: var(--text-secondary); padding: 40px 0; display: flex; flex-direction: column; gap: 18px; align-items: center; }
@@ -1693,6 +1695,27 @@ body.ar .process-step { padding: 22px 0 6px 22px; }
 .brand-mark.is-drawing path { stroke-dasharray: 100; stroke-dashoffset: 100; animation: trace-draw 1.1s cubic-bezier(.6,0,.2,1) forwards; }
 .brand-mark.is-drawing path + path { animation-delay: .25s; }
 @keyframes trace-draw { to { stroke-dashoffset: 0; } }
+
+/* ---- 404 page (pages/NotFound.jsx): a trace from the saffron pad that stops short of an empty pad ---- */
+.nf-main { max-width: 760px; padding-top: clamp(48px, 9vh, 96px); padding-bottom: 96px; }
+.nf-trace { display: block; width: min(100%, 560px); margin-inline-start: 0; height: auto; margin-bottom: clamp(28px, 5vh, 48px); overflow: visible; }
+.nf-trace path { fill: none; stroke: var(--text-primary); stroke-width: 7; stroke-linejoin: miter; }
+/* Drawn by default; the animation only plays the drawing in, so the trace shows even when it doesn't run. */
+.nf-run { stroke-dasharray: 100; animation: nf-draw 1.2s cubic-bezier(.6,0,.2,1) .15s backwards; }
+@keyframes nf-draw { from { stroke-dashoffset: 100; } }
+.nf-stub { stroke: var(--line-strong) !important; stroke-dasharray: 7 9; }
+.nf-pad-start { fill: #E3A21A; }
+.nf-pad-end { fill: none; stroke: var(--line-strong); stroke-width: 4; stroke-dasharray: 9 6; }
+.nf-eyebrow { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--gold); margin-bottom: 12px; }
+.nf-title { font-family: var(--font-heading); font-weight: 700; font-size: clamp(32px, 5.2vw, 56px); line-height: 1.08; letter-spacing: -0.03em; color: var(--text-primary); max-width: 16ch; }
+body.ar .nf-title { letter-spacing: 0; line-height: 1.32; }
+.nf-text { margin-top: 18px; font-size: 17px; line-height: 1.65; color: var(--text-secondary); max-width: 52ch; }
+.nf-address { margin-top: 14px; font-size: 14px; color: var(--text-muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.nf-address code { font-family: var(--font-mono); font-size: 13px; color: var(--text-secondary); background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 2px 8px; overflow-wrap: anywhere; }
+.nf-actions { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
+.nf-actions a { text-decoration: none; display: inline-flex; align-items: center; }
+@media (max-width: 520px) { .nf-actions a { width: 100%; justify-content: center; } }
+@media (prefers-reduced-motion: reduce) { .nf-run { animation: none; } }
 .nav-link:focus-visible { outline-offset: -2px; }
 
 /* ---- Hero v5: the name on one side; on the other a diagonal panel with the portrait standing
