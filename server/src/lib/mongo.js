@@ -209,6 +209,9 @@ const testimonialSchema = new mongoose.Schema(
     pending: { type: Boolean, default: false },
     submittedLang: { type: String, enum: ["", "en", "ar"], default: "" },
     order: { type: Number, default: 0 },
+    // The project this review is about (optional, chosen in Admin → Testimonials): the card on the
+    // site links to that project's case study.
+    project: { type: mongoose.Schema.Types.ObjectId, ref: "Project", default: null },
   },
   { timestamps: true }
 );

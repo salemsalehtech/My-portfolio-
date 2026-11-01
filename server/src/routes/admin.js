@@ -142,8 +142,12 @@ router.delete("/about", async (req, res) => {
 // Same CRUD shape as the other resources, but we copy only the known fields from the request
 // instead of passing req.body straight to Mongoose. Schema limits (rating 1-5, text length)
 // are enforced by Mongoose and come back as a 400 error.
-const TESTIMONIAL_FIELDS = ["authorName", "roleEn", "roleAr", "textEn", "textAr", "rating", "visible", "pending", "order"];
-const pickTestimonial = (body = {}) => only(body, TESTIMONIAL_FIELDS);
+const TESTIMONIAL_FIELDS = ["authorName", "roleEn", "roleAr", "textEn", "textAr", "rating", "visible", "pending", "order", "project"];
+const pickTestimonial = (body = {}) => {
+  const data = only(body, TESTIMONIAL_FIELDS);
+  if ("project" in data && !data.project) data.project = null; // "no project" in the form
+  return data;
+};
 // The schemas require an English or an Arabic text on create; an update checks the same rule here
 // when it sends both: true = both are being emptied.
 const clearsBoth = (data, en, ar) => en in data && ar in data && !data[en] && !data[ar];

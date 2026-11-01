@@ -53,7 +53,8 @@ router.post("/submit", submitLimiter, async (req, res) => {
 });
 
 router.get("/", async (req, res) => {
-  const items = await Testimonial.find({ visible: true }).sort({ order: 1, createdAt: -1 });
+  // The linked project comes with its titles only (a deleted project simply becomes null).
+  const items = await Testimonial.find({ visible: true }).sort({ order: 1, createdAt: -1 }).populate("project", "titleEn titleAr");
   res.json(items);
 });
 
