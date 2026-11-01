@@ -8,7 +8,8 @@ import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { SHARED_COPY, initials, timeAgo } from "../../lib/team";
 
-export default function Comments({ path, deletePath, canDelete, lang = "en", me, onCount }) {
+// `msg` puts a server error in the page's language (the member portal passes its own; the dashboard shows it as is).
+export default function Comments({ path, deletePath, canDelete, lang = "en", msg = (text) => text, me, onCount }) {
   const c = SHARED_COPY[lang];
   const [list, setList] = useState(null);
   const [text, setText] = useState("");
@@ -67,7 +68,7 @@ export default function Comments({ path, deletePath, canDelete, lang = "en", me,
           ))}
         </ul>
       )}
-      {error && <p className="tm-error" role="alert">{error}</p>}
+      {error && <p className="tm-error" role="alert">{msg(error)}</p>}
       <form className="tm-comment-form" onSubmit={send}>
         <textarea className="fp-input" dir="auto" rows={2} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={onKey} placeholder={c.writeComment} maxLength={2000} />
         <button className="fp-btn" type="submit" disabled={busy || !text.trim()}>{busy ? c.sending : c.send}</button>

@@ -9,7 +9,7 @@ import { useTeam } from "./TeamPortal";
 const EMPTY = { yesterday: "", today: "", blockers: "" };
 
 export default function StandupCard() {
-  const { t, lang } = useTeam();
+  const { t, lang, msg } = useTeam();
   const c = SHARED_COPY[lang];
   const [saved, setSaved] = useState(undefined); // undefined = loading, null = not posted yet
   const [form, setForm] = useState(EMPTY);
@@ -63,7 +63,7 @@ export default function StandupCard() {
           <label className="tm-field"><span>{c.blockers}</span>
             <textarea className="fp-input" dir="auto" rows={2} value={form.blockers} onChange={set("blockers")} maxLength={2000} placeholder={c.none} />
           </label>
-          {error && <p className="tm-error" role="alert">{error}</p>}
+          {error && <p className="tm-error" role="alert">{msg(error)}</p>}
           <div className="tm-row">
             <button className="fp-btn" type="submit" disabled={busy || !(form.yesterday.trim() || form.today.trim() || form.blockers.trim())}>{c.saveStandup}</button>
             {editing && <button className="fp-btn fp-btn-ghost" type="button" onClick={() => setEditing(false)}>{t.cancel}</button>}

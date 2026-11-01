@@ -1,6 +1,7 @@
 // teamCopy.js — every text of the member portal (/#/team), in English and Arabic.
 // Status and priority names live in lib/team.js (shared with the owner's dashboard).
-// SERVER_AR translates the server's error messages a member can meet (login / sign-up).
+// SERVER_AR translates the server's error messages a member can meet (word for word: change it
+// together with the server's wording).
 export const TEAM_COPY = {
   en: {
     portal: "Team workspace",
@@ -86,4 +87,18 @@ export const SERVER_AR = {
   "The password must be 8 to 100 characters": "كلمة المرور يجب أن تكون من 8 إلى 100 حرف",
   "Write your name (up to 80 characters)": "اكتب اسمك (حتى 80 حرفًا)",
   "Username: 3–30 characters, a-z, 0-9, dot, dash or underscore": "اسم المستخدم: من 3 إلى 30 حرفًا، a-z و0-9 والنقطة والشرطة والشرطة السفلية",
+  "Username and password are required": "اكتب اسم المستخدم وكلمة المرور",
+  "The current password is wrong": "كلمة المرور الحالية غير صحيحة",
+  "Choose a password different from the current one": "اختر كلمة مرور مختلفة عن الحالية",
+  "Please choose a new password first": "اختر كلمة مرور جديدة أولًا",
+  "Project not found": "المشروع غير موجود",
+  "Task not found": "المهمة غير موجودة",
+  "Step not found": "الخطوة غير موجودة",
+  "Too many comments. Please wait a few minutes.": "تعليقات كثيرة. انتظر بضع دقائق.",
+  "Comment not found": "التعليق غير موجود",
+  "Write at least one line": "اكتب سطرًا واحدًا على الأقل",
+  "Missing token": "سجّل الدخول أولًا",
+  "Invalid or expired token": "انتهت صلاحية تسجيل الدخول. سجّل الدخول مرة أخرى.",
+  "Your login has expired — please sign in again.": "انتهت صلاحية تسجيل الدخول. سجّل الدخول مرة أخرى.",
+  "This account is disabled": "هذا الحساب موقوف",
 };

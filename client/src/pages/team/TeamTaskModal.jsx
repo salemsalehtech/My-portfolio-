@@ -13,7 +13,7 @@ import Comments from "../../components/team/Comments";
 import { useTeam } from "./TeamPortal";
 
 export default function TeamTaskModal({ task, projectName, onClose, onChange, onCommentCount }) {
-  const { t, lang, member } = useTeam();
+  const { t, lang, member, msg } = useTeam();
   const mine = task.assignee?.id === member.id;
   const [stepText, setStepText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -90,7 +90,7 @@ export default function TeamTaskModal({ task, projectName, onClose, onChange, on
           </form>
         )}
 
-        {error && <p className="tm-error" role="alert">{error}</p>}
+        {error && <p className="tm-error" role="alert">{msg(error)}</p>}
         <div className="tm-task-actions">
           {!mine && <p className="tm-muted">{t.readOnly}</p>}
           {mine && task.status === "todo" && <button className="fp-btn" disabled={busy} onClick={() => setStatus("doing")}>{t.start}</button>}
@@ -112,6 +112,7 @@ export default function TeamTaskModal({ task, projectName, onClose, onChange, on
           deletePath={(x) => `/team/comments/${x.id}`}
           canDelete={(x) => x.member?.id === member.id}
           lang={lang}
+          msg={msg}
           me={member.id}
           onCount={onCommentCount}
         />

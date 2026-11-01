@@ -242,7 +242,7 @@ function TeamLogin({ onSignedIn, expired }) {
 
 // Changes the member's password. `forced`: the first-login screen (no way around it).
 function PasswordForm({ forced, onDone, onCancel }) {
-  const { t, setMember } = useTeam();
+  const { t, setMember, msg } = useTeam();
   const [form, setForm] = useState({ current: "", next: "", confirm: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -268,7 +268,7 @@ function PasswordForm({ forced, onDone, onCancel }) {
     <form className="tm-auth-card" onSubmit={submit}>
       <h2>{forced ? t.newPassTitle : t.changePass}</h2>
       {forced && <p className="tm-muted">{t.newPassIntro}</p>}
-      {error && <p className="tm-error" role="alert">{error}</p>}
+      {error && <p className="tm-error" role="alert">{msg(error)}</p>}
       <label className="tm-field"><span>{t.current}</span>
         <input className="fp-input" dir="ltr" type="password" value={form.current} onChange={set("current")} autoComplete="current-password" required />
       </label>

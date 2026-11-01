@@ -17,7 +17,7 @@ import TeamTaskModal from "./TeamTaskModal";
 
 export default function TeamProject() {
   const { id } = useParams();
-  const { t, lang, member } = useTeam();
+  const { t, lang, member, msg } = useTeam();
   const [data, setData] = useState(null);
   const [tab, setTab] = useState("board");
   const [open, setOpen] = useState(null);
@@ -82,7 +82,7 @@ export default function TeamProject() {
           ))}
         </nav>
 
-        {tab === "board" && error && <p className="tm-error" role="alert">{error}</p>}
+        {tab === "board" && error && <p className="tm-error" role="alert">{msg(error)}</p>}
         {tab === "board" && <Board tasks={tasks} lang={lang} onOpen={setOpen} mine={member.id} members={project.members} canMove={canMove} onMove={onMove} />}
 
         {tab === "docs" && (

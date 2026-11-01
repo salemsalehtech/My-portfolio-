@@ -42,7 +42,7 @@ export function TaskRow({ task, lang, onOpen, showProject = true }) {
 }
 
 export default function TeamHome() {
-  const { t, lang, member } = useTeam();
+  const { t, lang, member, msg } = useTeam();
   const [tasks, setTasks] = useState(null);
   const [projects, setProjects] = useState([]);
   const [open, setOpen] = useState(null);
@@ -78,7 +78,7 @@ export default function TeamHome() {
         <h1>{t.hello(member.name.split(" ")[0])}</h1>
         {member.specialty && <p className="tm-muted">{member.specialty}</p>}
       </header>
-      {error && <p className="tm-error">{error}</p>}
+      {error && <p className="tm-error">{msg(error)}</p>}
 
       <div className="tm-stats">
         {stats.map(({ label, value, Icon, tone }) => (
