@@ -18,6 +18,7 @@ const mongoose = require("mongoose");
 const { TeamMember, TeamProject, TeamTask, TeamComment, TeamNotification, TeamStandup, TeamInvite } = require("../lib/mongo");
 const { requireMember, signMemberToken } = require("../middleware/teamAuth");
 const { todayCairo, logActivity, notify, bellFor, withCommentCounts, hashInviteToken, usableInvite, MEMBER_PUBLIC } = require("../lib/team");
+const { passwordProblem } = require("../lib/passwords");
 
 const router = express.Router();
 
@@ -67,7 +68,8 @@ router.get("/invites/:token", signupLimiter, async (req, res) => {
 // POST /api/team/signup { token, name, specialty, username, password } → the new (pending) account.
 router.post("/signup", signupLimiter, async (req, res) => {
   const password = String(req.body?.password ?? "");
-  if (password.length < 8 || password.length > 100) return res.status(400).json({ error: "The password must be 8 to 100 characters" });
+  const problem = passwordProblem(password);
+  if (problem) return res.status(400).json({ error: problem });
   const username = String(req.body?.username ?? "").trim().toLowerCase();
   const name = String(req.body?.name ?? "").trim();
   if (!name || name.length > 80) return res.status(400).json({ error: "Write your name (up to 80 characters)" });
@@ -108,7 +110,8 @@ router.get("/me", (req, res) => res.json(req.member));
 router.post("/password", async (req, res) => {
   const current = String(req.body?.current ?? "");
   const next = String(req.body?.next ?? "");
-  if (next.length < 8 || next.length > 100) return res.status(400).json({ error: "The new password must be 8 to 100 characters" });
+  const problem = passwordProblem(next);
+  if (problem) return res.status(400).json({ error: problem });
   const member = await TeamMember.findById(req.member.id).select("+passwordHash");
   if (!(await bcrypt.compare(current, member.passwordHash))) return res.status(400).json({ error: "The current password is wrong" });
   if (await bcrypt.compare(next, member.passwordHash)) return res.status(400).json({ error: "Choose a password different from the current one" });

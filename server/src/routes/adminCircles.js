@@ -15,6 +15,7 @@ const { Circle, CircleMember, CircleInvite, CirclePayment, CircleRequest, Circle
 const { cairoDate, normalizePhone, monthDate, slotsProblem, buildStatement, commitmentOf, logCircle, notifyCircle } = require("../lib/circles");
 const { newInviteToken, hashInviteToken } = require("../lib/team");
 const { vapid, saveSubscription } = require("../lib/push");
+const { passwordProblem } = require("../lib/passwords");
 
 const router = express.Router();
 const isId = (id) => mongoose.isValidObjectId(id);
@@ -263,7 +264,8 @@ router.get("/members/all", async (req, res) => {
 const MEMBER_FIELDS = ["name", "notes", "guarantorName", "guarantorPhone", "active"];
 router.post("/members", (req, res) => saving(res, async () => {
   const password = String(req.body?.password ?? "");
-  if (password.length < 8 || password.length > 100) return res.status(400).json({ error: "The password must be 8 to 100 characters" });
+  const problem = passwordProblem(password);
+  if (problem) return res.status(400).json({ error: problem });
   const member = await CircleMember.create({
     ...only(req.body, MEMBER_FIELDS), phone: normalizePhone(req.body?.phone),
     passwordHash: await bcrypt.hash(password, 10), mustChangePassword: true,
@@ -285,7 +287,8 @@ router.post("/members/:id/approve", async (req, res) => {
 });
 router.post("/members/:id/password", async (req, res) => {
   const password = String(req.body?.password ?? "");
-  if (password.length < 8 || password.length > 100) return res.status(400).json({ error: "The password must be 8 to 100 characters" });
+  const problem = passwordProblem(password);
+  if (problem) return res.status(400).json({ error: problem });
   const member = isId(req.params.id) && await CircleMember.findByIdAndUpdate(req.params.id, { passwordHash: await bcrypt.hash(password, 10), mustChangePassword: true }, { new: true });
   if (!member) return res.status(404).json({ error: "Member not found" });
   res.json(member);

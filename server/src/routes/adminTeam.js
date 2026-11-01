@@ -13,11 +13,9 @@ const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const { TeamMember, TeamProject, TeamTask, TeamActivity, TeamComment, TeamNotification, TeamStandup, TeamInvite } = require("../lib/mongo");
 const { todayCairo, isOverdue, logActivity, notify, bellFor, withCommentCounts, newInviteToken, hashInviteToken, MEMBER_PUBLIC } = require("../lib/team");
+const { passwordProblem } = require("../lib/passwords");
 
 const router = express.Router();
-
-const checkPassword = (password) =>
-  password.length < 8 || password.length > 100 ? "The password must be 8 to 100 characters" : null;
 
 // ---- Overview ----
 router.get("/overview", async (req, res) => {
@@ -72,7 +70,7 @@ router.get("/members", async (req, res) => {
 });
 router.post("/members", async (req, res) => {
   const password = String(req.body?.password ?? "");
-  const problem = checkPassword(password);
+  const problem = passwordProblem(password);
   if (problem) return res.status(400).json({ error: problem });
   const member = await TeamMember.create({
     username: req.body?.username,
@@ -101,7 +99,7 @@ router.post("/members/:id/approve", async (req, res) => {
 // POST /members/:id/password { password } — a new temporary password; the member must change it.
 router.post("/members/:id/password", async (req, res) => {
   const password = String(req.body?.password ?? "");
-  const problem = checkPassword(password);
+  const problem = passwordProblem(password);
   if (problem) return res.status(400).json({ error: problem });
   const member = await TeamMember.findByIdAndUpdate(
     req.params.id,

@@ -18,6 +18,7 @@ const { cairoDate, addDays, normalizePhone, buildStatement, logCircle, notifyCir
 const { hashInviteToken, usableInvite } = require("../lib/team");
 const { readImageUpload } = require("../lib/images");
 const { vapid, saveSubscription } = require("../lib/push");
+const { passwordProblem } = require("../lib/passwords");
 
 const router = express.Router();
 
@@ -28,7 +29,6 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
   message: { error: "Too many attempts. Please try again later." },
 });
-const checkPassword = (p) => (p.length < 8 || p.length > 100 ? "The password must be 8 to 100 characters" : null);
 
 // POST /login { phone, password } → { token, member }
 router.post("/login", authLimiter, async (req, res) => {
@@ -59,7 +59,7 @@ router.post("/signup", authLimiter, async (req, res) => {
   const password = String(req.body?.password ?? "");
   if (!name || name.length > 80) return res.status(400).json({ error: "Write your name (up to 80 characters)" });
   if (!/^\d{8,15}$/.test(phone)) return res.status(400).json({ error: "Write a correct phone number" });
-  const problem = checkPassword(password);
+  const problem = passwordProblem(password);
   if (problem) return res.status(400).json({ error: problem });
   if (await CircleMember.exists({ phone })) return res.status(400).json({ error: "This phone number already has an account — sign in instead" });
   const invite = await CircleInvite.findOneAndUpdate({ tokenHash: hashInviteToken(req.body?.token), ...usableInvite() }, { $inc: { uses: 1 } }, { new: true });
@@ -82,7 +82,7 @@ router.get("/me", (req, res) => res.json(privateless(req.member)));
 
 router.post("/password", async (req, res) => {
   const next = String(req.body?.next ?? "");
-  const problem = checkPassword(next);
+  const problem = passwordProblem(next);
   if (problem) return res.status(400).json({ error: problem });
   const member = await CircleMember.findById(req.member.id).select("+passwordHash");
   if (!(await bcrypt.compare(String(req.body?.current ?? ""), member.passwordHash))) return res.status(400).json({ error: "The current password is wrong" });
