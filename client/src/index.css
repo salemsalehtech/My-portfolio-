@@ -167,20 +167,63 @@ h1 { font-family: var(--font-heading); font-size: clamp(44px,6vw,78px); font-wei
 .btn-download:hover { opacity: .9; transform: translateY(-2px); }
 
 /* ============ SKILLS ============ */
-.skills-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 48px; flex-wrap: wrap; }
-.skill-tab { background: var(--card); color: var(--text-secondary); border: 1px solid var(--card-border); padding: 10px 26px; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .25s; }
-.skill-tab.active { background: var(--gold); color: #161616; border-color: var(--gold); }
-.skills-list { max-width: 740px; margin: 0 auto; }
-.skill-item { margin-bottom: 24px; }
-.skill-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; }
-.skill-left { display: flex; align-items: center; gap: 12px; }
-.skill-abbr { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; flex-shrink: 0; font-family: var(--font-heading); letter-spacing: -.3px; }
-.skill-name { font-weight: 500; color: var(--text-primary); font-size: 15px; }
-.skill-right { display: flex; align-items: center; gap: 10px; }
-.skill-level { font-size: 11px; color: var(--gold); font-weight: 700; background: var(--gold-dim); padding: 3px 10px; border-radius: 20px; letter-spacing: .3px; }
-.skill-pct { font-size: 13px; font-weight: 700; color: var(--text-secondary); min-width: 36px; text-align: right; }
-.skill-bar { height: 5px; background: var(--card-border); border-radius: 3px; overflow: hidden; }
-.skill-fill { height: 100%; border-radius: 3px; width: 0; transition: width 1.4s cubic-bezier(.4,0,.2,1); }
+/* The board (Skills.jsx): groups as columns, depth tiers as rows. Depth is shown by the tile
+   itself — core tools are solid ink, regular ones are cards, "when needed" ones are dashed. */
+.stack-board {
+  display: grid; grid-template-columns: minmax(170px, .85fr) repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto repeat(3, auto); grid-auto-flow: column;
+  border-top: 1px solid var(--line-strong);
+}
+.stack-col { display: contents; }
+.stack-col > * { border-bottom: 1px solid var(--card-border); padding: 18px 16px; margin: 0; }
+.stack-col:not(.stack-tiers) > * { border-inline-start: 1px solid var(--card-border); }
+.stack-tiers > * { padding-inline-start: 0; }
+.stack-head { font-family: var(--font-mono); font-size: 12.5px; font-weight: 500; color: var(--text-muted); padding-block: 14px !important; }
+.stack-tier { display: flex; flex-direction: column; gap: 6px; }
+.stack-tier strong { font-family: var(--font-heading); font-size: 17px; font-weight: 600; color: var(--text-primary); letter-spacing: -.01em; }
+.stack-tier span { font-size: 13px; line-height: 1.5; color: var(--text-muted); max-width: 22ch; }
+.stack-cell { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.stack-cell.is-empty::before { content: "—"; color: var(--line-strong); }
+
+.tool {
+  display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: var(--radius-sm);
+  background: var(--card); border: 1px solid var(--card-border); color: var(--text-primary);
+  transition: border-color .25s, transform .25s;
+}
+.tool:hover { border-color: var(--line-strong); transform: translateY(-1px); }
+.stack-col > :nth-child(2) .tool { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.stack-col > :nth-child(4) .tool { background: transparent; border-style: dashed; border-color: var(--line-strong); }
+.tool-logo { width: 19px; height: 19px; flex-shrink: 0; fill: currentColor; transition: fill .25s; }
+.tool:hover .tool-logo { fill: var(--brand); }
+.stack-col > :nth-child(2) .tool:hover .tool-logo { fill: currentColor; }
+.tool-abbr { width: 19px; flex-shrink: 0; font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-align: center; opacity: .8; }
+.tool-name { font-size: 14.5px; font-weight: 500; min-width: 0; }
+.tool-meta { margin-inline-start: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: end; }
+.tool-tier { display: none; }
+.tool-count { font-family: var(--font-mono); font-size: 11px; opacity: .65; white-space: nowrap; }
+
+.stack-board .tool { opacity: 0; transform: translateY(8px); }
+.stack-board.visible .tool { opacity: 1; transform: none; transition: opacity .5s calc(var(--i) * 45ms), transform .5s calc(var(--i) * 45ms) cubic-bezier(.2,.7,.2,1), border-color .25s; }
+.stack-board.visible .tool:hover { transform: translateY(-1px); }
+
+.stack-extra { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 24px; font-size: 13.5px; color: var(--text-muted); }
+.stack-extra span { margin-inline-end: 4px; }
+.stack-extra code { direction: ltr; unicode-bidi: isolate; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); border: 1px solid var(--card-border); border-radius: 4px; padding: 3px 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-board .tool, .stack-board.visible .tool { opacity: 1; transform: none; transition: none; }
+}
+
+/* tablet and phone: one list per group, each tool labelled with its tier */
+@media (max-width: 860px) {
+  .stack-board { display: flex; flex-direction: column; gap: 28px; border-top: none; }
+  .stack-col { display: flex; flex-direction: column; gap: 8px; }
+  .stack-col.stack-tiers { display: none; }
+  .stack-col > *, .stack-col:not(.stack-tiers) > * { border: none; padding: 0; }
+  .stack-head { padding: 0 0 8px !important; border-bottom: 1px solid var(--line-strong) !important; margin-bottom: 4px; }
+  .stack-cell.is-empty { display: none; }
+  .tool-tier { display: block; font-family: var(--font-mono); font-size: 11px; opacity: .8; }
+}
 
 /* ============ PROJECTS ============ */
 .filter-btns { display: flex; justify-content: center; gap: 10px; margin-bottom: 44px; flex-wrap: wrap; }
@@ -1468,21 +1511,17 @@ body.ar .section-header h2 { line-height: 1.35; }
 .stat-num { background: none; -webkit-text-fill-color: currentColor; color: var(--text-primary); font-size: clamp(30px, 4vw, 42px); font-weight: 700; letter-spacing: -.02em; }
 .stat-label { font-family: var(--font-mono); text-transform: none; letter-spacing: 0; font-size: 12.5px; color: var(--text-muted); }
 .about-card-title, .case-study-title { font-family: var(--font-mono); font-size: 12.5px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text-muted); }
-.interest-tag, .project-cat, .skill-level, .post-tag, .tm-pill {
+.interest-tag, .project-cat, .post-tag, .tm-pill {
   border-radius: 4px; background: transparent; border: 1px solid var(--card-border); color: var(--text-secondary);
   font-family: var(--font-mono); font-weight: 500; font-size: 12px; padding: 2px 8px;
 }
 .tm-pill.is-late { border-color: rgba(214,69,69,.4); color: #D64545; background: transparent; }
 .info-icon { background: transparent; }
 
-/* ---- skills / filters: segmented, not pills ---- */
-.skills-tabs, .filter-btns { justify-content: flex-start; gap: 0; border: 1px solid var(--card-border); border-radius: var(--radius-sm); width: max-content; max-width: 100%; overflow-x: auto; padding: 3px; }
-.skill-tab, .filter-btn { border: none; border-radius: 4px; padding: 8px 16px; background: transparent; font-size: 14px; font-weight: 500; white-space: nowrap; }
-.skill-tab.active, .filter-btn.active { background: var(--ink); color: var(--on-ink); }
-.skills-list { margin: 0; }
-.skill-bar { height: 3px; }
-.skill-fill { background: var(--text-primary) !important; }
-.skill-abbr { border-radius: 4px; }
+/* ---- filters: segmented, not pills ---- */
+.filter-btns { justify-content: flex-start; gap: 0; border: 1px solid var(--card-border); border-radius: var(--radius-sm); width: max-content; max-width: 100%; overflow-x: auto; padding: 3px; }
+.filter-btn { border: none; border-radius: 4px; padding: 8px 16px; background: transparent; font-size: 14px; font-weight: 500; white-space: nowrap; }
+.filter-btn.active { background: var(--ink); color: var(--on-ink); }
 
 /* ---- projects ---- */
 .project-thumb { height: 120px; }

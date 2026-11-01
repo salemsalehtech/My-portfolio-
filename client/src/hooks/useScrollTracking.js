@@ -1,7 +1,7 @@
 // useScrollTracking.js — one hook, used once by pages/Portfolio.jsx, that tracks
 // everything the page needs to know about scroll position:
-//   - scrolled        true once the user has scrolled past 60px (Navbar uses this to add
-//                      a background/shadow so it's visible over page content)
+//   - scrolled        true as soon as the page scrolls (Navbar uses this to add
+//                      a background, so its links stay readable over the hero panel)
 //   - activeSection    which section id is currently in view (Navbar highlights this link)
 //   - showScrollTop    true once scrolled past 400px (shows the ScrollTop button)
 //
@@ -21,7 +21,7 @@ export function useScrollTracking() {
   useEffect(() => {
     function handleScroll() {
       const y = window.scrollY;
-      setScrolled(y > 60);
+      setScrolled(y > 4);
       setShowScrollTop(y > 400);
       // Walk the sections top-to-bottom and keep the last one we've scrolled past —
       // that's the section currently "active" in the viewport.

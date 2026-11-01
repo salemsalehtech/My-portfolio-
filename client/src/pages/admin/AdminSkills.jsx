@@ -2,10 +2,11 @@
 // table + modal-form structure as AdminProjects.jsx and AdminYoutube.jsx — see the comment
 // at the top of AdminProjects.jsx for the general pattern (editing state, load-after-mutate).
 //
-// Fields map 1:1 to the Skill model in server/src/lib/mongo.js: `color`/`textColor` style
-// the little colored abbreviation badge on the public site (components/Skills.jsx),
-// `percentage` drives the progress bar width, and `group` (frontend/backend/tools) decides
-// which tab the skill shows up under.
+// Fields map 1:1 to the Skill model in server/src/lib/mongo.js. On the public site
+// (components/Skills.jsx) `group` (frontend/backend/tools) picks the column and `levelEn` picks
+// the row: "Expert" → Core, "Advanced" → Regular, anything else → When needed. `percentage` is
+// only used when the level is empty and is never shown; `abbr` is shown when the tool has no
+// built-in logo.
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { useAdminT } from "../../lib/adminI18n";
