@@ -217,6 +217,9 @@ body.ar .core-tool::before { transform-origin: right center; }
 .kit-tool { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--card-border); color: var(--text-primary); }
 .kit-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 15px; font-weight: 500; }
 .kit-name small { font-size: 12.5px; font-weight: 400; color: var(--text-muted); }
+/* tool names read in their own direction ("C#", not "#C", on the Arabic page) */
+.kit-name bdi, .core-text bdi { unicode-bidi: plaintext; }
+body.ar .kit-name bdi { text-align: right; }
 .kit-meta { margin-inline-start: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); white-space: nowrap; text-align: end; }
 .kit-col h4 span { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--text-muted); }
 .kit-tool.is-core .tool-logo { fill: var(--gold); }
