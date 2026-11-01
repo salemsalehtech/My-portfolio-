@@ -1909,42 +1909,43 @@ body.ar .service-title { letter-spacing: 0; }
 .post-read { color: var(--text-primary); font-weight: 600; }
 .cert-card { background: var(--card); }
 
-/* ---- reviews: the first one featured on the panel (ink in light, saffron in dark, as the skills band) ---- */
-.testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; justify-content: stretch; }
-.testimonials-grid .is-featured { grid-column: span 2; }
-.testimonials-grid.is-single .is-featured { grid-column: 1 / -1; }
-@media (max-width: 700px) { .testimonials-grid .is-featured { grid-column: auto; } }
-.testimonial-card { max-width: none; padding: 28px; gap: 22px; background: var(--card); }
-.testimonial-card.is-featured {
-  --panel: #E3A21A; --mark: #0F1215; --on-panel: #0F1215;
-  position: relative; border: none; background-color: var(--panel); color: var(--on-panel);
-  background-image: radial-gradient(color-mix(in srgb, var(--mark) 16%, transparent) 1px, transparent 1.5px); background-size: 18px 18px;
-  padding: clamp(28px, 4vw, 44px); border-radius: 0;
-  clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%);
+/* ---- reviews: equal cards. A saffron trace runs along the top from the start corner, ending in a pad;
+   on hover it runs on to the cut. The quote mark, the rating pads and the cut avatar repeat the brand shapes. ---- */
+.testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 16px; justify-content: stretch; align-items: stretch; }
+.testimonial-card { max-width: none; display: flex; flex-direction: column; gap: 18px; padding: 30px 28px 24px; background: var(--card); }
+.testimonial-card::before {
+  content: ""; position: absolute; top: 0; inset-inline-start: 0; height: 3px; width: 64px; background: #E3A21A;
+  transition: width .45s cubic-bezier(.6,0,.2,1);
 }
-.light .testimonial-card.is-featured { --panel: #12161B; --mark: #E3A21A; --on-panel: #F3F5F7; }
-body.ar .testimonial-card.is-featured { clip-path: polygon(36px 0, 100% 0, 100% 100%, 0 100%, 0 36px); }
-.testimonial-card.is-featured:hover { transform: none; box-shadow: none; }
-.testimonial-mark { font-family: var(--font-heading); font-size: 88px; line-height: .6; height: 34px; color: var(--mark); display: block; }
-.testimonial-card.is-featured .testimonial-text { color: var(--on-panel); font-size: clamp(17px, 1.6vw, 20px); line-height: 1.75; font-weight: 500; }
-.testimonial-card.is-featured .testimonial-author { border-color: color-mix(in srgb, var(--on-panel) 22%, transparent); }
-.testimonial-card.is-featured .testimonial-name { color: var(--on-panel); }
-.testimonial-card.is-featured .testimonial-role { color: color-mix(in srgb, var(--on-panel) 72%, transparent); }
-.testimonial-text { color: var(--text-primary); font-size: 15.5px; }
-.testimonial-author { gap: 12px; }
+.testimonial-card:hover::before { width: calc(100% - var(--cut)); }
+.testimonial-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.testimonial-mark { font-family: var(--font-heading); font-weight: 700; font-size: 64px; line-height: 1; height: 30px; overflow: visible; color: #E3A21A; display: block; margin-top: -6px; }
+body.ar .testimonial-mark { transform: scaleX(-1); }
+.testimonial-text { flex: 1; margin: 0; color: var(--text-primary); font-size: 16px; line-height: 1.8; }
+.testimonial-project {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; cursor: pointer;
+  background: transparent; border: 1px dashed var(--line-strong); border-radius: 4px; color: var(--text-primary); font: 500 13px var(--font-body);
+}
+.testimonial-project span { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); }
+.testimonial-project:hover { border-style: solid; border-color: var(--text-primary); }
+.testimonial-project:hover .arrow-icon { transform: translateX(3px); }
+body.ar .testimonial-project:hover .arrow-icon { transform: scaleX(-1) translateX(3px); }
+.testimonial-author { gap: 12px; padding-top: 16px; border-top: 1px solid var(--card-border); }
 .testimonial-who { flex: 1; min-width: 0; }
+/* A name in the other script still lines up with the avatar side of the page. */
+.testimonial-name, .testimonial-role { text-align: match-parent; }
 .testimonial-avatar {
-  border-radius: 0; background: var(--ink); color: var(--on-ink); font-family: var(--font-heading); font-weight: 700;
-  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+  width: 42px; height: 42px; border-radius: 0; background: var(--ink); color: var(--on-ink); font-family: var(--font-heading); font-weight: 700; font-size: 17px;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
 }
-body.ar .testimonial-avatar { clip-path: polygon(9px 0, 100% 0, 100% 100%, 0 100%, 0 9px); }
-.testimonial-card.is-featured .testimonial-avatar { background: var(--on-panel); color: var(--panel); }
-/* the rating: five pads on a trace */
+body.ar .testimonial-avatar { clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px); }
+.testimonial-card:hover .testimonial-avatar { background: #E3A21A; color: #0F1215; }
 .testimonial-rating { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
 .testimonial-rating span { width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--line-strong); }
 .testimonial-rating span.on { background: #E3A21A; border-color: #E3A21A; }
-.testimonial-card.is-featured .testimonial-rating span { border-color: color-mix(in srgb, var(--on-panel) 40%, transparent); }
-.testimonial-card.is-featured .testimonial-rating span.on { background: var(--on-panel); border-color: var(--on-panel); }
+/* the dashboard's live preview */
+.testimonial-preview { margin: 4px 0 8px; }
+.testimonial-preview .testimonial-card { max-width: 420px; }
 
 /* ---- YouTube ---- */
 .yt-channel-card { border-radius: 0; text-align: start; align-items: flex-start; }

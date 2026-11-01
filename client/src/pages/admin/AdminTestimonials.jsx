@@ -12,6 +12,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { useAdminT } from "../../lib/adminI18n";
+import { TestimonialCard } from "../../components/Testimonials";
 
 // The public form links. HashRouter keeps the route after "#", so this works on the live site
 // (…/My-portfolio-/#/feedback/ar) and locally (http://localhost:5173/#/feedback/ar) alike.
@@ -23,7 +24,7 @@ const LINKS = [
 
 const EMPTY = {
   authorName: "", roleEn: "", roleAr: "", textEn: "", textAr: "",
-  rating: 5, visible: true, order: 0,
+  rating: 5, visible: true, order: 0, project: "",
 };
 
 // Short preview of a testimonial for the table: its English text, or the Arabic one if that is
@@ -37,6 +38,7 @@ export default function AdminTestimonials() {
   const { t } = useAdminT();
   // ---- STATE ----
   const [items, setItems] = useState([]);
+  const [projects, setProjects] = useState([]); // for "About which project?"
   const [editing, setEditing] = useState(null); // null | "new" | <testimonial id>
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState("");
@@ -44,11 +46,12 @@ export default function AdminTestimonials() {
 
   // ---- DATA LOADING ----
   const load = () => api.get("/admin/testimonials").then(setItems);
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); api.get("/admin/projects").then(setProjects).catch(() => {}); }, []);
+  const projectOf = (id) => projects.find((p) => p.id === id) || null;
 
   // ---- FORM HANDLERS ----
   const openNew = () => { setForm(EMPTY); setError(""); setEditing("new"); };
-  const openEdit = (item) => { setForm(item); setError(""); setEditing(item.id); };
+  const openEdit = (item) => { setForm({ ...item, project: item.project || "" }); setError(""); setEditing(item.id); };
 
   const save = async (e) => {
     e.preventDefault();
@@ -114,7 +117,10 @@ export default function AdminTestimonials() {
           {items.length === 0 && <tr><td colSpan={6} className="admin-empty">{t("No testimonials yet — the section is hidden on the site until you add one.")}</td></tr>}
           {items.map((item) => (
             <tr key={item.id} className={item.pending ? "admin-row-unread" : ""}>
-              <td>{item.authorName}</td>
+              <td>
+                <strong dir="auto">{item.authorName}</strong>
+                {projectOf(item.project) && <div className="admin-brief"><span className="admin-pill" dir="auto">{projectOf(item.project).titleEn || projectOf(item.project).titleAr}</span></div>}
+              </td>
               <td>{preview(item)}</td>
               <td>{"★".repeat(item.rating)}</td>
               <td>{item.order}</td>
@@ -164,9 +170,21 @@ export default function AdminTestimonials() {
                   <input className="form-input" type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} />
                 </label>
               </div>
+              <label>{t("About which project? (the card links to its case study)")}
+                <select className="form-input" value={form.project} onChange={(e) => setForm({ ...form, project: e.target.value })}>
+                  <option value="">{t("No project")}</option>
+                  {projects.map((p) => <option key={p.id} value={p.id}>{p.titleEn || p.titleAr}</option>)}
+                </select>
+              </label>
               <label>
                 <input type="checkbox" checked={form.visible} onChange={(e) => setForm({ ...form, visible: e.target.checked })} /> {t("Show on the site")}
               </label>
+              {(form.textEn || form.textAr || form.authorName) && (
+                <div className="testimonial-preview">
+                  <span className="admin-sub">{t("Preview on the site")}</span>
+                  <TestimonialCard item={{ ...form, project: projectOf(form.project) }} />
+                </div>
+              )}
               {error && <p className="admin-error">{error}</p>}
               <div className="admin-form-actions">
                 <button type="button" className="admin-btn" onClick={() => setEditing(null)}>{t("Cancel")}</button>

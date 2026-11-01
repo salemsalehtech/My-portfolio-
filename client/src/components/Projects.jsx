@@ -8,7 +8,7 @@
 //
 // A project with a picture shows it on its card; one without shows its gradient. As soon as any
 // project has a picture, all card tops get the same taller 16:9 size so the rows stay even.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";
@@ -47,6 +47,12 @@ export default function Projects() {
   const { data: projects } = useCollection("/projects");
   const [filter, setFilter] = useState("all"); // "all" or a tag key
   const [selected, setSelected] = useState(null);
+  // A review's "About <project>" link (components/Testimonials.jsx) opens that project here.
+  useEffect(() => {
+    const onOpen = (e) => { const p = projects.find((x) => x.id === e.detail?.id); if (p) { setSelected(p); track("project", p.id); } };
+    window.addEventListener("open-project", onOpen);
+    return () => window.removeEventListener("open-project", onOpen);
+  }, [projects]);
   const [headerRef, headerVisible] = useReveal();
   const [filterRef, filterVisible] = useReveal();
   const [gridRef, gridVisible] = useReveal();
