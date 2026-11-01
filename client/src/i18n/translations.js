@@ -18,7 +18,6 @@ export const T = {
     tagline: 'I build web apps that work in Arabic and English, and I teach how they are made — in Arabic, on YouTube.',
     ctaProjects: 'See my work', ctaYoutube: 'Watch on YouTube',
     menuLabel: 'Menu', languageLabel: 'Language', themeLabel: 'Switch theme', themeDark: 'Dark mode', themeLight: 'Light mode',
-    demoCaption: 'Try it — one product, Arabic and English. Switch the language, pick a time, book.',
     available: 'Taking new projects', busy: 'Fully booked right now', bookCall: 'Book a call',
     process: { title: 'How a project goes', subtitle: 'Working together', steps: [
       { title: 'We talk', text: 'A short call about what you need, who will use it and by when. No cost.' },
@@ -58,7 +57,6 @@ export const T = {
     tagline:'أبني تطبيقات ويب بتشتغل بالعربي والإنجليزي، وبشرح إزاي بتتعمل — بالعربي على يوتيوب.',
     ctaProjects:'شوف شغلي', ctaYoutube:'شاهد على يوتيوب',
     menuLabel:'القائمة', languageLabel:'اللغة', themeLabel:'تغيير المظهر', themeDark:'الوضع الداكن', themeLight:'الوضع الفاتح',
-    demoCaption:'جرّبها — منتج واحد بالعربي والإنجليزي. غيّر اللغة، اختار ميعاد، واحجز.',
     available:'متاح لمشاريع جديدة', busy:'مشغول حاليًا', bookCall:'احجز مكالمة',
     process:{ title:'المشروع بيمشي إزاي', subtitle:'طريقة الشغل', steps:[
       { title:'نتكلم', text:'مكالمة قصيرة عن اللي محتاجه، ومين هيستخدمه، وعايزه إمتى. من غير أي تكلفة.' },

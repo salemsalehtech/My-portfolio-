@@ -1,11 +1,10 @@
 // Hero.jsx — the top of the public portfolio (id="home").
 //
-// One side: who you are — the portrait as a small avatar with the "taking new projects" status
-// and Cairo time, then the name in BOTH scripts (the current language large, the other beneath
+// One side: the name in BOTH scripts (the current language large, the other beneath
 // it in the accent colour), the roles, the tagline, the optional USP, the calls to action ("Book a
 // call" when a booking link is set) and the social links.
-// Other side: HeroDemo.jsx — a small booking app the visitor can play with, switching between
-// Arabic and English, because that is exactly what the work is.
+// Other side: HeroPortrait.jsx — the photo framed like a drawing plate, carrying the
+// "taking new projects" status, the city and Cairo time.
 //
 // Props: `settings` — the profile content from Admin → "Profile & Links" (loaded once in
 // pages/Portfolio.jsx; never empty, it falls back to defaults). A link left empty hides its button.
@@ -16,20 +15,20 @@ import { useReveal } from "../hooks/useReveal";
 import { pick } from "../lib/pick";
 import { GithubIcon, LinkedinIcon, YoutubeIcon } from "../lib/socialIcons";
 import { API_BASE } from "../lib/api";
-import HeroDemo from "./HeroDemo";
+import HeroPortrait from "./HeroPortrait";
 
-const cairoTime = (lang) =>
-  new Intl.DateTimeFormat(lang === "ar" ? "ar-EG" : "en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Cairo" }).format(new Date());
+// Shown on the portrait plate, whose labels are always Latin.
+const cairoTime = () =>
+  new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Cairo" }).format(new Date());
 
 export default function Hero({ settings }) {
   const { t, lang } = useSite();
   const [textRef, textVisible] = useReveal();
-  const [time, setTime] = useState(() => cairoTime(lang));
+  const [time, setTime] = useState(cairoTime);
   useEffect(() => {
-    setTime(cairoTime(lang));
-    const timer = setInterval(() => setTime(cairoTime(lang)), 30 * 1000);
+    const timer = setInterval(() => setTime(cairoTime()), 30 * 1000);
     return () => clearInterval(timer);
-  }, [lang]);
+  }, []);
 
   const roles = settings.titles.map((title) => pick(lang, title.en, title.ar)).filter(Boolean);
   const socials = [
@@ -51,13 +50,6 @@ export default function Hero({ settings }) {
     <section id="home" className="hero">
       <div className="hero-container">
         <div ref={textRef} className={`hero-text ${textVisible ? "visible" : ""}`} data-ao>
-          <div className="hero-id">
-            <img className="hero-avatar-img" src={photo} alt="" width="56" height="56" />
-            <div>
-              <p className={`hero-status ${available ? "is-available" : "is-busy"}`}><span aria-hidden="true" />{availability}</p>
-              <p className="hero-place">{location} · <span dir="ltr">{time}</span></p>
-            </div>
-          </div>
           <p className="hero-greeting">{pick(lang, settings.greetingEn, settings.greetingAr)}</p>
           <h1 className="hero-name">
             <span>{name}</span>
@@ -82,7 +74,8 @@ export default function Hero({ settings }) {
             </div>
           )}
         </div>
-        <HeroDemo caption={t.demoCaption} />
+        <HeroPortrait src={photo} name={settings.nameEn || name} roles={settings.titles.map((title) => title.en).filter(Boolean).slice(0, 2).join(" · ")}
+          place={settings.locationEn || location} time={time} status={availability} available={available} />
       </div>
     </section>
   );

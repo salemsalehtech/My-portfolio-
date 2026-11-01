@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Design system
 
-Tokens live at the top of `client/src/index.css`; a "DESIGN SYSTEM v2" layer at the end restyles shared classes. One accent (saffron, `--gold`) for the brand mark, active states and focus only; primary buttons are ink (`--ink` / `--on-ink`). Fonts: Alexandria (display), IBM Plex Sans Arabic (text), IBM Plex Mono (labels, numbers; falls back to Plex Sans Arabic for Arabic). Corners `--radius-sm` 6px / `--radius` 10px. No emoji in the UI — use the line icons in `components/team/icons.jsx`. The logo is `components/BrandMark.jsx` (SS as two circuit traces, first pad saffron); the favicon in `index.html`, the app icons and `og-image.jpg` use the same paths. The hero pairs the bilingual name with `components/HeroDemo.jsx`, a small booking app visitors can switch between Arabic and English.
+Tokens live at the top of `client/src/index.css`; a "DESIGN SYSTEM v2" layer at the end restyles shared classes. One accent (saffron, `--gold`) for the brand mark, active states and focus only; primary buttons are ink (`--ink` / `--on-ink`). Fonts: Alexandria (display), IBM Plex Sans Arabic (text), IBM Plex Mono (labels, numbers; falls back to Plex Sans Arabic for Arabic). Corners `--radius-sm` 6px / `--radius` 10px. No emoji in the UI — use the line icons in `components/team/icons.jsx`. The logo is `components/BrandMark.jsx` (SS as two circuit traces, first pad saffron); the favicon in `index.html`, the app icons and `og-image.jpg` use the same paths. The hero pairs the bilingual name with `components/HeroPortrait.jsx`: the photo framed like a drawing plate (chamfered corner, registration marks, dimension lines, black and white until hover).
 
 ## Project overview
 
