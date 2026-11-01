@@ -33,7 +33,7 @@ function Logo({ icon, size = 20 }) {
   if (!icon) return null;
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true">
-      <path d={icon.path} />
+      <path d={icon.path} fillRule={icon.rule} />
     </svg>
   );
 }

@@ -40,7 +40,7 @@ function Logo({ skill, iconFor }) {
   if (!icon) return <span className="tool-abbr" aria-hidden="true">{skill.abbr || skill.name.slice(0, 2)}</span>;
   return (
     <svg className="tool-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d={icon.path} />
+      <path d={icon.path} fillRule={icon.rule} />
     </svg>
   );
 }
