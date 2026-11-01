@@ -67,5 +67,5 @@ All Mongoose models are defined in one file: `Project`, `Skill`, `YoutubeVideo`,
 
 ## Deployment
 
-- Client deploys to GitHub Pages via `.github/workflows/deploy-pages.yml` on every push to `main`. Server is meant to deploy to Render via `render.yaml` (not yet deployed as of this writing).
+- Client is served by GitHub Pages from the `gh-pages` branch (Pages source = "Deploy from a branch"): build `client` and push `client/dist` plus `.nojekyll` to `gh-pages` by hand. `.github/workflows/deploy-pages.yml` runs only manually. If the repository is ever made private, Pages is switched off and must be re-enabled in Settings → Pages after it is public again. Server is meant to deploy to Render via `render.yaml` (not yet deployed as of this writing).
 - `client/.env.production` sets `VITE_API_URL` — the absolute URL the production build calls for `/api/*` (the dev-only Vite proxy doesn't exist in the static GitHub Pages build). **This currently holds a placeholder value.** Once the server has a real Render URL, update this file to `https://<render-service>.onrender.com/api` before the next client deploy, or the live site's data fetching, contact form, and admin login will silently fail.
