@@ -95,11 +95,21 @@ const youtubeVideoSchema = new mongoose.Schema({
 });
 
 // A message sent through the contact form; `read` is toggled in Admin → Messages.
+// A message from the contact form ("Tell me about your project"). Besides the text, the visitor
+// picks what they need (one of the site's services, or "something else"), when, a rough budget
+// (optional), and how to be answered: by email, or on WhatsApp (then the phone is required and
+// the email optional).
+const CONTACT_TIMELINES = ["", "asap", "month", "quarter", "flexible"];
 const contactMessageSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    message: { type: String, required: true },
+    name: { type: String, required: true, trim: true, maxlength: 100 },
+    email: { type: String, default: "", trim: true, maxlength: 200 },
+    message: { type: String, required: true, trim: true, maxlength: 5000 },
+    projectType: { type: String, default: "", trim: true, maxlength: 120 },
+    timeline: { type: String, enum: CONTACT_TIMELINES, default: "" },
+    budget: { type: String, default: "", trim: true, maxlength: 60 },
+    channel: { type: String, enum: ["email", "whatsapp"], default: "email" },
+    phone: { type: String, default: "", trim: true, maxlength: 20 },
     read: { type: Boolean, default: false },
   },
   { timestamps: true }
