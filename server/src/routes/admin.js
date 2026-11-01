@@ -31,7 +31,9 @@ router.post("/projects", async (req, res) => {
   res.status(201).json(await Project.create(withoutImage(req.body)));
 });
 router.put("/projects/:id", async (req, res) => {
-  res.json(await Project.findByIdAndUpdate(req.params.id, withoutImage(req.body), { new: true, runValidators: true }));
+  const item = await Project.findByIdAndUpdate(req.params.id, withoutImage(req.body), { new: true, runValidators: true });
+  if (!item) return res.status(404).json({ error: "Project not found" });
+  res.json(item);
 });
 router.delete("/projects/:id", async (req, res) => {
   await Project.findByIdAndDelete(req.params.id);
@@ -46,7 +48,9 @@ router.post("/skills", async (req, res) => {
   res.status(201).json(await Skill.create(req.body));
 });
 router.put("/skills/:id", async (req, res) => {
-  res.json(await Skill.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }));
+  const item = await Skill.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  if (!item) return res.status(404).json({ error: "Skill not found" });
+  res.json(item);
 });
 router.delete("/skills/:id", async (req, res) => {
   await Skill.findByIdAndDelete(req.params.id);
@@ -61,7 +65,9 @@ router.post("/youtube", async (req, res) => {
   res.status(201).json(await YoutubeVideo.create(req.body));
 });
 router.put("/youtube/:id", async (req, res) => {
-  res.json(await YoutubeVideo.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true }));
+  const item = await YoutubeVideo.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  if (!item) return res.status(404).json({ error: "Video not found" });
+  res.json(item);
 });
 router.delete("/youtube/:id", async (req, res) => {
   await YoutubeVideo.findByIdAndDelete(req.params.id);
@@ -154,7 +160,9 @@ router.put("/testimonials/:id", async (req, res) => {
   if (clearsBoth(data, "textEn", "textAr")) {
     return res.status(400).json({ error: "The testimonial text is required" });
   }
-  res.json(await Testimonial.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
+  const item = await Testimonial.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+  if (!item) return res.status(404).json({ error: "Testimonial not found" });
+  res.json(item);
 });
 router.delete("/testimonials/:id", async (req, res) => {
   await Testimonial.findByIdAndDelete(req.params.id);
@@ -222,7 +230,9 @@ router.put("/services/:id", async (req, res) => {
   if (clearsBoth(data, "titleEn", "titleAr")) {
     return res.status(400).json({ error: "A service title is required" });
   }
-  res.json(await Service.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
+  const item = await Service.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+  if (!item) return res.status(404).json({ error: "Service not found" });
+  res.json(item);
 });
 router.delete("/services/:id", async (req, res) => {
   await Service.findByIdAndDelete(req.params.id);
@@ -244,7 +254,9 @@ router.put("/certificates/:id", async (req, res) => {
   if (clearsBoth(data, "titleEn", "titleAr")) {
     return res.status(400).json({ error: "A certificate title is required" });
   }
-  res.json(await Certificate.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
+  const item = await Certificate.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+  if (!item) return res.status(404).json({ error: "Certificate not found" });
+  res.json(item);
 });
 router.delete("/certificates/:id", async (req, res) => {
   await Certificate.findByIdAndDelete(req.params.id);
@@ -296,7 +308,9 @@ router.put("/courses/:id", async (req, res) => {
   if (clearsBoth(data, "titleEn", "titleAr")) {
     return res.status(400).json({ error: "A course title is required" });
   }
-  res.json(await Course.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true }));
+  const item = await Course.findByIdAndUpdate(req.params.id, data, { new: true, runValidators: true });
+  if (!item) return res.status(404).json({ error: "Course not found" });
+  res.json(item);
 });
 router.delete("/courses/:id", async (req, res) => {
   await Course.findByIdAndDelete(req.params.id);
@@ -445,7 +459,9 @@ router.get("/messages", async (req, res) => {
   res.json(await ContactMessage.find().sort({ createdAt: -1 }));
 });
 router.patch("/messages/:id", async (req, res) => {
-  res.json(await ContactMessage.findByIdAndUpdate(req.params.id, { read: !!req.body.read }, { new: true }));
+  const item = await ContactMessage.findByIdAndUpdate(req.params.id, { read: !!req.body.read }, { new: true });
+  if (!item) return res.status(404).json({ error: "Message not found" });
+  res.json(item);
 });
 router.delete("/messages/:id", async (req, res) => {
   await ContactMessage.findByIdAndDelete(req.params.id);

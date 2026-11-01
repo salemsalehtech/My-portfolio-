@@ -118,7 +118,8 @@ app.use((err, req, res, next) => {
     return res.status(409).json({ error: `That ${Object.keys(err.keyValue || {})[0] || "value"} is already used — please choose another one` });
   }
   const status = err.status || (err.name === "ValidationError" || err.name === "CastError" ? 400 : 500);
-  res.status(status).json({ error: err.message || "Internal server error" });
+  // A real crash (500) may carry database or code details in its message: those stay in the log.
+  res.status(status).json({ error: status >= 500 ? "Internal server error" : err.message || "Request failed" });
 });
 
 module.exports = app;
