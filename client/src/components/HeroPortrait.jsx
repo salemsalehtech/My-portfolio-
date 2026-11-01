@@ -1,48 +1,52 @@
-// HeroPortrait.jsx — the portrait in the hero, drawn like a plate from an engineering drawing:
-// a frame with one 45° chamfered corner (the same cut as the logo's traces), registration marks
-// at the corners, a dimension line under it carrying the name and roles, a vertical one beside it
-// carrying the city and the local time, and the availability status pinned to the frame.
+// HeroPortrait.jsx — the stage on the hero's far side: a panel cut on a diagonal, the brand mark
+// (components/BrandMark.jsx) drawn huge behind the cut-out portrait, and the mark's bottom strokes
+// drawn a second time IN FRONT of the portrait, so the person stands inside the logo.
 //
-// The photo sits in black and white and comes into colour on hover; it also drifts a few pixels
-// with the pointer. Both are skipped when the visitor prefers reduced motion.
+// The traces draw themselves once on load; the mark and the portrait drift apart slightly with the
+// pointer (depth). In light mode the panel is ink and the mark saffron; in dark mode they swap.
+// Motion is skipped when the visitor prefers reduced motion.
 //
-// Props: `src` (the photo URL), `name`, `roles` (string), `place` (city), `time` (Cairo time),
+// Props: `src` (photo URL), `cutout` (true when the photo has no background — the bundled one;
+// an uploaded photo keeps its background and gets a softer fade instead), `name` (alt text),
 // `status` (availability text), `available` (bool).
 import { useRef } from "react";
+import { TRACE_PATHS } from "./BrandMark";
 
-export default function HeroPortrait({ src, name, roles, place, time, status, available }) {
-  const frameRef = useRef(null);
+function Mark({ className }) {
+  return (
+    <svg className={className} viewBox="-3 2 100 58" aria-hidden="true" focusable="false">
+      <g fill="none" stroke="currentColor" strokeWidth="6.5" strokeLinejoin="miter">
+        {TRACE_PATHS.map((d) => <path key={d} d={d} pathLength="100" />)}
+      </g>
+      <circle cx="40" cy="9" r="6.2" fill="currentColor" />
+      <circle cx="4" cy="53" r="6.2" fill="currentColor" />
+      <circle cx="90" cy="9" r="6.2" fill="currentColor" />
+      <circle cx="54" cy="53" r="6.2" fill="currentColor" />
+    </svg>
+  );
+}
+
+export default function HeroPortrait({ src, cutout, name, status, available }) {
+  const ref = useRef(null);
 
   const onMove = (e) => {
-    const el = frameRef.current;
+    const el = ref.current;
     if (!el || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const r = el.getBoundingClientRect();
     el.style.setProperty("--px", ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
     el.style.setProperty("--py", ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
   };
   const onLeave = () => {
-    frameRef.current?.style.setProperty("--px", 0);
-    frameRef.current?.style.setProperty("--py", 0);
+    ref.current?.style.setProperty("--px", 0);
+    ref.current?.style.setProperty("--py", 0);
   };
 
   return (
-    <figure className="plate" dir="ltr">
-      <div className="plate-body">
-        <div className="plate-frame" ref={frameRef} onPointerMove={onMove} onPointerLeave={onLeave}>
-          <img src={src} alt={name} width="760" height="950" />
-          <span className="plate-grid" aria-hidden="true" />
-        </div>
-        <span className="plate-reg is-tl" aria-hidden="true" />
-        <span className="plate-reg is-tr" aria-hidden="true" />
-        <span className="plate-reg is-bl" aria-hidden="true" />
-        <span className="plate-reg is-br" aria-hidden="true" />
-        <p className={`plate-status ${available ? "is-available" : "is-busy"}`}><span aria-hidden="true" />{status}</p>
-        <p className="plate-side"><span>{place}</span><span>{time}</span></p>
-      </div>
-      <figcaption className="plate-dim">
-        <span className="plate-dim-line" aria-hidden="true" />
-        <span className="plate-dim-text">{name}{roles && <> — {roles}</>}</span>
-      </figcaption>
-    </figure>
+    <div className={`stage ${cutout ? "is-cutout" : "is-photo"}`} ref={ref} onPointerMove={onMove} onPointerLeave={onLeave}>
+      <Mark className="stage-mark is-back" />
+      <div className="stage-fig"><img className="stage-photo" src={src} alt={name} width="760" height="950" /></div>
+      <Mark className="stage-mark is-front" />
+      <p className={`stage-status ${available ? "is-available" : "is-busy"}`}><span aria-hidden="true" />{status}</p>
+    </div>
   );
 }

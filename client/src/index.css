@@ -1615,80 +1615,79 @@ body.ar .process-step { padding: 22px 0 6px 22px; }
 @keyframes trace-draw { to { stroke-dashoffset: 0; } }
 .nav-link:focus-visible { outline-offset: -2px; }
 
-/* ---- Hero v4: the name on one side, the portrait as a drawing plate on the other (HeroPortrait.jsx) ---- */
-.hero-container { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; gap: clamp(32px, 6vw, 96px); }
-.hero-text { padding-top: 8px; }
-
+/* ---- Hero v5: the name on one side; on the other a diagonal panel with the portrait standing
+   inside a huge brand mark (HeroPortrait.jsx). Light: ink panel, saffron mark. Dark: swapped. ---- */
+.hero-stage { --panel: #E3A21A; --mark: #0F1215; --gutter: clamp(20px, 4vw, 60px); --bleed: max(var(--gutter), calc((100vw - 1200px) / 2 + var(--gutter))); position: relative; }
+.light .hero-stage { --panel: #12161B; --mark: #E3A21A; }
+.hero-stage .hero-container {
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, .88fr); align-items: stretch; gap: clamp(24px, 4vw, 64px);
+  min-height: clamp(560px, calc(100svh - var(--nav-h)), 820px); padding-top: 0; padding-bottom: 0;
+}
 .hero-container > * { min-width: 0; }
-.plate { --cut: 44px; --reg: 14px; margin: 0; justify-self: end; width: min(100%, 420px); padding: 0 34px 0 0; font-family: var(--font-mono); }
-.plate-body { position: relative; }
-.plate-frame {
-  --px: 0; --py: 0; position: relative; aspect-ratio: 4 / 5; overflow: hidden; background: var(--card);
-  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
-  animation: plate-in 1s cubic-bezier(.6,0,.2,1) both;
-}
-.plate-frame img {
-  display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%;
-  filter: grayscale(1) contrast(1.06) brightness(.98);
-  transform: scale(1.07) translate(calc(var(--px) * -10px), calc(var(--py) * -10px));
-  transition: filter .6s ease, transform .5s cubic-bezier(.2,.7,.2,1);
-}
-.plate-frame:hover img { filter: none; }
-.plate-grid { /* faint drafting grid over the photo, strongest at the edges */
-  position: absolute; inset: 0; pointer-events: none;
-  background-image: linear-gradient(to right, rgba(255,255,255,.09) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,.09) 1px, transparent 1px);
-  background-size: 25% 20%; mask-image: radial-gradient(80% 70% at 50% 35%, transparent 45%, #000 100%);
-}
-/* the chamfer edge, drawn in saffron like the logo's first pad */
-.plate-body::after {
-  content: ""; position: absolute; top: 0; left: calc(100% - var(--cut)); width: calc(var(--cut) * 1.414); height: 2px;
-  background: var(--gold); transform: rotate(45deg); transform-origin: 0 0;
-}
+.hero-stage .hero-text { align-self: center; padding: clamp(48px, 8vh, 96px) 0; }
 
-.plate-reg { position: absolute; width: var(--reg); height: var(--reg); pointer-events: none; }
-.plate-reg::before, .plate-reg::after { content: ""; position: absolute; background: var(--text-muted); }
-.plate-reg::before { left: 50%; top: 0; bottom: 0; width: 1px; }
-.plate-reg::after { top: 50%; left: 0; right: 0; height: 1px; }
-.plate-reg.is-tl { top: -22px; left: -22px; }
-.plate-reg.is-tr { top: -22px; right: -22px; }
-.plate-reg.is-bl { bottom: -22px; left: -22px; }
-.plate-reg.is-br { bottom: -22px; right: -22px; }
-
-.plate-status {
-  position: absolute; left: 16px; bottom: 16px; z-index: 2; display: flex; align-items: center; gap: 8px; margin: 0;
-  padding: 7px 12px 7px 10px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--bg) 88%, transparent);
-  backdrop-filter: blur(6px); border: 1px solid var(--card-border); font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--text-primary);
+/* the stage is the panel: it bleeds to the viewport edge and everything in it is cut on the diagonal */
+.stage {
+  --px: 0; --py: 0; position: relative; min-height: 420px; margin-inline-end: calc(-1 * var(--bleed)); margin-top: 0;
+  background: var(--panel); clip-path: polygon(0 0, 100% 0, 100% 100%, 18% 100%); overflow: hidden;
+  animation: stage-panel .9s cubic-bezier(.7,0,.2,1) both;
 }
-.plate-status span { width: 8px; height: 8px; border-radius: 50%; background: #2F9E62; box-shadow: 0 0 0 3px rgba(47,158,98,.2); animation: plate-pulse 2.4s ease-in-out infinite; }
-.plate-status.is-busy span { background: #C98A06; box-shadow: 0 0 0 3px rgba(201,138,6,.2); animation: none; }
-
-/* vertical dimension beside the frame: city, coordinates, Cairo time */
-.plate-side {
-  position: absolute; top: 0; bottom: 0; left: calc(100% + 12px); margin: 0; display: flex; justify-content: space-between;
-  writing-mode: vertical-rl; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted);
-  border-left: 1px solid var(--card-border); padding-left: 8px;
+body.ar .stage { clip-path: polygon(0 0, 100% 0, 82% 100%, 0 100%); animation-name: stage-panel-ar; }
+/* the figure sits toward the outer edge; the mark spans the visible panel behind and in front of it */
+.stage-fig { position: absolute; z-index: 1; bottom: 0; inset-inline-end: -5%; height: 94%; aspect-ratio: 760 / 950; }
+.stage-mark {
+  position: absolute; inset-inline-end: 3%; bottom: 20%; width: 98%; height: auto; color: var(--mark); overflow: visible;
+  transform: translate(calc(var(--px) * -18px), calc(var(--py) * -12px));
+  transition: transform .6s cubic-bezier(.2,.7,.2,1);
 }
-.plate-side span:last-child { color: var(--text-primary); }
+.stage-mark path { stroke-dasharray: 100; stroke-dashoffset: 100; animation: trace-draw 1.4s .35s cubic-bezier(.6,0,.2,1) forwards; }
+.stage-mark path + path { animation-delay: .6s; }
+.stage-mark circle { transform-box: fill-box; transform-origin: center; animation: stage-pad .4s 1.5s both; }
+.stage-mark.is-back { z-index: 0; }
+.stage-mark.is-front { z-index: 2; clip-path: inset(74% -10% -10% -10%); pointer-events: none; }
+.stage-photo {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  mask-image: linear-gradient(to right, transparent, #000 14%);
+  transform: translate(calc(var(--px) * 8px), calc(var(--py) * 5px));
+  filter: grayscale(1) contrast(1.08); transition: transform .6s cubic-bezier(.2,.7,.2,1), filter .6s ease;
+  animation: stage-rise 1s .2s cubic-bezier(.2,.7,.2,1) both;
+}
+.stage:hover .stage-photo { filter: grayscale(0) contrast(1.02); }
+body.ar .stage-photo { mask-image: linear-gradient(to left, transparent, #000 14%); }
+.stage.is-photo .stage-photo { object-fit: cover; border-radius: var(--radius) var(--radius) 0 0; }
+.stage-status {
+  position: absolute; z-index: 3; inset-inline-start: 24%; bottom: 7%; margin: 0; display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px 8px 11px; border-radius: 999px; background: var(--bg); color: var(--text-primary);
+  font-size: 13.5px; font-weight: 600; box-shadow: 0 10px 30px -12px rgba(0,0,0,.45);
+}
+.stage-status span { width: 8px; height: 8px; border-radius: 50%; background: #2F9E62; box-shadow: 0 0 0 3px rgba(47,158,98,.22); animation: plate-pulse 2.4s ease-in-out infinite; }
+.stage-status.is-busy span { background: #C98A06; box-shadow: 0 0 0 3px rgba(201,138,6,.22); animation: none; }
 
-/* horizontal dimension line under the frame: |<———— name — roles ————>| */
-.plate-dim { position: relative; margin-top: 18px; display: flex; justify-content: center; }
-.plate-dim-line { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--line-strong, var(--card-border)); }
-.plate-dim-line::before, .plate-dim-line::after { content: ""; position: absolute; top: -6px; width: 1px; height: 13px; background: var(--text-muted); }
-.plate-dim-line::before { left: 0; }
-.plate-dim-line::after { right: 0; }
-.plate-dim-text { position: relative; padding: 0 10px; background: var(--bg); font-size: 11.5px; letter-spacing: .04em; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: calc(100% - 28px); }
-
-@keyframes plate-in { from { clip-path: polygon(0 0, 0 0, 0 0, 0 100%, 0 100%); } }
+@keyframes stage-panel { from { clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%); } }
+@keyframes stage-panel-ar { from { clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); } }
+@keyframes stage-rise { from { opacity: 0; transform: translateY(40px); } }
+@keyframes stage-pad { from { opacity: 0; transform: scale(0); } }
 @keyframes plate-pulse { 50% { box-shadow: 0 0 0 6px rgba(47,158,98,0); } }
+
 @media (prefers-reduced-motion: reduce) {
-  .plate-frame { animation: none; }
-  .plate-frame img { transition: none; transform: scale(1.04); }
-  .plate-status span { animation: none; }
+  .stage, .stage-photo, .stage-mark circle, .stage-status span { animation: none; }
+  .stage-mark path { animation: none; stroke-dashoffset: 0; }
+  .stage-mark, .stage-photo { transition: none; }
 }
-@media (hover: none) { .plate-frame img { filter: grayscale(.25); } }
+@media (hover: none) { .stage-photo { filter: grayscale(.15) contrast(1.04); } }
+
+/* phone and tablet: the stage goes first as a full-width band with a slanted bottom edge */
 @media (max-width: 860px) {
-  .hero-container { grid-template-columns: minmax(0, 1fr); }
-  .plate { justify-self: start; width: min(100%, 340px); margin-inline-start: 22px; }
+  .hero-stage { --stage-h: clamp(380px, 108vw, 520px); }
+  .hero-stage .hero-container { grid-template-columns: minmax(0, 1fr); min-height: 0; gap: 0; }
+  .stage, body.ar .stage { order: -1; height: var(--stage-h); min-height: 0; margin-inline: calc(-1 * var(--gutter)); clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%); animation: none; }
+  body.ar .stage { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 88%); }
+  .stage-fig { inset-inline-end: auto; left: 50%; transform: translateX(-50%); height: 96%; }
+  .stage-photo, body.ar .stage-photo { mask-image: none; }
+  .stage-mark { inset-inline-end: auto; left: -9%; width: 118%; bottom: 18%; }
+  .stage-mark.is-front { clip-path: inset(72% -10% -10% -10%); }
+  .stage-status { inset-inline-start: 6%; bottom: 13%; font-size: 13px; }
+  .hero-stage .hero-text { padding: 28px 0 56px; }
 }
 .hero-name { width: fit-content; max-width: 100%; font-size: clamp(40px, 5.3vw, 80px); }
 .hero-name > span:first-child { white-space: nowrap; }
