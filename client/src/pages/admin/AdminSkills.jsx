@@ -2,19 +2,43 @@
 // table + modal-form structure as AdminProjects.jsx and AdminYoutube.jsx — see the comment
 // at the top of AdminProjects.jsx for the general pattern (editing state, load-after-mutate).
 //
-// Fields map 1:1 to the Skill model in server/src/lib/mongo.js. On the public site
-// (components/Skills.jsx) `group` (frontend/backend/tools) picks the column and `levelEn` picks
-// the row: "Expert" → Core, "Advanced" → Regular, anything else → When needed. `percentage` is
-// only used when the level is empty and is never shown; `abbr` is shown when the tool has no
-// built-in logo.
+// Fields map to the Skill model in server/src/lib/mongo.js and to the public Skills section
+// (components/Skills.jsx): `tier` "core" puts the tool on the core-stack band at the top, the other
+// tiers list it under its `group`'s column. `icon` is a key of lib/toolIcons.js ("" = guess from
+// the name, "none" = show `abbr` instead). `noteEn`/`noteAr` is one short line under the name.
+// Skills saved before tiers existed show their old level until edited here.
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { useAdminT } from "../../lib/adminI18n";
 
-const EMPTY = {
-  name: "", abbr: "", color: "#E8A020", textColor: "#ffffff",
-  percentage: 80, levelEn: "Advanced", levelAr: "متقدم", group: "frontend", order: 0,
-};
+const GROUPS = ["frontend", "backend", "tools"];
+const TIERS = [
+  ["core", "Core — the band at the top"],
+  ["regular", "Regular"],
+  ["working", "When needed"],
+];
+const TIER_LABEL = { core: "Core", regular: "Regular", working: "When needed" };
+
+const EMPTY = { name: "", group: "frontend", tier: "regular", icon: "", noteEn: "", noteAr: "", abbr: "", order: 0 };
+
+// the same fallback the public section uses for skills saved before tiers existed
+function tierOf(s) {
+  if (s.tier) return s.tier;
+  const level = String(s.levelEn || "").toLowerCase();
+  if (level === "expert") return "core";
+  if (level === "advanced") return "regular";
+  if (level) return "working";
+  return s.percentage >= 90 ? "core" : s.percentage >= 80 ? "regular" : "working";
+}
+
+function Logo({ icon, size = 20 }) {
+  if (!icon) return null;
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true">
+      <path d={icon.path} />
+    </svg>
+  );
+}
 
 export default function AdminSkills() {
   const { t } = useAdminT();
@@ -22,22 +46,39 @@ export default function AdminSkills() {
   const [skills, setSkills] = useState([]);
   const [editing, setEditing] = useState(null); // null | "new" | <skill id>
   const [form, setForm] = useState(EMPTY);
+  const [error, setError] = useState("");
+  const [icons, setIcons] = useState(null); // lib/toolIcons.js, loaded on demand
 
   // ---- DATA LOADING ----
   const load = () => api.get("/admin/skills").then(setSkills);
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    import("../../lib/toolIcons").then(setIcons);
+  }, []);
+
+  const iconOf = (s) => icons?.iconFor(s) || null;
+  const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
   // ---- FORM HANDLERS ----
-  const openNew = () => { setForm(EMPTY); setEditing("new"); };
-  const openEdit = (s) => { setForm(s); setEditing(s.id); };
+  const openNew = () => { setForm(EMPTY); setError(""); setEditing("new"); };
+  const openEdit = (s) => {
+    setForm({ ...EMPTY, ...s, tier: tierOf(s), icon: s.icon || "", noteEn: s.noteEn || "", noteAr: s.noteAr || "" });
+    setError("");
+    setEditing(s.id);
+  };
 
   const save = async (e) => {
     e.preventDefault();
-    const payload = { ...form, percentage: Number(form.percentage), order: Number(form.order) };
-    if (editing === "new") await api.post("/admin/skills", payload);
-    else await api.put(`/admin/skills/${editing}`, payload);
-    setEditing(null);
-    load();
+    const { name, group, tier, icon, noteEn, noteAr, abbr, order } = form;
+    const payload = { name: name.trim(), group, tier, icon, noteEn: noteEn.trim(), noteAr: noteAr.trim(), abbr: abbr.trim(), order: Number(order) || 0 };
+    try {
+      if (editing === "new") await api.post("/admin/skills", payload);
+      else await api.put(`/admin/skills/${editing}`, payload);
+      setEditing(null);
+      load();
+    } catch (err) {
+      setError(err.message || t("Could not save."));
+    }
   };
 
   const remove = async (id) => {
@@ -46,24 +87,29 @@ export default function AdminSkills() {
     load();
   };
 
+  const sorted = [...skills].sort((a, b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group) || (a.order ?? 0) - (b.order ?? 0));
+  const guessed = icons?.iconFor({ name: form.name }); // what "Automatic" would show
+
   // ---- RENDER: table of existing skills ----
   return (
     <div>
       <h1>{t("Skills")}</h1>
+      <p className="admin-sub">{t("Core tools appear large on the band at the top of the Skills section; the rest are listed under their group.")}</p>
       <div className="admin-toolbar">
         <button className="admin-btn admin-btn-primary" onClick={openNew}>{t("+ New Skill")}</button>
       </div>
       <table className="admin-table">
         <thead>
-          <tr><th>{t("Name")}</th><th>{t("Group")}</th><th>%</th><th>{t("Order")}</th><th></th></tr>
+          <tr><th></th><th>{t("Name")}</th><th>{t("Group")}</th><th>{t("Tier")}</th><th>{t("Order")}</th><th></th></tr>
         </thead>
         <tbody>
-          {skills.length === 0 && <tr><td colSpan={5} className="admin-empty">{t("No skills yet.")}</td></tr>}
-          {skills.map((s) => (
+          {skills.length === 0 && <tr><td colSpan={6} className="admin-empty">{t("No skills yet.")}</td></tr>}
+          {sorted.map((s) => (
             <tr key={s.id}>
-              <td>{s.name}</td>
-              <td>{s.group}</td>
-              <td>{s.percentage}%</td>
+              <td className="admin-icon-cell"><Logo icon={iconOf(s)} />{!iconOf(s) && icons && <span className="skill-abbr-cell">{s.abbr}</span>}</td>
+              <td>{s.name}{(s.noteEn || s.noteAr) && <div className="admin-sub">{s.noteEn || s.noteAr}</div>}</td>
+              <td>{t(s.group)}</td>
+              <td><span className={`skill-tier-pill is-${tierOf(s)}`}>{t(TIER_LABEL[tierOf(s)])}</span></td>
               <td>{s.order}</td>
               <td className="actions">
                 <button className="admin-btn" onClick={() => openEdit(s)}>{t("Edit")}</button>
@@ -79,46 +125,62 @@ export default function AdminSkills() {
         <div className="admin-modal-overlay" onClick={() => setEditing(null)}>
           <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
             <h2>{editing === "new" ? t("New Skill") : t("Edit Skill")}</h2>
+            {error && <div className="admin-error">{error}</div>}
             <form className="admin-form" onSubmit={save}>
               <div className="admin-form-row">
                 <label>{t("Name")}
-                  <input className="form-input" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+                  <input className="form-input" value={form.name} onChange={set("name")} placeholder="Next.js" required />
                 </label>
-                <label>{t("Abbreviation")}
-                  <input className="form-input" value={form.abbr} onChange={(e) => setForm({ ...form, abbr: e.target.value })} required />
-                </label>
-              </div>
-              <div className="admin-form-row">
-                <label>{t("Color")}
-                  <input className="form-input" type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} />
-                </label>
-                <label>{t("Text Color")}
-                  <input className="form-input" type="color" value={form.textColor} onChange={(e) => setForm({ ...form, textColor: e.target.value })} />
+                <label>{t("Order")}
+                  <input className="form-input" type="number" value={form.order} onChange={set("order")} />
                 </label>
               </div>
               <div className="admin-form-row">
                 <label>{t("Group")}
-                  <select className="form-input" value={form.group} onChange={(e) => setForm({ ...form, group: e.target.value })}>
-                    <option value="frontend">frontend</option>
-                    <option value="backend">backend</option>
-                    <option value="tools">tools</option>
+                  <select className="form-input" value={form.group} onChange={set("group")}>
+                    {GROUPS.map((g) => <option key={g} value={g}>{t(g)}</option>)}
                   </select>
                 </label>
-                <label>{t("Percentage")}
-                  <input className="form-input" type="number" min={0} max={100} value={form.percentage} onChange={(e) => setForm({ ...form, percentage: e.target.value })} />
+                <label>{t("Tier")}
+                  <select className="form-input" value={form.tier} onChange={set("tier")}>
+                    {TIERS.map(([value, label]) => <option key={value} value={value}>{t(label)}</option>)}
+                  </select>
                 </label>
               </div>
               <div className="admin-form-row">
-                <label>{t("Level (EN)")}
-                  <input className="form-input" value={form.levelEn} onChange={(e) => setForm({ ...form, levelEn: e.target.value })} />
+                <label>{t("What you use it for (EN) — optional")}
+                  <input className="form-input" value={form.noteEn} onChange={set("noteEn")} maxLength={120} placeholder="App Router, server components" />
                 </label>
-                <label>{t("Level (AR)")}
-                  <input className="form-input" value={form.levelAr} onChange={(e) => setForm({ ...form, levelAr: e.target.value })} />
+                <label>{t("What you use it for (AR) — optional")}
+                  <input className="form-input" value={form.noteAr} onChange={set("noteAr")} maxLength={120} dir="rtl" />
                 </label>
               </div>
-              <label>{t("Order")}
-                <input className="form-input" type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} />
-              </label>
+
+              <fieldset className="skill-icon-picker">
+                <legend>{t("Logo")}</legend>
+                <div className="skill-icon-grid">
+                  <button type="button" className={form.icon === "" ? "active" : ""} onClick={() => setForm({ ...form, icon: "" })} title={t("Automatic (from the name)")}>
+                    {guessed ? <Logo icon={guessed} size={22} /> : <span>Auto</span>}
+                    <small>{t("Automatic")}</small>
+                  </button>
+                  {icons && Object.entries(icons.TOOL_ICONS).map(([key, icon]) => (
+                    <button type="button" key={key} className={form.icon === key ? "active" : ""} onClick={() => setForm({ ...form, icon: key })} title={icon.title}>
+                      <Logo icon={icon} size={22} />
+                      <small>{icon.title}</small>
+                    </button>
+                  ))}
+                  <button type="button" className={form.icon === "none" ? "active" : ""} onClick={() => setForm({ ...form, icon: "none" })}>
+                    <span>Aa</span>
+                    <small>{t("No logo")}</small>
+                  </button>
+                </div>
+              </fieldset>
+              {(form.icon === "none" || (form.icon === "" && !guessed)) && (
+                <label>{t("Short letters shown instead of a logo")}
+                  <input className="form-input" value={form.abbr} onChange={set("abbr")} maxLength={4} placeholder="UX" />
+                </label>
+              )}
+
               <div className="admin-form-actions">
                 <button type="button" className="admin-btn" onClick={() => setEditing(null)}>{t("Cancel")}</button>
                 <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>

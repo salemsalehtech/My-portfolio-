@@ -61,10 +61,17 @@ const projectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// A skill bar in the Skills section: `percentage` = bar width, `group` = which tab it's under
-// (frontend / backend / tools), `color` / `textColor` = the small badge with `abbr`.
+// A tool in the Skills section: `group` = its column (frontend / backend / tools), `tier` = its row
+// (core / regular / working; empty → worked out from `levelEn`, then `percentage`), `icon` = a key of
+// client/src/lib/toolIcons.js ("" → guessed from the name, "none" → show `abbr`), `noteEn`/`noteAr` =
+// one short line on what it's used for. `color`, `textColor`, `percentage` and the levels are from
+// the old progress-bar design and are no longer shown.
 const skillSchema = new mongoose.Schema({
   name: { type: String, required: true },
+  tier: { type: String, enum: ["", "core", "regular", "working"], default: "" },
+  icon: { type: String, default: "", maxlength: 40 },
+  noteEn: { type: String, default: "", maxlength: 120 },
+  noteAr: { type: String, default: "", maxlength: 120 },
   abbr: { type: String, default: "" },
   color: { type: String, default: "#ffffff" },
   textColor: { type: String, default: "#1a1a1a" },

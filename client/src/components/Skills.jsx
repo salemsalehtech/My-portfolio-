@@ -1,33 +1,29 @@
-// Skills.jsx — the "Tools I use" section (id="skills"): a board with the three groups as columns
-// (frontend / backend / tools) and three depth tiers as rows — no percentages. Skills come live
-// from the public GET /skills API; each skill's tier is read from its English level
-// (Expert → core, Advanced → regular, anything else → working; the old `percentage` is only a
-// fallback when the level is empty).
+// Skills.jsx — the "Tools I use" section (id="skills"), in two parts:
+//   1. the core stack: a band in the hero's panel colours where each core tool sits on a round pad
+//      and one trace runs through all the pads, like the strokes of the brand mark (BrandMark.jsx);
+//   2. the rest of the toolkit: one column per group (frontend / backend / tools), regular tools
+//      first, "when needed" ones after them, dimmed.
+// Under both, a strip lists technologies the projects used that are not on the skills list yet.
 //
-// Each tool shows how many projects (GET /projects) list it in their tags, and the strip under the
-// board lists technologies those projects used that are not on the skills list yet.
-//
-// On phones the board turns into one list per group, and every tool carries its tier as a label.
-import { siCss3, siGit, siHtml5, siJavascript, siLaravel, siMysql, siNodedotjs, siPhp, siReact, siVuedotjs, siYoutube } from "simple-icons";
+// Skills come live from GET /skills and are managed on the dashboard's Skills page. A skill's row is
+// its `tier`; old skills without one are placed by their English level (Expert → core,
+// Advanced → regular, anything else → working). Each tool also shows how many projects
+// (GET /projects) list it in their tags. Logos (lib/toolIcons.js) load as a separate chunk.
+import { useEffect, useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";
 
 const GROUPS = ["frontend", "backend", "tools"];
-const TIERS = ["core", "regular", "working"];
 
 // "Node.js" → "nodejs", "React 18" → "react18"
 const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9#]/g, "");
-
-const ICONS = {
-  html5: siHtml5, css3: siCss3, javascript: siJavascript, react: siReact, vuejs: siVuedotjs,
-  php: siPhp, laravel: siLaravel, nodejs: siNodedotjs, mysql: siMysql, git: siGit, contentcreation: siYoutube,
-};
 
 // "Git / GitHub" can be written as either name in a project's tags
 const names = (skill) => String(skill.name).split("/").map(norm).filter(Boolean);
 
 function tierOf(skill) {
+  if (skill.tier) return skill.tier;
   const level = norm(skill.levelEn);
   if (level === "expert") return "core";
   if (level === "advanced") return "regular";
@@ -45,11 +41,12 @@ function projectsLabel(n, lang) {
   return n <= 10 ? `${n} مشاريع` : `${n} مشروع`;
 }
 
-function Logo({ skill }) {
-  const icon = ICONS[names(skill)[0]];
+function Logo({ skill, iconFor }) {
+  const icon = iconFor?.(skill);
+  if (!iconFor) return <span className="tool-logo" aria-hidden="true" />; // logos still loading
   if (!icon) return <span className="tool-abbr" aria-hidden="true">{skill.abbr || skill.name.slice(0, 2)}</span>;
   return (
-    <svg className="tool-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={{ "--brand": `#${icon.hex}` }}>
+    <svg className="tool-logo" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d={icon.path} />
     </svg>
   );
@@ -59,11 +56,27 @@ export default function Skills() {
   const { t, lang } = useSite();
   const { data: skills } = useCollection("/skills");
   const { data: projects } = useCollection("/projects");
+  const [iconFor, setIconFor] = useState(null);
   const [headerRef, headerVisible] = useReveal();
-  const [boardRef, boardVisible] = useReveal();
+  const [coreRef, coreVisible] = useReveal();
+  const [restRef, restVisible] = useReveal();
+
+  useEffect(() => {
+    import("../lib/toolIcons").then((m) => setIconFor(() => m.iconFor)).catch(() => setIconFor(() => () => null));
+  }, []);
 
   const projectTags = projects.map((p) => splitTags(p.tags).map(norm));
   const usedIn = (skill) => projectTags.filter((tags) => tags.some((tag) => names(skill).some((n) => tag.startsWith(n)))).length;
+  const note = (skill) => (lang === "ar" ? skill.noteAr || skill.noteEn : skill.noteEn || skill.noteAr);
+
+  const byOrder = (a, b) => (a.order ?? 0) - (b.order ?? 0);
+  const core = skills.filter((s) => tierOf(s) === "core").sort((a, b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group) || byOrder(a, b));
+  const rest = GROUPS.map((group) => ({
+    group,
+    list: skills
+      .filter((s) => s.group === group && tierOf(s) !== "core")
+      .sort((a, b) => (tierOf(a) === "working") - (tierOf(b) === "working") || byOrder(a, b)),
+  })).filter((g) => g.list.length);
 
   // technologies the projects used that no skill covers, in first-seen order
   const extra = [];
@@ -72,9 +85,6 @@ export default function Skills() {
     if (skills.some((s) => names(s).some((name) => n.startsWith(name)))) continue;
     if (!extra.some((e) => norm(e) === n)) extra.push(tag);
   }
-
-  const cell = (group, tier) => skills.filter((s) => s.group === group && tierOf(s) === tier);
-  let n = 0; // running index for the staggered reveal
 
   return (
     <section id="skills" className="section-bg">
@@ -85,43 +95,61 @@ export default function Skills() {
           <div className="section-line"></div>
         </div>
 
-        <div ref={boardRef} className={`stack-board ${boardVisible ? "visible" : ""}`} data-ao>
-          <div className="stack-col stack-tiers" aria-hidden="true">
-            <div className="stack-head" />
-            {TIERS.map((tier) => (
-              <div className="stack-tier" key={tier}>
-                <strong>{t.skills.tiers[tier]}</strong>
-                <span>{t.skills.tierNotes[tier]}</span>
-              </div>
-            ))}
-          </div>
-
-          {GROUPS.map((group) => (
-            <div className="stack-col" key={group}>
-              <h3 className="stack-head">{t.skills[group]}</h3>
-              {TIERS.map((tier) => {
-                const list = cell(group, tier);
+        {core.length > 0 && (
+          <div ref={coreRef} className={`core-band ${coreVisible ? "visible" : ""}`} data-ao>
+            <p className="core-label">{t.skills.coreLabel}</p>
+            <ul className="core-list">
+              {core.map((skill, i) => {
+                const count = usedIn(skill);
                 return (
-                  <ul className={`stack-cell ${list.length ? "" : "is-empty"}`} key={tier}>
+                  <li className="core-tool" key={skill.id} style={{ "--i": i }}>
+                    <span className="core-pad"><Logo skill={skill} iconFor={iconFor} /></span>
+                    <span className="core-text">
+                      <strong>{skill.name}</strong>
+                      {note(skill) && <span className="core-note">{note(skill)}</span>}
+                      <span className="core-meta">
+                        {t.skills[skill.group]}
+                        {count > 0 && <> · {projectsLabel(count, lang)}</>}
+                      </span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+
+        {rest.length > 0 && (
+          <div ref={restRef} className={`kit ${restVisible ? "visible" : ""}`} data-ao>
+            <h3 className="kit-title">{t.skills.restLabel}</h3>
+            <div className="kit-cols">
+              {rest.map(({ group, list }) => (
+                <div className="kit-col" key={group}>
+                  <h4>{t.skills[group]}</h4>
+                  <ul>
                     {list.map((skill) => {
                       const count = usedIn(skill);
+                      const tier = tierOf(skill);
                       return (
-                        <li className="tool" key={skill.id} style={{ "--i": n++ }}>
-                          <Logo skill={skill} />
-                          <span className="tool-name">{skill.name}</span>
-                          <span className="tool-meta">
-                            <span className={`tool-tier is-${tier}`}>{t.skills.tiers[tier]}</span>
-                            {count > 0 && <span className="tool-count">{projectsLabel(count, lang)}</span>}
+                        <li className={`kit-tool is-${tier}`} key={skill.id}>
+                          <Logo skill={skill} iconFor={iconFor} />
+                          <span className="kit-name">
+                            {skill.name}
+                            {note(skill) && <small>{note(skill)}</small>}
+                          </span>
+                          <span className="kit-meta">
+                            {tier === "working" && <span>{t.skills.tiers.working}</span>}
+                            {count > 0 && <span>{projectsLabel(count, lang)}</span>}
                           </span>
                         </li>
                       );
                     })}
                   </ul>
-                );
-              })}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
 
         {extra.length > 0 && (
           <p className="stack-extra">
