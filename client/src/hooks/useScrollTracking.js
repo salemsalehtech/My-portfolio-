@@ -4,6 +4,7 @@
 //                      a background, so its links stay readable over the hero panel)
 //   - activeSection    which section id is currently in view (Navbar highlights this link)
 //   - showScrollTop    true once scrolled past 400px (shows the ScrollTop button)
+//   - the CSS variable --scroll on <html>: how far down the page is, 0 to 1 (the navbar's trace)
 //
 // (The related scrollToSection() helper — for clicking a nav link to jump to a section —
 // lives in lib/scrollToSection.js since it's a plain DOM utility, not a stateful hook.)
@@ -23,6 +24,8 @@ export function useScrollTracking() {
       const y = window.scrollY;
       setScrolled(y > 4);
       setShowScrollTop(y > 400);
+      const room = document.documentElement.scrollHeight - window.innerHeight;
+      document.documentElement.style.setProperty("--scroll", room > 0 ? Math.min(1, y / room).toFixed(4) : "0");
       // Walk the sections top-to-bottom and keep the last one we've scrolled past —
       // that's the section currently "active" in the viewport.
       let current = "home";

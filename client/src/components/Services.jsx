@@ -6,9 +6,18 @@
 // If there are no services the whole section is skipped. As in About.jsx / Testimonials.jsx,
 // the content is a separate component: useReveal() (fade-in on scroll) only watches the
 // elements that exist when its component first mounts, and the content mounts after the data.
+// Each card ends with "Start a project like this": it picks that service in the contact form
+// (components/Contact.jsx listens for "contact-prefill") and scrolls there.
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { serviceIcon } from "../lib/serviceIcons";
+import { scrollToSection } from "../lib/scrollToSection";
+import { ArrowIcon } from "./ArrowIcon";
+
+const startProject = (projectType) => {
+  window.dispatchEvent(new CustomEvent("contact-prefill", { detail: { projectType } }));
+  scrollToSection("contact");
+};
 
 export default function Services({ items, loading }) {
   if (loading || items.length === 0) return null;
@@ -34,10 +43,13 @@ function ServicesContent({ items }) {
 
         <div ref={gridRef} className={`services-grid ${gridVisible ? "visible" : ""}`} data-ao>
           {items.map((item) => (
-            <div className="service-card" key={item.id}>
+            <div className="service-card cut-card" key={item.id}>
               <div className="service-icon">{serviceIcon(item.icon)}</div>
               <h3 className="service-title" dir="auto">{pick(item.titleEn, item.titleAr)}</h3>
               <p className="service-desc" dir="auto">{pick(item.descEn, item.descAr)}</p>
+              <button type="button" className="trace-link" onClick={() => startProject(pick(item.titleEn, item.titleAr))}>
+                {t.services.cta} <ArrowIcon />
+              </button>
             </div>
           ))}
         </div>

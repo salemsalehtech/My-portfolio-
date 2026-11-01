@@ -87,7 +87,7 @@ export default function Portfolio() {
       <BlogSection items={posts.data} loading={posts.loading} />
       <Courses items={courses.data} loading={courses.loading} />
       <YouTube settings={settings} />
-      <Contact settings={settings} />
+      <Contact settings={settings} services={services.data} />
       <Footer settings={settings} />
       <ScrollTop visible={showScrollTop} />
     </>

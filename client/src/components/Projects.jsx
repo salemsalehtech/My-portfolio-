@@ -15,6 +15,7 @@ import { useCollection } from "../hooks/useCollection";
 import ProjectModal from "./ProjectModal";
 import { track } from "../lib/analytics";
 import { API_BASE } from "../lib/api";
+import { ArrowIcon } from "./ArrowIcon";
 
 // The project's picture (Admin → Projects → Upload picture). `?v=<updatedAt>` changes when a new
 // picture is uploaded, so browsers never keep showing an old one.
@@ -85,7 +86,7 @@ export default function Projects() {
             const desc = lang === "ar" ? project.descAr : project.descEn;
             const cat = lang === "ar" ? project.catLabelAr : project.catLabelEn;
             return (
-              <div className="project-card" key={project.id} role="button" tabIndex={0}
+              <div className="project-card cut-card" key={project.id} role="button" tabIndex={0}
                 onClick={() => { setSelected(project); track("project", project.id); }}
                 onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(project); track("project", project.id); } }}>
                 <div className="project-thumb" style={{ background: project.gradient }}>
@@ -108,7 +109,7 @@ export default function Projects() {
                   )}
                   <div className="project-footer">
                     <span className="project-cat">{cat}</span>
-                    <span className="project-more">{t.projects.details}</span>
+                    <span className="project-more">{t.projects.details} <ArrowIcon size={14} /></span>
                   </div>
                 </div>
               </div>

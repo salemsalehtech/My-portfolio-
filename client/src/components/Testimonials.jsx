@@ -15,12 +15,11 @@ export default function Testimonials({ items, loading }) {
   return <TestimonialsContent items={items} />;
 }
 
-function Stars({ rating }) {
+// The rating as five pads on a trace (filled = earned), read out as "5 out of 5".
+function Rating({ rating, label }) {
   return (
-    <div className="testimonial-stars" aria-label={`${rating} / 5`}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={n <= rating ? "on" : ""}>★</span>
-      ))}
+    <div className="testimonial-rating" role="img" aria-label={label.replace("{n}", rating)}>
+      {[1, 2, 3, 4, 5].map((n) => <span key={n} className={n <= rating ? "on" : ""} />)}
     </div>
   );
 }
@@ -42,17 +41,19 @@ function TestimonialsContent({ items }) {
           <div className="section-line"></div>
         </div>
 
-        <div ref={gridRef} className={`testimonials-grid ${gridVisible ? "visible" : ""}`} data-ao>
-          {items.map((item) => (
-            <figure className="testimonial-card" key={item.id}>
-              <Stars rating={item.rating} />
+        {/* The first review is the featured one, on the ink panel; the others are cards beside and below it. */}
+        <div ref={gridRef} className={`testimonials-grid ${items.length === 1 ? "is-single" : ""} ${gridVisible ? "visible" : ""}`} data-ao>
+          {items.map((item, i) => (
+            <figure className={`testimonial-card ${i === 0 ? "is-featured" : "cut-card"}`} key={item.id}>
+              {i === 0 && <span className="testimonial-mark" aria-hidden="true">“</span>}
               <blockquote className="testimonial-text" dir="auto">{pick(item.textEn, item.textAr)}</blockquote>
               <figcaption className="testimonial-author">
-                <div className="testimonial-avatar">{item.authorName.trim().charAt(0).toUpperCase()}</div>
-                <div>
+                <div className="testimonial-avatar" aria-hidden="true">{item.authorName.trim().charAt(0).toUpperCase()}</div>
+                <div className="testimonial-who">
                   <div className="testimonial-name" dir="auto">{item.authorName}</div>
                   <div className="testimonial-role" dir="auto">{pick(item.roleEn, item.roleAr)}</div>
                 </div>
+                <Rating rating={item.rating} label={t.testimonials.rating} />
               </figcaption>
             </figure>
           ))}

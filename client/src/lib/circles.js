@@ -15,12 +15,7 @@ export const monthName = (date, lang = "ar") =>
 // Days from today (Cairo date string) to a date: 0 = today, negative = past.
 export const daysUntil = (date, today) => Math.round((new Date(`${date}T12:00:00Z`) - new Date(`${today}T12:00:00Z`)) / 864e5);
 
-// A WhatsApp chat with a ready message (Egyptian numbers 01… become 201…).
-export const whatsappLink = (phone, text) => {
-  const digits = String(phone || "").replace(/\D/g, "");
-  const intl = digits.startsWith("0") && digits.length === 11 ? `2${digits}` : digits;
-  return `https://wa.me/${intl}?text=${encodeURIComponent(text)}`;
-};
+export { whatsappLink } from "./whatsapp";
 
 // The parts a month can be split into, and how a number of shares reads: 1.5 → "1½", 0.333 → "⅓".
 export const PARTS = [[1, "1"], [0.75, "¾"], [2 / 3, "⅔"], [0.5, "½"], [1 / 3, "⅓"], [0.25, "¼"], [0.2, "⅕"]];

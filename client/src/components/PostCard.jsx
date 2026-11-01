@@ -9,7 +9,7 @@ export default function PostCard({ post }) {
   const { t, lang } = useSite();
   const { title, excerpt, isAr } = postInLang(post, lang);
   return (
-    <Link to={`/blog/${post.slug}`} className="post-card">
+    <Link to={`/blog/${post.slug}`} className="post-card cut-card">
       {post.hasCover ? (
         <div className="post-cover"><img src={postCoverUrl(post)} alt="" loading="lazy" /></div>
       ) : (

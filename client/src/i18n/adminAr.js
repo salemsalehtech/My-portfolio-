@@ -97,6 +97,13 @@ export const ADMIN_AR = {
   // ---- messages ----
   "Message": "الرسالة",
   "Received": "وقت الاستلام",
+  "Reply on": "الرد على",
+  "WhatsApp": "واتساب",
+  "Hi": "أهلًا",
+  "As soon as possible": "في أسرع وقت",
+  "Within a month": "خلال شهر",
+  "1–3 months": "خلال 1–3 شهور",
+  "No rush": "مش مستعجل",
   "No messages yet.": "لا توجد رسائل بعد.",
   "Mark Read": "تعليم كمقروءة",
   "Mark Unread": "تعليم كغير مقروءة",

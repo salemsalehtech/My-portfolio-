@@ -1,6 +1,7 @@
 // YouTube.jsx — the "YouTube Channel" section (id="youtube"): a channel-info card plus a list
 // of videos fetched live from the public GET /youtube API via useCollection(). Each video links
-// out to YouTube directly (there's no in-page player).
+// out to YouTube directly (there's no in-page player). A video link shows YouTube's own
+// thumbnail; a link without a video id (a channel or a playlist page) keeps the plain ink tile.
 //
 // Props: `settings` — the site-wide profile content from Admin → "Profile & Links" (loaded in
 // pages/Portfolio.jsx): the channel link, its @handle (read from the link) and the description.
@@ -9,6 +10,10 @@ import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";
 import { pick, youtubeHandle } from "../lib/pick";
 import { YoutubeIcon } from "../lib/socialIcons";
+import { ArrowIcon } from "./ArrowIcon";
+
+// "https://www.youtube.com/watch?v=zBw1ZlFd-HY&list=…" / "https://youtu.be/zBw1ZlFd-HY" → "zBw1ZlFd-HY"
+const videoId = (url) => (String(url || "").match(/(?:[?&]v=|youtu\.be\/|\/embed\/|\/shorts\/)([\w-]{11})/) || [])[1];
 
 export default function YouTube({ settings }) {
   const { t, lang } = useSite();
@@ -37,8 +42,8 @@ export default function YouTube({ settings }) {
             {channelUrl && <p className="yt-handle">{youtubeHandle(channelUrl)}</p>}
             <p className="yt-desc">{pick(lang, settings.channelDescEn, settings.channelDescAr)}</p>
             {channelUrl && (
-              <a href={channelUrl} target="_blank" rel="noopener noreferrer" className="btn-youtube">
-                <YoutubeIcon size={15} />
+              <a href={channelUrl} target="_blank" rel="noopener noreferrer" className="btn-primary yt-subscribe">
+                <YoutubeIcon size={16} />
                 {t.youtube.subscribe}
               </a>
             )}
@@ -48,9 +53,11 @@ export default function YouTube({ settings }) {
             {videos.map((video) => {
               const title = lang === "ar" ? video.titleAr : video.titleEn;
               const sub = lang === "ar" ? video.subAr : video.subEn;
+              const id = videoId(video.url);
               return (
-                <a href={video.url} target="_blank" rel="noopener noreferrer" className="yt-video" key={video.id}>
-                  <div className="yt-thumb" style={{ background: video.gradient }}>
+                <a href={video.url} target="_blank" rel="noopener noreferrer" className="yt-video cut-card" key={video.id}>
+                  <div className="yt-thumb">
+                    {id && <img src={`https://i.ytimg.com/vi/${id}/mqdefault.jpg`} alt="" loading="lazy" />}
                     <div className="yt-thumb-overlay"></div>
                     <div className="yt-play">
                       <svg width="12" height="12" viewBox="0 0 12 12" fill="#CC0000"><polygon points="3,1 11,6 3,11" /></svg>
@@ -60,9 +67,7 @@ export default function YouTube({ settings }) {
                     <h4 className="yt-title">{title}</h4>
                     <p className="yt-sub">{sub}</p>
                   </div>
-                  <div className="yt-icon-btn">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="#FF0000"><polygon points="5,3 19,12 5,21" /></svg>
-                  </div>
+                  <span className="yt-go"><ArrowIcon /></span>
                 </a>
               );
             })}
