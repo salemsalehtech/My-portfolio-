@@ -61,7 +61,8 @@ const projectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// A tool in the Skills section: `group` = its column (frontend / backend / tools), `tier` = its row
+// A tool in the Skills section: `group` = its area (languages / frontend / backend / mobile / desktop /
+// databases / tools — client/src/lib/skillGroups.js), `tier` = how central it is
 // (core / regular / working; empty → worked out from `levelEn`, then `percentage`), `icon` = a key of
 // client/src/lib/toolIcons.js ("" → guessed from the name, "none" → show `abbr`), `noteEn`/`noteAr` =
 // one short line on what it's used for. `color`, `textColor`, `percentage` and the levels are from

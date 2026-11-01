@@ -7,11 +7,19 @@
 // tiers list it under its `group`'s column. `icon` is a key of lib/toolIcons.js ("" = guess from
 // the name, "none" = show `abbr` instead). `noteEn`/`noteAr` is one short line under the name.
 // Skills saved before tiers existed show their old level until edited here.
+//
+// Groups come from lib/skillGroups.js. Typing a known name in a new skill picks its group for you
+// (groupFor() in lib/toolIcons.js) until you choose one yourself, and "Sort into groups" moves
+// existing skills to the group their name suggests, after showing the list of moves.
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { useAdminT } from "../../lib/adminI18n";
+import { GROUPS, groupOf, tierOf } from "../../lib/skillGroups";
 
-const GROUPS = ["frontend", "backend", "tools"];
+const GROUP_LABEL = {
+  languages: "Programming languages", frontend: "Frontend", backend: "Backend", mobile: "Mobile apps",
+  desktop: "Desktop apps", databases: "Databases", tools: "Tools & Other",
+};
 const TIERS = [
   ["core", "Core — the band at the top"],
   ["regular", "Regular"],
@@ -20,16 +28,6 @@ const TIERS = [
 const TIER_LABEL = { core: "Core", regular: "Regular", working: "When needed" };
 
 const EMPTY = { name: "", group: "frontend", tier: "regular", icon: "", noteEn: "", noteAr: "", abbr: "", order: 0 };
-
-// the same fallback the public section uses for skills saved before tiers existed
-function tierOf(s) {
-  if (s.tier) return s.tier;
-  const level = String(s.levelEn || "").toLowerCase();
-  if (level === "expert") return "core";
-  if (level === "advanced") return "regular";
-  if (level) return "working";
-  return s.percentage >= 90 ? "core" : s.percentage >= 80 ? "regular" : "working";
-}
 
 function Logo({ icon, size = 20 }) {
   if (!icon) return null;
@@ -48,6 +46,8 @@ export default function AdminSkills() {
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState("");
   const [icons, setIcons] = useState(null); // lib/toolIcons.js, loaded on demand
+  const [groupPicked, setGroupPicked] = useState(false); // stop suggesting once a group is chosen
+  const [busy, setBusy] = useState(false);
 
   // ---- DATA LOADING ----
   const load = () => api.get("/admin/skills").then(setSkills);
@@ -58,11 +58,33 @@ export default function AdminSkills() {
 
   const iconOf = (s) => icons?.iconFor(s) || null;
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
+  const setName = (e) => {
+    const name = e.target.value;
+    const suggested = editing === "new" && !groupPicked ? icons?.groupFor(name) : null;
+    setForm({ ...form, name, ...(suggested ? { group: suggested } : {}) });
+  };
+
+  // skills whose name points to another group than the one they're in
+  const moves = icons
+    ? skills.map((s) => ({ s, to: icons.groupFor(s.name) || (GROUPS.includes(s.group) ? null : "tools") })).filter(({ s, to }) => to && to !== s.group)
+    : [];
+  const sortIntoGroups = async () => {
+    const list = moves.map(({ s, to }) => `${s.name}: ${t(GROUP_LABEL[groupOf(s)])} → ${t(GROUP_LABEL[to])}`).join("\n");
+    if (!confirm(`${t("Move these skills?")}\n\n${list}`)) return;
+    setBusy(true);
+    try {
+      for (const { s, to } of moves) await api.put(`/admin/skills/${s.id}`, { group: to });
+    } catch (err) {
+      alert(err.message);
+    }
+    setBusy(false);
+    load();
+  };
 
   // ---- FORM HANDLERS ----
-  const openNew = () => { setForm(EMPTY); setError(""); setEditing("new"); };
+  const openNew = () => { setForm(EMPTY); setError(""); setGroupPicked(false); setEditing("new"); };
   const openEdit = (s) => {
-    setForm({ ...EMPTY, ...s, tier: tierOf(s), icon: s.icon || "", noteEn: s.noteEn || "", noteAr: s.noteAr || "" });
+    setForm({ ...EMPTY, ...s, group: groupOf(s), tier: tierOf(s), icon: s.icon || "", noteEn: s.noteEn || "", noteAr: s.noteAr || "" });
     setError("");
     setEditing(s.id);
   };
@@ -87,7 +109,7 @@ export default function AdminSkills() {
     load();
   };
 
-  const sorted = [...skills].sort((a, b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group) || (a.order ?? 0) - (b.order ?? 0));
+  const sorted = [...skills].sort((a, b) => GROUPS.indexOf(groupOf(a)) - GROUPS.indexOf(groupOf(b)) || (a.order ?? 0) - (b.order ?? 0));
   const guessed = icons?.iconFor({ name: form.name }); // what "Automatic" would show
 
   // ---- RENDER: table of existing skills ----
@@ -97,6 +119,11 @@ export default function AdminSkills() {
       <p className="admin-sub">{t("Core tools appear large on the band at the top of the Skills section; the rest are listed under their group.")}</p>
       <div className="admin-toolbar">
         <button className="admin-btn admin-btn-primary" onClick={openNew}>{t("+ New Skill")}</button>
+        {moves.length > 0 && (
+          <button className="admin-btn" onClick={sortIntoGroups} disabled={busy}>
+            {t("Sort into groups")} ({moves.length})
+          </button>
+        )}
       </div>
       <table className="admin-table">
         <thead>
@@ -107,8 +134,8 @@ export default function AdminSkills() {
           {sorted.map((s) => (
             <tr key={s.id}>
               <td className="admin-icon-cell"><Logo icon={iconOf(s)} />{!iconOf(s) && icons && <span className="skill-abbr-cell">{s.abbr}</span>}</td>
-              <td>{s.name}{(s.noteEn || s.noteAr) && <div className="admin-sub">{s.noteEn || s.noteAr}</div>}</td>
-              <td>{t(s.group)}</td>
+              <td><bdi>{s.name}</bdi>{(s.noteEn || s.noteAr) && <div className="admin-sub">{s.noteEn || s.noteAr}</div>}</td>
+              <td>{t(GROUP_LABEL[groupOf(s)])}</td>
               <td><span className={`skill-tier-pill is-${tierOf(s)}`}>{t(TIER_LABEL[tierOf(s)])}</span></td>
               <td>{s.order}</td>
               <td className="actions">
@@ -129,7 +156,7 @@ export default function AdminSkills() {
             <form className="admin-form" onSubmit={save}>
               <div className="admin-form-row">
                 <label>{t("Name")}
-                  <input className="form-input" value={form.name} onChange={set("name")} placeholder="Next.js" required />
+                  <input className="form-input" value={form.name} onChange={setName} placeholder="Python" required />
                 </label>
                 <label>{t("Order")}
                   <input className="form-input" type="number" value={form.order} onChange={set("order")} />
@@ -137,8 +164,8 @@ export default function AdminSkills() {
               </div>
               <div className="admin-form-row">
                 <label>{t("Group")}
-                  <select className="form-input" value={form.group} onChange={set("group")}>
-                    {GROUPS.map((g) => <option key={g} value={g}>{t(g)}</option>)}
+                  <select className="form-input" value={form.group} onChange={(e) => { setGroupPicked(true); set("group")(e); }}>
+                    {GROUPS.map((g) => <option key={g} value={g}>{t(GROUP_LABEL[g])}</option>)}
                   </select>
                 </label>
                 <label>{t("Tier")}
@@ -149,7 +176,7 @@ export default function AdminSkills() {
               </div>
               <div className="admin-form-row">
                 <label>{t("What you use it for (EN) — optional")}
-                  <input className="form-input" value={form.noteEn} onChange={set("noteEn")} maxLength={120} placeholder="App Router, server components" />
+                  <input className="form-input" value={form.noteEn} onChange={set("noteEn")} maxLength={120} placeholder="APIs, data scripts" />
                 </label>
                 <label>{t("What you use it for (AR) — optional")}
                   <input className="form-input" value={form.noteAr} onChange={set("noteAr")} maxLength={120} dir="rtl" />

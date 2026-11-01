@@ -1,35 +1,28 @@
 // Skills.jsx — the "Tools I use" section (id="skills"), in two parts:
 //   1. the core stack: a band in the hero's panel colours where each core tool sits on a round pad
 //      and one trace runs through all the pads, like the strokes of the brand mark (BrandMark.jsx);
-//   2. the rest of the toolkit: one column per group (frontend / backend / tools), regular tools
-//      first, "when needed" ones after them, dimmed.
+//   2. the full toolkit: one block per group (languages, frontend, backend, mobile, desktop,
+//      databases, tools — lib/skillGroups.js), core tools first and marked, "when needed" ones last,
+//      dimmed. Empty groups are left out.
 // Under both, a strip lists technologies the projects used that are not on the skills list yet.
 //
-// Skills come live from GET /skills and are managed on the dashboard's Skills page. A skill's row is
-// its `tier`; old skills without one are placed by their English level (Expert → core,
-// Advanced → regular, anything else → working). Each tool also shows how many projects
+// Skills come live from GET /skills and are managed on the dashboard's Skills page; tierOf() in
+// lib/skillGroups.js reads a skill's tier. Each tool also shows how many projects
 // (GET /projects) list it in their tags. Logos (lib/toolIcons.js) load as a separate chunk.
 import { useEffect, useState } from "react";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";
+import { GROUPS, groupOf, tierOf } from "../lib/skillGroups";
 
-const GROUPS = ["frontend", "backend", "tools"];
+// "Node.js" → "nodejs", "React 18" → "react18", "C++" → "c++"
+const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9#+]/g, "");
 
-// "Node.js" → "nodejs", "React 18" → "react18"
-const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9#]/g, "");
+// a project tag names a skill when it is that name, or that name plus a version ("react18")
+const tagMatches = (tag, name) => tag === name || (tag.startsWith(name) && /^\d/.test(tag.slice(name.length)));
 
 // "Git / GitHub" can be written as either name in a project's tags
 const names = (skill) => String(skill.name).split("/").map(norm).filter(Boolean);
-
-function tierOf(skill) {
-  if (skill.tier) return skill.tier;
-  const level = norm(skill.levelEn);
-  if (level === "expert") return "core";
-  if (level === "advanced") return "regular";
-  if (level) return "working";
-  return skill.percentage >= 90 ? "core" : skill.percentage >= 80 ? "regular" : "working";
-}
 
 // a project's tags can bundle several tools: "Node.js + Express.js"
 const splitTags = (tags) => (tags || []).flatMap((t) => String(t).split("+")).map((t) => t.trim()).filter(Boolean);
@@ -59,30 +52,29 @@ export default function Skills() {
   const [iconFor, setIconFor] = useState(null);
   const [headerRef, headerVisible] = useReveal();
   const [coreRef, coreVisible] = useReveal();
-  const [restRef, restVisible] = useReveal();
+  const [kitRef, kitVisible] = useReveal();
 
   useEffect(() => {
     import("../lib/toolIcons").then((m) => setIconFor(() => m.iconFor)).catch(() => setIconFor(() => () => null));
   }, []);
 
   const projectTags = projects.map((p) => splitTags(p.tags).map(norm));
-  const usedIn = (skill) => projectTags.filter((tags) => tags.some((tag) => names(skill).some((n) => tag.startsWith(n)))).length;
+  const usedIn = (skill) => projectTags.filter((tags) => tags.some((tag) => names(skill).some((n) => tagMatches(tag, n)))).length;
   const note = (skill) => (lang === "ar" ? skill.noteAr || skill.noteEn : skill.noteEn || skill.noteAr);
 
   const byOrder = (a, b) => (a.order ?? 0) - (b.order ?? 0);
-  const core = skills.filter((s) => tierOf(s) === "core").sort((a, b) => GROUPS.indexOf(a.group) - GROUPS.indexOf(b.group) || byOrder(a, b));
-  const rest = GROUPS.map((group) => ({
+  const rank = { core: 0, regular: 1, working: 2 };
+  const core = skills.filter((s) => tierOf(s) === "core").sort((a, b) => GROUPS.indexOf(groupOf(a)) - GROUPS.indexOf(groupOf(b)) || byOrder(a, b));
+  const kit = GROUPS.map((group) => ({
     group,
-    list: skills
-      .filter((s) => s.group === group && tierOf(s) !== "core")
-      .sort((a, b) => (tierOf(a) === "working") - (tierOf(b) === "working") || byOrder(a, b)),
+    list: skills.filter((s) => groupOf(s) === group).sort((a, b) => rank[tierOf(a)] - rank[tierOf(b)] || byOrder(a, b)),
   })).filter((g) => g.list.length);
 
   // technologies the projects used that no skill covers, in first-seen order
   const extra = [];
   for (const tag of projects.flatMap((p) => splitTags(p.tags))) {
     const n = norm(tag);
-    if (skills.some((s) => names(s).some((name) => n.startsWith(name)))) continue;
+    if (skills.some((s) => names(s).some((name) => tagMatches(n, name)))) continue;
     if (!extra.some((e) => norm(e) === n)) extra.push(tag);
   }
 
@@ -105,10 +97,10 @@ export default function Skills() {
                   <li className="core-tool" key={skill.id} style={{ "--i": i }}>
                     <span className="core-pad"><Logo skill={skill} iconFor={iconFor} /></span>
                     <span className="core-text">
-                      <strong>{skill.name}</strong>
+                      <strong><bdi>{skill.name}</bdi></strong>
                       {note(skill) && <span className="core-note">{note(skill)}</span>}
                       <span className="core-meta">
-                        {t.skills[skill.group]}
+                        {t.skills.groups[groupOf(skill)]}
                         {count > 0 && <> · {projectsLabel(count, lang)}</>}
                       </span>
                     </span>
@@ -119,13 +111,13 @@ export default function Skills() {
           </div>
         )}
 
-        {rest.length > 0 && (
-          <div ref={restRef} className={`kit ${restVisible ? "visible" : ""}`} data-ao>
-            <h3 className="kit-title">{t.skills.restLabel}</h3>
+        {kit.length > 0 && (
+          <div ref={kitRef} className={`kit ${kitVisible ? "visible" : ""}`} data-ao>
+            <h3 className="kit-title">{t.skills.kitLabel}</h3>
             <div className="kit-cols">
-              {rest.map(({ group, list }) => (
+              {kit.map(({ group, list }) => (
                 <div className="kit-col" key={group}>
-                  <h4>{t.skills[group]}</h4>
+                  <h4>{t.skills.groups[group]} <span>{list.length}</span></h4>
                   <ul>
                     {list.map((skill) => {
                       const count = usedIn(skill);
@@ -134,11 +126,11 @@ export default function Skills() {
                         <li className={`kit-tool is-${tier}`} key={skill.id}>
                           <Logo skill={skill} iconFor={iconFor} />
                           <span className="kit-name">
-                            {skill.name}
+                            <bdi>{skill.name}</bdi>
                             {note(skill) && <small>{note(skill)}</small>}
                           </span>
                           <span className="kit-meta">
-                            {tier === "working" && <span>{t.skills.tiers.working}</span>}
+                            {tier !== "regular" && <span className="kit-tier">{t.skills.tiers[tier]}</span>}
                             {count > 0 && <span>{projectsLabel(count, lang)}</span>}
                           </span>
                         </li>

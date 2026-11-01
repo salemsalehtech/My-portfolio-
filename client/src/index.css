@@ -206,22 +206,26 @@ body.ar .core-tool::before { transform-origin: right center; }
 .core-band.visible .core-text { opacity: 1; transform: none; }
 .core-tool:hover .core-pad { transform: scale(1.08); transition-delay: 0s; }
 
-/* part 2 — the rest of the toolkit, one column per group */
+/* part 2 — the whole toolkit, one block per group, flowed into columns so short and long groups pack */
 .kit { margin-top: clamp(40px, 5vw, 64px); opacity: 0; transform: translateY(12px); transition: opacity .6s, transform .6s; }
 .kit.visible { opacity: 1; transform: none; }
 .kit-title { margin: 0 0 18px; font-family: var(--font-mono); font-size: 12.5px; font-weight: 500; color: var(--text-muted); }
-.kit-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: clamp(20px, 3vw, 44px); }
-.kit-col h4 { margin: 0; padding-bottom: 10px; border-bottom: 1px solid var(--line-strong); font-family: var(--font-heading); font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.kit-cols { columns: 3 250px; column-gap: clamp(24px, 3.5vw, 52px); }
+.kit-col { break-inside: avoid; margin-bottom: 34px; }
+.kit-col h4 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0; padding-bottom: 10px; border-bottom: 1px solid var(--line-strong); font-family: var(--font-heading); font-size: 15px; font-weight: 600; color: var(--text-primary); }
 .kit-col ul { list-style: none; margin: 0; padding: 0; }
 .kit-tool { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--card-border); color: var(--text-primary); }
 .kit-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 15px; font-weight: 500; }
 .kit-name small { font-size: 12.5px; font-weight: 400; color: var(--text-muted); }
 .kit-meta { margin-inline-start: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); white-space: nowrap; text-align: end; }
+.kit-col h4 span { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--text-muted); }
+.kit-tool.is-core .tool-logo { fill: var(--gold); }
+.kit-tool.is-core .kit-tier { color: var(--gold); }
 .kit-tool.is-working { color: var(--text-secondary); }
 .kit-tool.is-working .tool-logo, .kit-tool.is-working .tool-abbr { opacity: .55; }
 
 .tool-logo { display: block; width: 20px; height: 20px; flex-shrink: 0; fill: currentColor; }
-.tool-abbr { width: 20px; flex-shrink: 0; font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-align: center; opacity: .8; }
+.tool-abbr { direction: ltr; unicode-bidi: isolate; width: 20px; flex-shrink: 0; font-family: var(--font-mono); font-size: 10px; font-weight: 600; text-align: center; opacity: .8; }
 
 .stack-extra { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 24px; font-size: 13.5px; color: var(--text-muted); }
 .stack-extra span { margin-inline-end: 4px; }
@@ -533,7 +537,7 @@ body.ar .service-title { font-family: var(--font-ar); }
 .service-desc { text-align: start; font-size: 14.5px; line-height: 1.8; color: var(--text-secondary); }
 .admin-icon-cell { color: var(--gold); width: 44px; }
 /* AdminSkills.jsx: tier pill in the table and the logo picker in the form */
-.skill-abbr-cell { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+.skill-abbr-cell { direction: ltr; unicode-bidi: isolate; font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
 .skill-tier-pill { font-family: var(--font-mono); font-size: 12px; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--card-border); color: var(--text-secondary); white-space: nowrap; }
 .skill-tier-pill.is-core { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
 .skill-tier-pill.is-working { border-style: dashed; }
