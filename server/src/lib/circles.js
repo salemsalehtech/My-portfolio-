@@ -11,13 +11,8 @@
 const jwt = require("jsonwebtoken");
 const { Circle, CircleMember, CirclePayment, CircleLog, CircleNotification } = require("./mongo");
 const { sendPush } = require("./push");
+const { cairoDate, addDays } = require("./dates");
 
-const cairoDate = (d = new Date()) => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo" }).format(d);
-const addDays = (date, days) => {
-  const d = new Date(`${date}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
-};
 
 // "+20 100-123 4567" / "00201001234567" → "01001234567". Other countries keep their digits.
 function normalizePhone(raw) {

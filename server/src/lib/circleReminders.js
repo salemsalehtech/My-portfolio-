@@ -5,10 +5,9 @@
 // (remembered in circle.remindedAt). Members without phone notifications simply see the same
 // reminders in the portal (routes/circles.js works them out live). Runs only in server.js.
 const { Circle, CirclePayment, PushSubscription } = require("./mongo");
-const { cairoDate, addDays, buildStatement } = require("./circles");
+const { buildStatement } = require("./circles");
+const { cairoDate, cairoHour, addDays } = require("./dates");
 const { sendPush } = require("./push");
-
-const cairoHour = () => Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Cairo", hour: "2-digit", hourCycle: "h23" }).format(new Date()));
 
 async function runOnce() {
   const hour = cairoHour();

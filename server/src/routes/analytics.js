@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const rateLimit = require("express-rate-limit");
 const { DailyStat, Project, Post } = require("../lib/mongo");
+const { cairoDate } = require("../lib/dates");
 
 // Privacy-friendly visitor analytics: POST /api/analytics/event.
 // The site (client/src/lib/analytics.js) sends tiny events — "visit", "section", "project", "post",
@@ -23,8 +24,6 @@ const eventLimiter = rateLimit({
 const SECTIONS = ["home", "about", "services", "skills", "projects", "certificates", "testimonials", "blog", "courses", "youtube", "contact"];
 const MAX_REFERRERS_PER_DAY = 50; // beyond that, new sources are counted as "other"
 
-// Today's date in Cairo (the owner's time zone), as "YYYY-MM-DD".
-const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo" }).format(new Date());
 
 // Mongoose map keys can't contain "." — store "linkedin.com" as "linkedin．com" (full-width dot).
 const toKey = (host) => host.replace(/\./g, "．");
@@ -43,7 +42,7 @@ function referrerHost(value) {
 
 router.post("/event", eventLimiter, async (req, res) => {
   const { type, name, device, lang, referrer } = req.body || {};
-  const date = today();
+  const date = cairoDate(); // today in Cairo, the owner's time zone
   const inc = {};
 
   if (type === "visit") {

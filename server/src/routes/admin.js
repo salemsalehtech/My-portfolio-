@@ -10,6 +10,7 @@ const express = require("express");
 const { readImageUpload } = require("../lib/images");
 const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, DailyStat, Post, Course, Form, FormResponse } = require("../lib/mongo");
 const { requireAuth } = require("../middleware/auth");
+const { cairoDate } = require("../lib/dates");
 
 const router = express.Router();
 // The lock on the whole file: requireAuth runs before EVERY route below, so none of them can
@@ -318,7 +319,6 @@ router.delete("/courses/:id/image", async (req, res) => {
 // GET /api/admin/analytics?days=7|30|90 — sums the daily counters written by routes/analytics.js
 // into: one row per day (for the chart), totals, and the top sections / projects / referrers.
 const ANALYTICS_RANGES = [7, 30, 90];
-const cairoDate = (date) => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo" }).format(date);
 const fromKey = (key) => key.replace(/．/g, "."); // undo the full-width dot used in map keys
 
 // Adds every { key: count } of `map` into `total`.

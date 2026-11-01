@@ -2,11 +2,12 @@
 // portal (routes/team.js).
 const crypto = require("crypto");
 const { TeamActivity, TeamComment, TeamNotification, TeamTask } = require("./mongo");
+const { cairoDate, addDays } = require("./dates");
 
 // Today's date in Cairo as "YYYY-MM-DD" — due dates are stored the same way, so a plain string
 // comparison tells whether a task is overdue.
-const todayCairo = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo" }).format(new Date());
-const tomorrowCairo = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Cairo" }).format(new Date(Date.now() + 24 * 60 * 60 * 1000));
+const todayCairo = () => cairoDate();
+const tomorrowCairo = () => addDays(cairoDate(), 1);
 
 const isOverdue = (task, today = todayCairo()) => Boolean(task.dueDate) && task.status !== "done" && task.dueDate < today;
 
