@@ -14,6 +14,14 @@ const mongoose = require("mongoose");
 
 // Opens the connection (called once by server.js before the server starts listening).
 // MONGODB_URI comes from .env locally (local MongoDB) or from Render's settings (MongoDB Atlas).
+const httpUrl = {
+  type: String,
+  default: "",
+  maxlength: 300,
+  validate: { validator: (v) => v === "" || /^https?:\/\/\S+$/i.test(v), message: "Links must start with http:// or https://" },
+};
+// (Every link that ends up in an href goes through httpUrl, so a "javascript:" link can never be saved.)
+
 async function connectMongo() {
   const uri = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/salem_portfolio";
   await mongoose.connect(uri);
@@ -30,8 +38,8 @@ const projectSchema = new mongoose.Schema(
     descAr: { type: String, default: "" },
     tags: { type: [String], default: [] },
     category: { type: String, default: "web" },
-    githubUrl: { type: String, default: "" },
-    demoUrl: { type: String, default: "" },
+    githubUrl: httpUrl,
+    demoUrl: httpUrl,
     gradient: { type: String, default: "" },
     catLabelEn: { type: String, default: "" },
     catLabelAr: { type: String, default: "" },
@@ -90,7 +98,7 @@ const youtubeVideoSchema = new mongoose.Schema({
   subEn: { type: String, default: "" },
   subAr: { type: String, default: "" },
   gradient: { type: String, default: "" },
-  url: { type: String, default: "" },
+  url: httpUrl,
   order: { type: Number, default: 0 },
 });
 
@@ -221,12 +229,6 @@ const testimonialSchema = new mongoose.Schema(
 // the location, the footer role and the YouTube channel description. One single document; if
 // none exists the site uses the defaults in client/src/lib/siteDefaults.js.
 // Links are validated to start with http(s):// — never let a "javascript:" URL into an href.
-const httpUrl = {
-  type: String,
-  default: "",
-  maxlength: 300,
-  validate: { validator: (v) => v === "" || /^https?:\/\/\S+$/i.test(v), message: "Links must start with http:// or https://" },
-};
 const shortText = { type: String, default: "", maxlength: 160 };
 const siteSettingsSchema = new mongoose.Schema(
   {
@@ -848,7 +850,7 @@ const pushSubscriptionSchema = new mongoose.Schema(
 const circleSettingsSchema = new mongoose.Schema(
   {
     instapay: { type: String, default: "", trim: true, maxlength: 120 }, // e.g. name@instapay
-    instapayLink: { type: String, default: "", trim: true, maxlength: 300 }, // ipn.eg/… link (shown as a QR code)
+    instapayLink: { ...httpUrl, trim: true }, // ipn.eg/… link (shown as a QR code)
     vodafone: { type: String, default: "", trim: true, maxlength: 20 },
     payNote: { type: String, default: "", maxlength: 500 },
     vapidPublic: { type: String, default: "" },

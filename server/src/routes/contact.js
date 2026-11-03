@@ -25,6 +25,8 @@ const text = (value) => (typeof value === "string" ? value.trim() : "");
 
 router.post("/", contactLimiter, async (req, res) => {
   const body = req.body || {};
+  // Honeypot: a hidden field real people never see; bots fill everything. Pretend it worked, save nothing.
+  if (body.website) return res.status(201).json({ success: true });
   const name = text(body.name), email = text(body.email), message = text(body.message);
   const channel = body.channel === "whatsapp" ? "whatsapp" : "email";
   // A WhatsApp number keeps its digits (and a leading +): "+20 100 123 4567" -> "+201001234567".

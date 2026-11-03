@@ -19,7 +19,7 @@ async function requireMember(req, res, next) {
   if (!token) return res.status(401).json({ error: "Missing token" });
   let payload;
   try {
-    payload = jwt.verify(token, teamSecret());
+    payload = jwt.verify(token, teamSecret(), { algorithms: ["HS256"] });
   } catch {
     return res.status(401).json({ error: "Invalid or expired token" });
   }

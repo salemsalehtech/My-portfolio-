@@ -32,6 +32,7 @@ const circlesRouter = require("./routes/circles");
 const adminCirclesRouter = require("./routes/adminCircles");
 const adminTeamRouter = require("./routes/adminTeam");
 const { requireAuth } = require("./middleware/auth");
+const { stripOperators } = require("./middleware/sanitize");
 const authRouter = require("./routes/auth");
 const adminRouter = require("./routes/admin");
 
@@ -72,6 +73,8 @@ app.use("/api/circle", express.json({ limit: "4mb" }));
 app.use("/api/admin/team", express.json({ limit: "1mb" }));
 // Reads JSON request bodies into req.body (max 100 KB by default — plenty for every form).
 app.use(express.json());
+// Drops MongoDB operator keys ("$ne", "a.b"…) from every body, query and params (middleware/sanitize.js).
+app.use(stripOperators);
 
 // Health check: Render (and the keep-alive in lib/keepAlive.js) call this to see the app is up.
 app.get("/api/health", (req, res) => res.json({ ok: true }));

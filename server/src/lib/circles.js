@@ -187,7 +187,7 @@ async function requireCircleMember(req, res, next) {
   if (!token) return res.status(401).json({ error: "Missing token" });
   let payload;
   try {
-    payload = jwt.verify(token, circleSecret());
+    payload = jwt.verify(token, circleSecret(), { algorithms: ["HS256"] });
   } catch {
     return res.status(401).json({ error: "Invalid or expired token" });
   }

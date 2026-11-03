@@ -89,7 +89,7 @@ router.put("/cv", async (req, res) => {
   if (buffer.subarray(0, 5).toString("latin1") !== "%PDF-") return res.status(400).json({ error: "File must be a PDF" });
 
   // Keep only safe characters: the name ends up inside a Content-Disposition header.
-  const safeName = String(filename || "cv.pdf").replace(/[^A-Za-z0-9._-]/g, "_").slice(0, 80) || "cv.pdf";
+  const safeName = String(filename || "cv.pdf").replace(/[^A-Za-z0-9._-]/g, "_").replace(/\.{2,}/g, ".").replace(/^[._]+/, "").slice(0, 80) || "cv.pdf";
 
   // One CV at a time: replace the existing document, or create it on the first upload.
   const cv = await CvFile.findOneAndUpdate(
