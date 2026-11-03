@@ -210,10 +210,20 @@ body.ar .core-tool::before { transform-origin: right center; }
 .kit { margin-top: clamp(40px, 5vw, 64px); opacity: 0; transform: translateY(12px); transition: opacity .6s, transform .6s; }
 .kit.visible { opacity: 1; transform: none; }
 .kit-title { margin: 0 0 18px; font-family: var(--font-mono); font-size: 12.5px; font-weight: 500; color: var(--text-muted); }
-.kit-cols { columns: 3 250px; column-gap: clamp(24px, 3.5vw, 52px); }
-.kit-col { break-inside: avoid; margin-bottom: 34px; }
-.kit-col h4 { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin: 0; padding-bottom: 10px; border-bottom: 1px solid var(--line-strong); font-family: var(--font-heading); font-size: 15px; font-weight: 600; color: var(--text-primary); }
-.kit-col ul { list-style: none; margin: 0; padding: 0; }
+/* one area at a time: tabs (with how many tools each holds) over a grid of tool tiles */
+.kit-tabs { display: flex; gap: 0; border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 3px; width: max-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; margin-bottom: 18px; }
+.kit-tabs::-webkit-scrollbar { display: none; }
+.kit-tab { display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: 4px; padding: 8px 14px; background: transparent; color: var(--text-secondary); font: 500 14px var(--font-body); white-space: nowrap; cursor: pointer; }
+.kit-tab span { font: 500 11.5px var(--font-mono); color: var(--text-muted); }
+.kit-tab:hover { color: var(--text-primary); }
+.kit-tab[aria-selected="true"] { background: var(--ink); color: var(--on-ink); }
+.kit-tab[aria-selected="true"] span { color: inherit; opacity: .7; }
+.kit-panel { animation: kit-in .3s ease both; }
+@keyframes kit-in { from { opacity: 0; transform: translateY(6px); } }
+.kit-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 0 clamp(20px, 3vw, 40px); border-top: 1px solid var(--line-strong); }
+.kit-projects { background: none; border: none; padding: 0; cursor: pointer; font: inherit; color: inherit; text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.kit-projects:hover { color: var(--text-primary); text-decoration-color: #E3A21A; }
+.filter-skill span { margin-inline-start: 6px; opacity: .7; }
 .kit-tool { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--card-border); color: var(--text-primary); }
 .kit-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 15px; font-weight: 500; }
 .kit-name small { font-size: 12.5px; font-weight: 400; color: var(--text-muted); }
@@ -221,7 +231,6 @@ body.ar .core-tool::before { transform-origin: right center; }
 .kit-name bdi, .core-text bdi { unicode-bidi: plaintext; }
 body.ar .kit-name bdi { text-align: right; }
 .kit-meta { margin-inline-start: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); white-space: nowrap; text-align: end; }
-.kit-col h4 span { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--text-muted); }
 .kit-tool.is-core .tool-logo { fill: var(--gold); }
 .kit-tool.is-core .kit-tier { color: var(--gold); }
 .kit-tool.is-working { color: var(--text-secondary); }

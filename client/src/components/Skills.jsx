@@ -14,18 +14,17 @@ import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";
 import { GROUPS, groupOf, tierOf } from "../lib/skillGroups";
+import { norm, tagMatches, skillNames, splitTags } from "../lib/skillMatch";
+import { scrollToSection } from "../lib/scrollToSection";
 
-// "Node.js" → "nodejs", "React 18" → "react18", "C++" → "c++"
-const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9#+]/g, "");
+const names = skillNames;
 
-// a project tag names a skill when it is that name, or that name plus a version ("react18")
-const tagMatches = (tag, name) => tag === name || (tag.startsWith(name) && /^\d/.test(tag.slice(name.length)));
-
-// "Git / GitHub" can be written as either name in a project's tags
-const names = (skill) => String(skill.name).split("/").map(norm).filter(Boolean);
-
-// a project's tags can bundle several tools: "Node.js + Express.js"
-const splitTags = (tags) => (tags || []).flatMap((t) => String(t).split("+")).map((t) => t.trim()).filter(Boolean);
+// "2 projects" next to a tool: shows only those projects in the Projects section (Projects.jsx listens).
+const showProjects = (skill) => {
+  window.dispatchEvent(new CustomEvent("filter-projects", { detail: { label: skill.name, names: names(skill) } }));
+  scrollToSection("projects");
+};
+const readArea = () => { try { return localStorage.getItem("skillsArea") || ""; } catch { return ""; } };
 
 function projectsLabel(n, lang) {
   if (lang !== "ar") return n === 1 ? "1 project" : `${n} projects`;
@@ -53,6 +52,7 @@ export default function Skills() {
   const [headerRef, headerVisible] = useReveal();
   const [coreRef, coreVisible] = useReveal();
   const [kitRef, kitVisible] = useReveal();
+  const [area, setArea] = useState(readArea); // the area shown in "everything I work with"
 
   useEffect(() => {
     import("../lib/toolIcons").then((m) => setIconFor(() => m.iconFor)).catch(() => setIconFor(() => () => null));
@@ -69,6 +69,22 @@ export default function Skills() {
     group,
     list: skills.filter((s) => groupOf(s) === group).sort((a, b) => rank[tierOf(a)] - rank[tierOf(b)] || byOrder(a, b)),
   })).filter((g) => g.list.length);
+
+  // the chosen area, or the first one that has tools (also when the saved one is gone)
+  const activeArea = kit.some((g) => g.group === area) ? area : kit[0]?.group;
+  const chooseArea = (group) => { setArea(group); try { localStorage.setItem("skillsArea", group); } catch { /* storage blocked */ } };
+  // arrow keys move between the tabs (and wrap), as in any tab list
+  const onTabKey = (e) => {
+    const step = { ArrowRight: 1, ArrowLeft: -1, Home: -Infinity, End: Infinity }[e.key];
+    if (step === undefined) return;
+    e.preventDefault();
+    const rtl = lang === "ar" && Math.abs(step) === 1 ? -1 : 1;
+    const i = kit.findIndex((g) => g.group === activeArea);
+    const next = step === -Infinity ? 0 : step === Infinity ? kit.length - 1 : (i + step * rtl + kit.length) % kit.length;
+    chooseArea(kit[next].group);
+    document.getElementById(`skills-tab-${kit[next].group}`)?.focus();
+  };
+  const current = kit.find((g) => g.group === activeArea);
 
   // technologies the projects used that no skill covers, in first-seen order
   const extra = [];
@@ -114,12 +130,19 @@ export default function Skills() {
         {kit.length > 0 && (
           <div ref={kitRef} className={`kit ${kitVisible ? "visible" : ""}`} data-ao>
             <h3 className="kit-title">{t.skills.kitLabel}</h3>
-            <div className="kit-cols">
+            <div className="kit-tabs" role="tablist" aria-label={t.skills.kitLabel} onKeyDown={onTabKey}>
               {kit.map(({ group, list }) => (
-                <div className="kit-col" key={group}>
-                  <h4>{t.skills.groups[group]} <span>{list.length}</span></h4>
-                  <ul>
-                    {list.map((skill) => {
+                <button key={group} id={`skills-tab-${group}`} type="button" role="tab" className="kit-tab"
+                  aria-selected={group === activeArea} aria-controls="skills-panel" tabIndex={group === activeArea ? 0 : -1}
+                  onClick={() => chooseArea(group)}>
+                  {t.skills.groups[group]} <span>{list.length}</span>
+                </button>
+              ))}
+            </div>
+            {current && (
+              <div className="kit-panel" id="skills-panel" role="tabpanel" aria-labelledby={`skills-tab-${current.group}`} key={current.group}>
+                  <ul className="kit-grid">
+                    {current.list.map((skill) => {
                       const count = usedIn(skill);
                       const tier = tierOf(skill);
                       return (
@@ -131,15 +154,14 @@ export default function Skills() {
                           </span>
                           <span className="kit-meta">
                             {tier !== "regular" && <span className="kit-tier">{t.skills.tiers[tier]}</span>}
-                            {count > 0 && <span>{projectsLabel(count, lang)}</span>}
+                            {count > 0 && <button type="button" className="kit-projects" onClick={() => showProjects(skill)}>{projectsLabel(count, lang)}</button>}
                           </span>
                         </li>
                       );
                     })}
                   </ul>
-                </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         )}
 

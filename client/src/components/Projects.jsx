@@ -16,6 +16,7 @@ import ProjectModal from "./ProjectModal";
 import { track } from "../lib/analytics";
 import { API_BASE } from "../lib/api";
 import { ArrowIcon } from "./ArrowIcon";
+import { projectUses } from "../lib/skillMatch";
 
 // The project's picture (Admin → Projects → Upload picture). `?v=<updatedAt>` changes when a new
 // picture is uploaded, so browsers never keep showing an old one.
@@ -46,6 +47,14 @@ export default function Projects() {
   const { t, lang } = useSite();
   const { data: projects } = useCollection("/projects");
   const [filter, setFilter] = useState("all"); // "all" or a tag key
+  // a tool picked in the Skills section ("2 projects"): { label, names } — shows the projects that used it
+  const [bySkill, setBySkill] = useState(null);
+  useEffect(() => {
+    const onFilter = (e) => { if (e.detail?.names?.length) setBySkill(e.detail); };
+    window.addEventListener("filter-projects", onFilter);
+    return () => window.removeEventListener("filter-projects", onFilter);
+  }, []);
+  const pickTag = (key) => { setBySkill(null); setFilter(key); };
   const [selected, setSelected] = useState(null);
   // A review's "About <project>" link (components/Testimonials.jsx) opens that project here.
   useEffect(() => {
@@ -59,10 +68,12 @@ export default function Projects() {
 
   const tags = collectTags(projects);
   // If the selected tag no longer exists (data changed), fall back to showing everything.
-  const activeFilter = tags.some((tag) => tag.key === filter) ? filter : "all";
-  const filtered = activeFilter === "all"
-    ? projects
-    : projects.filter((p) => (p.tags || []).some((tag) => tagKey(tag) === activeFilter));
+  const activeFilter = bySkill ? "skill" : tags.some((tag) => tag.key === filter) ? filter : "all";
+  const filtered = bySkill
+    ? projects.filter((p) => projectUses(p, bySkill.names))
+    : activeFilter === "all"
+      ? projects
+      : projects.filter((p) => (p.tags || []).some((tag) => tagKey(tag) === activeFilter));
 
   return (
     <section id="projects" className="section-surface">
@@ -75,15 +86,20 @@ export default function Projects() {
 
         <div ref={filterRef} className={`filter-btns ${filterVisible ? "visible" : ""}`} data-ao>
           {tags.length > 0 && (
-            <button className={`filter-btn ${activeFilter === "all" ? "active" : ""}`} onClick={() => setFilter("all")}>
+            <button className={`filter-btn ${activeFilter === "all" ? "active" : ""}`} onClick={() => pickTag("all")}>
               {t.projects.filterAll}
             </button>
           )}
           {tags.map((tag) => (
-            <button key={tag.key} className={`filter-btn ${activeFilter === tag.key ? "active" : ""}`} onClick={() => setFilter(tag.key)}>
+            <button key={tag.key} className={`filter-btn ${activeFilter === tag.key ? "active" : ""}`} onClick={() => pickTag(tag.key)}>
               {tag.label}
             </button>
           ))}
+          {bySkill && (
+            <button className="filter-btn active filter-skill" onClick={() => pickTag("all")} aria-label={t.projects.clearSkill.replace("{name}", bySkill.label)}>
+              <bdi>{bySkill.label}</bdi> <span aria-hidden="true">×</span>
+            </button>
+          )}
         </div>
 
         <div ref={gridRef} className={`projects-grid ${projects.some((p) => p.hasImage) ? "has-images" : ""} ${gridVisible ? "visible" : ""}`} data-ao>
