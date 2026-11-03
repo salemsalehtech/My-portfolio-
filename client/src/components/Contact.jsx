@@ -20,7 +20,7 @@ import { pick, linkLabel, youtubeHandle } from "../lib/pick";
 import { TIMELINES, BUDGETS, DRAFT_KEY } from "../lib/contactBrief";
 import { GithubIcon, LinkedinIcon, YoutubeIcon, MailIcon, PinIcon } from "../lib/socialIcons";
 
-const EMPTY = { projectType: "", timeline: "", budget: "", channel: "email", name: "", email: "", phone: "", message: "" };
+const EMPTY = { projectType: "", timeline: "", budget: "", channel: "email", name: "", email: "", phone: "", message: "", website: "" };
 const MAX_MESSAGE = 5000;
 
 const readDraft = () => {
@@ -127,6 +127,8 @@ export default function Contact({ settings, services = [] }) {
             ) : (
               <form onSubmit={submit} noValidate>
                 {status === "error" && <div className="admin-error">{c.error}</div>}
+                {/* bot trap: hidden from people (and screen readers); a filled-in value means a bot */}
+                <input className="feedback-trap" name="website" value={form.website} onChange={typed("website")} tabIndex={-1} autoComplete="off" aria-hidden="true" />
 
                 <Choices label={c.need} options={needOptions} value={form.projectType} onChange={set("projectType")} clearable />
                 <Choices label={c.when} options={TIMELINES.map((x) => [x.id, x[lang]])} value={form.timeline} onChange={set("timeline")} clearable />
