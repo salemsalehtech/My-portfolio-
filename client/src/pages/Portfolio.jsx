@@ -22,6 +22,8 @@ import YouTube from "../components/YouTube";
 import Contact from "../components/Contact";
 import Footer from "../components/Footer";
 import ScrollTop from "../components/ScrollTop";
+import CtaBand from "../components/CtaBand";
+import WhatsAppButton from "../components/WhatsAppButton";
 import { useScrollTracking } from "../hooks/useScrollTracking";
 import { useCollection } from "../hooks/useCollection";
 import { useSiteSettings } from "../hooks/useSiteSettings";
@@ -84,12 +86,14 @@ export default function Portfolio() {
       <Products items={products.data} loading={products.loading} />
       <Certificates items={certificates.data} loading={certificates.loading} />
       <Testimonials items={testimonials.data} loading={testimonials.loading} />
+      <CtaBand settings={settings} />
       <BlogSection items={posts.data} loading={posts.loading} />
       <Courses items={courses.data} loading={courses.loading} />
       <YouTube settings={settings} />
       <Contact settings={settings} services={services.data} />
       <Footer settings={settings} />
       <ScrollTop visible={showScrollTop} />
+      <WhatsAppButton number={settings.whatsapp} visible={showScrollTop} />
     </>
   );
 }

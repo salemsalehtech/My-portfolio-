@@ -13,11 +13,15 @@ import { renderMarkdown, readingMinutes } from "../lib/markdown";
 import { postCoverUrl, formatPostDate, postInLang } from "../lib/posts";
 import { track } from "../lib/analytics";
 import BlogHeader from "../components/BlogHeader";
+import CtaBand from "../components/CtaBand";
+import WhatsAppButton from "../components/WhatsAppButton";
+import { useSiteSettings } from "../hooks/useSiteSettings";
 
 export default function BlogPost() {
   const { slug } = useParams();
   const { t, lang } = useSite();
   const [post, setPost] = useState(undefined); // undefined = loading, null = not found
+  const settings = useSiteSettings();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -61,6 +65,8 @@ export default function BlogPost() {
           </article>
         )}
       </main>
+      {post && <CtaBand settings={settings} />}
+      <WhatsAppButton number={settings.whatsapp} />
     </div>
   );
 }

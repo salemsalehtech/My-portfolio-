@@ -7,7 +7,7 @@ const { toKey } = require("../lib/analytics");
 
 // Privacy-friendly visitor analytics: POST /api/analytics/event.
 // The site (client/src/lib/analytics.js) sends tiny events — "visit", "section", "project", "post",
-// "cv". Nothing about the visitor is stored: no IP, no cookie, no id — each event just adds 1
+// "cv", "whatsapp". Nothing about the visitor is stored: no IP, no cookie, no id — each event just adds 1
 // to a counter in today's DailyStat document. Every value is checked against a fixed list or
 // format first, so nobody can fill the database with arbitrary keys.
 const router = express.Router();
@@ -62,6 +62,8 @@ router.post("/event", eventLimiter, async (req, res) => {
     inc[`posts.${name}`] = 1;
   } else if (type === "cv") {
     inc.cvDownloads = 1;
+  } else if (type === "whatsapp") {
+    inc.whatsappClicks = 1;
   } else {
     return res.status(400).json({ error: "Unknown event" });
   }

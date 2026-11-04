@@ -19,3 +19,12 @@ export const timelineLabel = (id, lang = "en") => TIMELINES.find((x) => x.id ===
 
 // The visitor's unsent answers stay on their device, so a reload or a closed tab loses nothing.
 export const DRAFT_KEY = "contactDraft";
+
+// Starts the brief with a first line (e.g. "something like <project>" from a case-study page),
+// unless the visitor already wrote a message. Storage may be blocked: then nothing is kept.
+export function prefillMessage(text) {
+  try {
+    const draft = JSON.parse(localStorage.getItem(DRAFT_KEY) || "{}");
+    if (!draft.message) localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draft, message: text }));
+  } catch { /* storage unavailable */ }
+}

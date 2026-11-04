@@ -2,6 +2,7 @@
 //
 // Route map:
 //   /                    -> Portfolio (the public single-page site)
+//   /work/:slug          -> ProjectPage (one project's case study)
 //   /admin/login         -> AdminLogin
 //   /admin               -> AdminLayout (redirects to /admin/projects if visited directly)
 //     /admin/projects    -> AdminProjects
@@ -50,6 +51,7 @@ import { lazy, Suspense } from "react";
 // them lazily puts that code in a separate file that is only downloaded when one of these two
 // pages is opened — the home page stays as light as before.
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const ProjectPage = lazy(() => import("./pages/ProjectPage"));
 const AdminPostEditor = lazy(() => import("./pages/admin/AdminPostEditor"));
 // The team workspace (member portal + the owner's team pages) is only downloaded when opened.
 const TeamPortal = lazy(() => import("./pages/team/TeamPortal"));
@@ -75,6 +77,7 @@ export default function App() {
             <Route path="/" element={<Portfolio />} />
             <Route path="/blog" element={<BlogList />} />
             <Route path="/blog/:slug" element={<Suspense fallback={loading}><BlogPost /></Suspense>} />
+            <Route path="/work/:slug" element={<Suspense fallback={loading}><ProjectPage /></Suspense>} />
             <Route path="/feedback" element={<Navigate to="/feedback/en" replace />} />
             <Route path="/feedback/:lang" element={<FeedbackForm />} />
             <Route path="/form/:slug" element={<PublicForm />} />

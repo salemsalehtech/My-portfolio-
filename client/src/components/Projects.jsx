@@ -1,6 +1,6 @@
 // Projects.jsx — the "Featured Projects" section (id="projects"): a technology filter bar
 // plus a grid of project cards, fetched live from the public GET /projects API via
-// useCollection(). Clicking a card opens ProjectModal with that project's full details.
+// useCollection(). Each card links to the project's case-study page (pages/ProjectPage.jsx).
 //
 // The filter buttons are NOT a fixed list: they are built from the `tags` of the projects
 // themselves (edited in Admin → Projects), most-used first. Add a tag to a project in the
@@ -9,19 +9,13 @@
 // A project with a picture shows it on its card; one without shows its gradient. As soon as any
 // project has a picture, all card tops get the same taller 16:9 size so the rows stay even.
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
 import { useCollection } from "../hooks/useCollection";
-import ProjectModal from "./ProjectModal";
-import { track } from "../lib/analytics";
-import { API_BASE } from "../lib/api";
 import { ArrowIcon } from "./ArrowIcon";
 import { projectUses } from "../lib/skillMatch";
-
-// The project's picture (Admin → Projects → Upload picture). `?v=<updatedAt>` changes when a new
-// picture is uploaded, so browsers never keep showing an old one.
-export const projectImageUrl = (project) =>
-  `${API_BASE}/projects/${project.id}/image?v=${encodeURIComponent(project.updatedAt || "")}`;
+import { projectImageUrl, projectPath } from "../lib/projects";
 
 // "React", "react " and "REACT" count as the same tag.
 const tagKey = (tag) => String(tag).trim().toLowerCase();
@@ -55,13 +49,6 @@ export default function Projects() {
     return () => window.removeEventListener("filter-projects", onFilter);
   }, []);
   const pickTag = (key) => { setBySkill(null); setFilter(key); };
-  const [selected, setSelected] = useState(null);
-  // A review's "About <project>" link (components/Testimonials.jsx) opens that project here.
-  useEffect(() => {
-    const onOpen = (e) => { const p = projects.find((x) => x.id === e.detail?.id); if (p) { setSelected(p); track("project", p.id); } };
-    window.addEventListener("open-project", onOpen);
-    return () => window.removeEventListener("open-project", onOpen);
-  }, [projects]);
   const [headerRef, headerVisible] = useReveal();
   const [filterRef, filterVisible] = useReveal();
   const [gridRef, gridVisible] = useReveal();
@@ -108,9 +95,7 @@ export default function Projects() {
             const desc = lang === "ar" ? project.descAr : project.descEn;
             const cat = lang === "ar" ? project.catLabelAr : project.catLabelEn;
             return (
-              <div className="project-card cut-card" key={project.id} role="button" tabIndex={0}
-                onClick={() => { setSelected(project); track("project", project.id); }}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setSelected(project); track("project", project.id); } }}>
+              <Link className="project-card cut-card" key={project.id} to={projectPath(project)}>
                 <div className="project-thumb" style={{ background: project.gradient }}>
                   {project.hasImage && <img className="project-thumb-img" src={projectImageUrl(project)} alt="" loading="lazy" />}
                   <div className="project-tags">
@@ -134,13 +119,12 @@ export default function Projects() {
                     <span className="project-more">{t.projects.details} <ArrowIcon size={14} /></span>
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>
       </div>
 
-      {selected && <ProjectModal project={selected} onClose={() => setSelected(null)} />}
     </section>
   );
 }

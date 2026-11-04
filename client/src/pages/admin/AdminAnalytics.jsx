@@ -144,6 +144,7 @@ export default function AdminAnalytics() {
             <div className="an-tile"><span>{t("Visits")}</span><strong>{fmt(totals.visits)}</strong></div>
             <div className="an-tile"><span>{t("Per day (average)")}</span><strong>{(totals.visits / data.days).toFixed(1)}</strong></div>
             <div className="an-tile"><span>{t("CV downloads")}</span><strong>{fmt(totals.cvDownloads)}</strong></div>
+            <div className="an-tile"><span>{t("WhatsApp chats")}</span><strong>{fmt(totals.whatsappClicks || 0)}</strong></div>
             <div className="an-tile"><span>{t("On mobile")}</span><strong>{pct(totals.mobile, totals.mobile + totals.desktop)}</strong></div>
             <div className="an-tile"><span>{t("In Arabic")}</span><strong>{pct(totals.langAr, totals.langAr + totals.langEn)}</strong></div>
           </div>
@@ -166,7 +167,7 @@ export default function AdminAnalytics() {
 
           <div className="an-grid-3">
             <TopTable title={t("Sections viewed")} rows={data.sections} label={(r) => T.en.nav[r.name] || r.name} />
-            <TopTable title={t("Projects opened")} rows={data.projects} label={(r) => r.title} />
+            <TopTable title={t("Project pages read")} rows={data.projects} label={(r) => r.title} />
             <TopTable title={t("Articles read")} rows={data.posts || []} label={(r) => r.title} />
             <TopTable title={t("Where visitors came from")} rows={data.referrers} label={(r) => (r.host === "direct" ? "Direct / unknown" : r.host === "other" ? "Other sites" : r.host)} />
           </div>

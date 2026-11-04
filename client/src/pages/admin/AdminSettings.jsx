@@ -130,6 +130,7 @@ export default function AdminSettings() {
           <Field label={t("LinkedIn URL")} type="url" value={form.linkedinUrl} onChange={set("linkedinUrl")} placeholder="https://www.linkedin.com/in/…" />
           <Field label={t("YouTube channel URL")} type="url" value={form.youtubeUrl} onChange={set("youtubeUrl")} placeholder="https://www.youtube.com/@…" />
         </div>
+        <Field label={t("WhatsApp number — shows the floating chat button and the WhatsApp button in the “Have a project?” band")} type="tel" value={form.whatsapp || ""} onChange={set("whatsapp")} placeholder="01012345678" />
 
         <h2>{t("Other texts")}</h2>
         <div className="admin-form-row">

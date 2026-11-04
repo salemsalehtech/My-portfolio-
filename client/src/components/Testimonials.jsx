@@ -1,6 +1,6 @@
 // Testimonials.jsx — the "What Clients Say" section (id="testimonials"): equal cards with the
 // client's words, rating, name, role, and (when chosen in Admin → Testimonials) the project the
-// review is about, which opens that project's case study. The list comes from the public
+// review is about, which links to that project's case-study page. The list comes from the public
 // GET /testimonials API (only the ones marked visible); Portfolio.jsx fetches it and passes it in
 // as `items` / `loading`, because the Navbar also needs to know if it's empty.
 //
@@ -10,8 +10,10 @@
 // first mounts, and the content mounts after the data has arrived.
 //
 // TestimonialCard is also the live preview in the dashboard's testimonial form.
+import { Link } from "react-router-dom";
 import { useSite } from "../context/SiteContext";
 import { useReveal } from "../hooks/useReveal";
+import { projectPath } from "../lib/projects";
 import { ArrowIcon } from "./ArrowIcon";
 
 export default function Testimonials({ items, loading }) {
@@ -28,10 +30,7 @@ function Rating({ rating, label }) {
   );
 }
 
-// Projects.jsx listens for this and opens the project's case study.
-const openProject = (id) => window.dispatchEvent(new CustomEvent("open-project", { detail: { id } }));
-
-// One review. `item.project` is { id, titleEn, titleAr } or null.
+// One review. `item.project` is { id, slug, titleEn, titleAr } or null.
 export function TestimonialCard({ item }) {
   const { t, lang } = useSite();
   // The site's language first; a review written in one language only falls back to it.
@@ -47,9 +46,9 @@ export function TestimonialCard({ item }) {
       </div>
       <blockquote className="testimonial-text" dir="auto">{pick(item.textEn, item.textAr)}</blockquote>
       {project && (
-        <button type="button" className="testimonial-project" onClick={() => openProject(item.project.id)}>
+        <Link className="testimonial-project" to={projectPath(item.project)}>
           <span>{t.testimonials.about}</span> <bdi>{project}</bdi> <ArrowIcon size={14} />
-        </button>
+        </Link>
       )}
       <figcaption className="testimonial-author">
         <div className="testimonial-avatar" aria-hidden="true">{name.charAt(0).toUpperCase()}</div>

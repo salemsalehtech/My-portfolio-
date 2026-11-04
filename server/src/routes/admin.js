@@ -7,6 +7,7 @@
 // Single-document resources (about, settings, cv) use PUT / DELETE without an :id.
 // The public site reads the same data through the read-only routers (routes/projects.js, …).
 const express = require("express");
+const mongoose = require("mongoose");
 const { readImageUpload } = require("../lib/images");
 const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, Post, Course, Form, FormResponse } = require("../lib/mongo");
 const { only } = require("../lib/fields");
@@ -24,14 +25,28 @@ router.use(requireAuth);
 // `runValidators: true` makes updates respect the schema's limits too (not only creates).
 // The picture is never taken from the form — only from the upload route (PUT /projects/:id/image).
 const withoutImage = ({ image, ...rest } = {}) => rest;
+const slugify = (text) =>
+  String(text || "").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 70);
+// The project page's link name: the one typed in the form, or one made from the English title;
+// "-2", "-3"… is added when another project already uses it.
+async function projectSlug(body, id = null) {
+  const base = slugify(body.slug) || slugify(body.titleEn) || "project";
+  for (let n = 1; ; n++) {
+    const slug = n === 1 ? base : `${base}-${n}`;
+    if (!(await Project.exists({ slug, ...(id && { _id: { $ne: id } }) }))) return slug;
+  }
+}
 router.get("/projects", async (req, res) => {
   res.json(await Project.find().sort({ order: 1 }));
 });
 router.post("/projects", async (req, res) => {
-  res.status(201).json(await Project.create(withoutImage(req.body)));
+  const body = withoutImage(req.body);
+  res.status(201).json(await Project.create({ ...body, slug: await projectSlug(body) }));
 });
 router.put("/projects/:id", async (req, res) => {
-  const item = await Project.findByIdAndUpdate(req.params.id, withoutImage(req.body), { new: true, runValidators: true });
+  if (!mongoose.isValidObjectId(req.params.id)) return res.status(404).json({ error: "Project not found" });
+  const body = withoutImage(req.body);
+  const item = await Project.findByIdAndUpdate(req.params.id, { ...body, slug: await projectSlug(body, req.params.id) }, { new: true, runValidators: true });
   if (!item) return res.status(404).json({ error: "Project not found" });
   res.json(item);
 });
@@ -180,7 +195,7 @@ const SETTINGS_TEXT_FIELDS = [
   "greetingEn", "greetingAr", "nameEn", "nameAr", "taglineEn", "taglineAr", "uspEn", "uspAr",
   "email", "githubUrl", "linkedinUrl", "youtubeUrl",
   "locationEn", "locationAr", "roleEn", "roleAr", "channelDescEn", "channelDescAr",
-  "availabilityEn", "availabilityAr", "bookingUrl",
+  "availabilityEn", "availabilityAr", "bookingUrl", "whatsapp",
 ];
 
 router.get("/settings", async (req, res) => {
@@ -193,6 +208,7 @@ router.put("/settings", async (req, res) => {
   const clean = {};
   for (const field of SETTINGS_TEXT_FIELDS) clean[field] = String(body[field] ?? "").trim();
   clean.titles = asList(body.titles, 6).map((t) => ({ en: String(t.en ?? "").trim(), ar: String(t.ar ?? "").trim() }));
+  clean.whatsapp = clean.whatsapp.replace(/[\s()-]/g, ""); // "010 1234-5678" -> "01012345678"
   clean.availableForWork = body.availableForWork !== false;
   clean.process = asList(body.process, 6).map((p) => ({
     titleEn: String(p.titleEn ?? "").trim(), titleAr: String(p.titleAr ?? "").trim(),

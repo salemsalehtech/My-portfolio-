@@ -3,8 +3,9 @@
 //
 //   trackVisit(lang)        once per browser session: device type, language, where they came from
 //   track("section", id)    once per session per section that came into view
-//   track("project", id)    once per session per project popup opened
+//   track("project", id)    once per session per project page opened
 //   track("cv")             once per session when the CV is downloaded
+//   track("whatsapp")       once per session when a WhatsApp chat is opened (button or band)
 //
 // Nothing is sent when: running the dev server (npm run dev), the visitor is the logged-in admin
 // (so your own visits don't count), or the browser asks not to be tracked (Do Not Track).

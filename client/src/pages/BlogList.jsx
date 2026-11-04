@@ -5,11 +5,14 @@ import { useSite } from "../context/SiteContext";
 import { useCollection } from "../hooks/useCollection";
 import BlogHeader from "../components/BlogHeader";
 import PostCard from "../components/PostCard";
+import WhatsAppButton from "../components/WhatsAppButton";
+import { useSiteSettings } from "../hooks/useSiteSettings";
 
 export default function BlogList() {
   const { t } = useSite();
   const { data: posts, loading } = useCollection("/posts");
   const [tag, setTag] = useState("all");
+  const settings = useSiteSettings();
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
   useEffect(() => { document.title = `${t.blog.title} | Salem Saleh`; }, [t.blog.title]);
@@ -40,6 +43,7 @@ export default function BlogList() {
           {shown.map((post) => <PostCard key={post.id} post={post} />)}
         </div>
       </main>
+      <WhatsAppButton number={settings.whatsapp} />
     </div>
   );
 }

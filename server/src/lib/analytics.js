@@ -22,7 +22,7 @@ async function analyticsReport(days) {
   const docs = await DailyStat.find({ date: { $in: dates } }).lean();
   const byDate = Object.fromEntries(docs.map((d) => [d.date, d]));
 
-  const totals = { visits: 0, mobile: 0, desktop: 0, langEn: 0, langAr: 0, cvDownloads: 0 };
+  const totals = { visits: 0, mobile: 0, desktop: 0, langEn: 0, langAr: 0, cvDownloads: 0, whatsappClicks: 0 };
   const sections = {}, projects = {}, referrers = {}, posts = {};
   for (const doc of docs) {
     for (const field of Object.keys(totals)) totals[field] += doc[field] || 0;

@@ -28,11 +28,14 @@ async function connectMongo() {
   console.log("Connected to MongoDB");
 }
 
-// A portfolio project (Projects section + its details popup). `tags` feed the technology filter
-// buttons, `gradient` is the CSS background of the card, `order` sorts the cards.
+// A portfolio project (Projects section + its case-study page at /#/work/<slug>). `tags` feed the
+// technology filter buttons, `gradient` is the CSS background of the card, `order` sorts the cards.
 const projectSchema = new mongoose.Schema(
   {
     titleEn: { type: String, required: true },
+    // The readable part of the page address. Made from the English title when left empty, and kept
+    // unique by routes/admin.js (projectSlug). Projects saved before it existed open by their id.
+    slug: { type: String, default: "", maxlength: 80, index: true, match: [/^([a-z0-9]+(-[a-z0-9]+)*)?$/, "The link name may only use a-z, 0-9 and single dashes"] },
     titleAr: { type: String, default: "" },
     descEn: { type: String, default: "" },
     descAr: { type: String, default: "" },
@@ -51,6 +54,13 @@ const projectSchema = new mongoose.Schema(
     solutionAr: { type: String, default: "", maxlength: 1500 },
     resultEn: { type: String, default: "", maxlength: 1500 },
     resultAr: { type: String, default: "", maxlength: 1500 },
+    // The case-study page's facts line ("2025" · "Design and full-stack build") and an optional
+    // longer story in Markdown (screens, decisions, what was learned), rendered like a blog post.
+    year: { type: String, default: "", maxlength: 20 },
+    roleEn: { type: String, default: "", maxlength: 120 },
+    roleAr: { type: String, default: "", maxlength: 120 },
+    storyEn: { type: String, default: "", maxlength: 20000 },
+    storyAr: { type: String, default: "", maxlength: 20000 },
     // Up to 4 results with numbers ("40%" — "fewer missed appointments"), shown on the card and
     // in the case study. Only real, measured numbers belong here.
     metrics: {
@@ -254,6 +264,13 @@ const siteSettingsSchema = new mongoose.Schema(
     availableForWork: { type: Boolean, default: true },
     availabilityEn: shortText, availabilityAr: shortText,
     bookingUrl: httpUrl,
+    // A WhatsApp number for the floating chat button and the "Let's talk" band (empty = no button).
+    whatsapp: {
+      type: String,
+      default: "",
+      maxlength: 20,
+      validate: { validator: (v) => v === "" || /^\+?\d{8,15}$/.test(v), message: "Write the WhatsApp number with digits only, e.g. 01012345678 or +201012345678" },
+    },
     // "How a project goes": up to 6 steps, shown in order (empty = the built-in 4 steps).
     process: {
       type: [{ _id: false, titleEn: shortText, titleAr: shortText, textEn: { type: String, default: "", maxlength: 300 }, textAr: { type: String, default: "", maxlength: 300 } }],
@@ -327,6 +344,7 @@ const dailyStatSchema = new mongoose.Schema(
     langEn: { type: Number, default: 0 },
     langAr: { type: Number, default: 0 },
     cvDownloads: { type: Number, default: 0 },
+    whatsappClicks: { type: Number, default: 0 }, // the WhatsApp chat button / band
     sections: { type: Map, of: Number, default: {} },
     projects: { type: Map, of: Number, default: {} },
     referrers: { type: Map, of: Number, default: {} },

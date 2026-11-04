@@ -17,7 +17,8 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { readAsBase64 } from "../../lib/readAsBase64";
-import { projectImageUrl } from "../../components/Projects";
+import { projectImageUrl, projectPath } from "../../lib/projects";
+import { slugify } from "../../lib/slug";
 import { useAdminT } from "../../lib/adminI18n";
 import { ListEditor } from "./FormParts";
 
@@ -27,7 +28,7 @@ const EMPTY = {
   metrics: [],
   titleEn: "", titleAr: "", descEn: "", descAr: "", tags: "", category: "web",
   githubUrl: "", demoUrl: "", gradient: "linear-gradient(135deg,#1E3A5F,#2E5B9A)",
-  catLabelEn: "", catLabelAr: "", order: 0,
+  catLabelEn: "", catLabelAr: "", order: 0, slug: "", year: "", roleEn: "", roleAr: "", storyEn: "", storyAr: "",
   problemEn: "", problemAr: "", solutionEn: "", solutionAr: "", resultEn: "", resultAr: "",
 };
 
@@ -128,7 +129,10 @@ export default function AdminProjects() {
               <td className="admin-thumb-cell">
                 {p.hasImage ? <img className="admin-thumb" src={projectImageUrl(p)} alt="" /> : "—"}
               </td>
-              <td>{p.titleEn}</td>
+              <td>
+                {p.titleEn}
+                <a className="admin-sublink" href={`#${projectPath(p)}`} target="_blank" rel="noreferrer" dir="ltr">#{projectPath(p)}</a>
+              </td>
               <td>{p.category}</td>
               <td>{p.order}</td>
               <td className="actions">
@@ -157,6 +161,23 @@ export default function AdminProjects() {
                 </label>
                 <label>{t("Title (AR)")}
                   <input className="form-input" value={form.titleAr} onChange={(e) => setForm({ ...form, titleAr: e.target.value })} required />
+                </label>
+              </div>
+              <div className="admin-form-row">
+                <label>{t("Page link name (empty = made from the English title)")}
+                  <input className="form-input" dir="ltr" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                    placeholder={slugify(form.titleEn) || "clinic-booking-system"} maxLength={70} />
+                </label>
+                <label>{t("Year")}
+                  <input className="form-input" dir="ltr" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} placeholder="2025" maxLength={20} />
+                </label>
+              </div>
+              <div className="admin-form-row">
+                <label>{t("My role (EN)")}
+                  <input className="form-input" value={form.roleEn} onChange={(e) => setForm({ ...form, roleEn: e.target.value })} placeholder="Design and full-stack build" maxLength={120} />
+                </label>
+                <label>{t("My role (AR)")}
+                  <input className="form-input" dir="rtl" value={form.roleAr} onChange={(e) => setForm({ ...form, roleAr: e.target.value })} placeholder="التصميم والبرمجة كاملة" maxLength={120} />
                 </label>
               </div>
               <label>{t("Description (EN)")}
@@ -202,7 +223,7 @@ export default function AdminProjects() {
 
               <h3 style={{ marginTop: 10 }}>{t("Case study (optional)")}</h3>
               <p style={{ opacity: 0.7, fontSize: 13, margin: 0 }}>
-                {t("Shown in the project popup as Problem → Solution → Result. Leave a part empty to skip it.")}
+                {t("Shown on the project's page as Problem → Solution → Result. Leave a part empty to skip it.")}
               </p>
               <ListEditor
                 title={t("Results in numbers (up to 4, real numbers only)")}
@@ -229,6 +250,16 @@ export default function AdminProjects() {
                   </label>
                 </div>
               ))}
+              <h3 style={{ marginTop: 10 }}>{t("The full story (optional, Markdown)")}</h3>
+              <p style={{ opacity: 0.7, fontSize: 13, margin: 0 }}>
+                {t("A longer write-up under the case study: the screens, the decisions, what you learned. Written like a blog post (## headings, lists, links, images).")}
+              </p>
+              <label>{t("Story (EN)")}
+                <textarea className="form-input form-textarea" rows={8} dir="ltr" value={form.storyEn} onChange={(e) => setForm({ ...form, storyEn: e.target.value })} maxLength={20000} />
+              </label>
+              <label>{t("Story (AR)")}
+                <textarea className="form-input form-textarea" rows={8} dir="rtl" value={form.storyAr} onChange={(e) => setForm({ ...form, storyAr: e.target.value })} maxLength={20000} />
+              </label>
               <div className="admin-form-actions">
                 <button type="button" className="admin-btn" onClick={() => setEditing(null)}>{t("Cancel")}</button>
                 <button type="submit" className="admin-btn admin-btn-primary">{t("Save")}</button>
