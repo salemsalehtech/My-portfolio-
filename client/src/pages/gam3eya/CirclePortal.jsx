@@ -20,6 +20,7 @@ import { useSite } from "../../context/SiteContext";
 import { SunIcon, MoonIcon, GlobeIcon, KeyIcon, LogoutIcon, ExternalIcon, CheckCircleIcon } from "../../components/team/icons";
 import CircleBell from "../../components/circles/CircleBell";
 import CircleHome from "./CircleHome";
+import Toaster from "../../components/Toaster";
 import { CircleReceipt, CircleCertificate } from "./CirclePrint";
 import BrandMark from "../../components/BrandMark";
 
@@ -76,7 +77,7 @@ export default function CirclePortal() {
 
   return (
     <CircleContext.Provider value={{ lang, setLang, t, msg, member, setMember, logout }}>
-      <div className="tm gm" dir={lang === "ar" ? "rtl" : "ltr"} lang={lang}>{page}</div>
+      <div className="tm gm" dir={lang === "ar" ? "rtl" : "ltr"} lang={lang}>{page}<Toaster /></div>
     </CircleContext.Provider>
   );
 }

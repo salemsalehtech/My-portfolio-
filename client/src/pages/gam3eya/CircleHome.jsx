@@ -11,10 +11,12 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, fetchImageUrl } from "../../lib/api";
 import { money, day, monthName, daysUntil, downloadCalendar, METHOD_LABEL, STATE_LABEL } from "../../lib/circles";
-import { pushSupported, pushState, enablePush, isIos, isStandalone } from "../../lib/webPush";
+import PushPrompt from "../../components/PushPrompt";
+import CircleRing from "../../components/circles/CircleRing";
+import { toast } from "../../components/Toaster";
 import { useCircle } from "./CirclePortal";
 import PayModal from "./PayModal";
-import { HourglassIcon, CalendarIcon, AwardIcon, WalletIcon, TargetIcon, ForwardIcon, BellIcon, PhoneIcon } from "../../components/team/icons";
+import { HourglassIcon, CalendarIcon, AwardIcon, WalletIcon, TargetIcon, ForwardIcon } from "../../components/team/icons";
 
 export default function CircleHome() {
   const { t, msg, member, setMember } = useCircle();
@@ -37,7 +39,7 @@ export default function CircleHome() {
       {circles && circles.map((c) => (
         <CircleCard key={c.id} circle={c} onPay={(month) => setPaying({ circle: c, month })} onChange={setCircles} reload={load} />
       ))}
-      <PushCard />
+      <PushPrompt base="/circle" text={{ on: t.pushOn, done: t.pushOnDone, blocked: t.pushBlocked, ios: t.pushIos, error: t.error }} />
       <WaitlistCard member={member} onChange={setMember} />
       {paying && <PayModal circle={paying.circle} month={paying.month} payInfo={payInfo} onClose={() => setPaying(null)} onSent={() => { setPaying(null); load(); }} />}
     </main>
@@ -55,6 +57,18 @@ function CircleCard({ circle, onPay, onChange, reload }) {
   const pct = me.totalToPay ? Math.round((me.paidSoFar / me.totalToPay) * 100) : 0;
   const finished = circle.status === "finished";
 
+  // My turn is this month: celebrate once (remembered per browser, per circle and month).
+  const turnNow = !finished && circle.turns.some((x) => x.month === circle.currentMonth && !x.receivedAt);
+  useEffect(() => {
+    if (!turnNow) return;
+    const key = `gmTurn:${circle.id}:${circle.currentMonth}`;
+    try {
+      if (localStorage.getItem(key)) return;
+      localStorage.setItem(key, "1");
+    } catch { return; }
+    toast(t.ringTurnNow, { confetti: true, ms: 5000 });
+  }, [turnNow, circle.id, circle.currentMonth, t.ringTurnNow]);
+
   return (
     <section className={`gm-circle ${finished ? "is-finished" : ""}`}>
       <header className="gm-circle-head">
@@ -65,6 +79,7 @@ function CircleCard({ circle, onPay, onChange, reload }) {
         {finished && <span className="tm-pill">{t.finished}</span>}
       </header>
 
+      <CircleRing circle={circle} t={t} />
       <div className="gm-boxes">
         {!finished && (
           <div className={`gm-box ${next?.state === "late" ? "is-late" : next ? "" : "is-ok"}`}>
@@ -249,26 +264,6 @@ export function Proof({ path }) {
   }, [path]);
   if (!url) return <span className="gm-proof is-empty" />;
   return <a className="gm-proof" href={url} target="_blank" rel="noreferrer"><img src={url} alt="" /></a>;
-}
-
-function PushCard() {
-  const { t } = useCircle();
-  const [state, setState] = useState("checking");
-  const [error, setError] = useState("");
-  useEffect(() => { pushState().then(setState).catch(() => setState("unsupported")); }, []);
-  if (state === "checking" || state === "on") return state === "on" ? <p className="tm-muted tm-small gm-push-ok"><BellIcon size={14} className="ui-icon" /> {t.pushOnDone}</p> : null;
-  const turnOn = async () => {
-    setError("");
-    try { await enablePush("/circle"); setState("on"); } catch (err) { setState(err.message === "blocked" ? "blocked" : "off"); if (err.message !== "blocked") setError(t.error); }
-  };
-  return (
-    <section className="gm-push">
-      {state === "blocked" ? <p className="tm-muted">{t.pushBlocked}</p>
-        : !pushSupported() || (isIos() && !isStandalone()) ? <p className="tm-muted"><PhoneIcon size={15} className="ui-icon" /> {t.pushIos}</p>
-          : <button className="fp-btn" onClick={turnOn}><BellIcon size={16} /> {t.pushOn}</button>}
-      {error && <p className="tm-error tm-small">{error}</p>}
-    </section>
-  );
 }
 
 function WaitlistCard({ member, onChange }) {
