@@ -8,7 +8,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const { Product, ProductImage, TeamProject } = require("../lib/mongo");
 const { only } = require("../lib/fields");
-const { readImageUpload } = require("../lib/images");
+const { readImageUpload, pictureRoutes } = require("../lib/images");
 
 const router = express.Router();
 
@@ -77,18 +77,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 // PUT /:id/cover { data: "<base64>" } — the main picture (PNG, JPEG or WebP, max 2 MB).
-router.put("/:id/cover", async (req, res) => {
-  const { image, error } = readImageUpload(req.body);
-  if (error) return res.status(400).json({ error });
-  const product = await Product.findByIdAndUpdate(req.params.id, { image }, { new: true });
-  if (!product) return res.status(404).json({ error: "Product not found" });
-  res.json(product);
-});
-router.delete("/:id/cover", async (req, res) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, { image: { contentType: "", size: 0 } }, { new: true });
-  if (!product) return res.status(404).json({ error: "Product not found" });
-  res.json(product);
-});
+pictureRoutes(router, { path: "", route: "cover", Model: Product, name: "Product" });
 
 // POST /:id/images { data } → { id } — a gallery picture; the editor puts the id in a gallery item.
 router.post("/:id/images", async (req, res) => {

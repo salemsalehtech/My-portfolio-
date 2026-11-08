@@ -8,7 +8,7 @@
 // The public site reads the same data through the read-only routers (routes/projects.js, …).
 const express = require("express");
 const mongoose = require("mongoose");
-const { readImageUpload } = require("../lib/images");
+const { readImageUpload, pictureRoutes } = require("../lib/images");
 const { Project, Skill, YoutubeVideo, ContactMessage, CvFile, About, Testimonial, Service, SiteSettings, Certificate, Post, Course, Form, FormResponse } = require("../lib/mongo");
 const { only } = require("../lib/fields");
 const { requireAuth } = require("../middleware/auth");
@@ -284,33 +284,10 @@ router.delete("/certificates/:id", async (req, res) => {
 });
 
 // PUT /api/admin/certificates/:id/image  { data: "<base64>" } — PNG, JPEG or WebP, max 2 MB.
-router.put("/certificates/:id/image", async (req, res) => {
-  const { image, error } = readImageUpload(req.body);
-  if (error) return res.status(400).json({ error });
-  const cert = await Certificate.findByIdAndUpdate(req.params.id, { image }, { new: true });
-  if (!cert) return res.status(404).json({ error: "Certificate not found" });
-  res.json(cert);
-});
-
-router.delete("/certificates/:id/image", async (req, res) => {
-  const cert = await Certificate.findByIdAndUpdate(req.params.id, { image: { contentType: "", size: 0 } }, { new: true });
-  if (!cert) return res.status(404).json({ error: "Certificate not found" });
-  res.json(cert);
-});
+pictureRoutes(router, { path: "/certificates", Model: Certificate, name: "Certificate" });
 
 // PUT /api/admin/projects/:id/image  { data: "<base64>" } — same rules as certificate pictures.
-router.put("/projects/:id/image", async (req, res) => {
-  const { image, error } = readImageUpload(req.body);
-  if (error) return res.status(400).json({ error });
-  const project = await Project.findByIdAndUpdate(req.params.id, { image }, { new: true });
-  if (!project) return res.status(404).json({ error: "Project not found" });
-  res.json(project);
-});
-router.delete("/projects/:id/image", async (req, res) => {
-  const project = await Project.findByIdAndUpdate(req.params.id, { image: { contentType: "", size: 0 } }, { new: true });
-  if (!project) return res.status(404).json({ error: "Project not found" });
-  res.json(project);
-});
+pictureRoutes(router, { path: "/projects", Model: Project, name: "Project" });
 
 // ---- Courses ----
 // Same as certificates: CRUD + a separate route to upload / remove the cover picture.
@@ -338,18 +315,7 @@ router.delete("/courses/:id", async (req, res) => {
 });
 
 // PUT /api/admin/courses/:id/image  { data: "<base64>" } — same rules as certificate pictures.
-router.put("/courses/:id/image", async (req, res) => {
-  const { image, error } = readImageUpload(req.body);
-  if (error) return res.status(400).json({ error });
-  const course = await Course.findByIdAndUpdate(req.params.id, { image }, { new: true });
-  if (!course) return res.status(404).json({ error: "Course not found" });
-  res.json(course);
-});
-router.delete("/courses/:id/image", async (req, res) => {
-  const course = await Course.findByIdAndUpdate(req.params.id, { image: { contentType: "", size: 0 } }, { new: true });
-  if (!course) return res.status(404).json({ error: "Course not found" });
-  res.json(course);
-});
+pictureRoutes(router, { path: "/courses", Model: Course, name: "Course" });
 
 // ---- Visitor analytics (read-only) ----
 // GET /api/admin/analytics?days=7|30|90 — sums the daily counters written by routes/analytics.js
@@ -402,18 +368,7 @@ router.delete("/posts/:id", async (req, res) => {
 });
 
 // PUT /api/admin/posts/:id/cover  { data: "<base64>" } — same rules as certificate pictures.
-router.put("/posts/:id/cover", async (req, res) => {
-  const { image, error } = readImageUpload(req.body);
-  if (error) return res.status(400).json({ error });
-  const post = await Post.findByIdAndUpdate(req.params.id, { cover: image }, { new: true });
-  if (!post) return res.status(404).json({ error: "Post not found" });
-  res.json(post);
-});
-router.delete("/posts/:id/cover", async (req, res) => {
-  const post = await Post.findByIdAndUpdate(req.params.id, { cover: { contentType: "", size: 0 } }, { new: true });
-  if (!post) return res.status(404).json({ error: "Post not found" });
-  res.json(post);
-});
+pictureRoutes(router, { path: "/posts", route: "cover", Model: Post, field: "cover", name: "Post" });
 
 // ---- Forms (Form Builder) ----
 // A form's fields are sent as one array from the editor; saving runs every schema check (slug

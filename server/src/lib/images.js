@@ -41,4 +41,23 @@ function sendImage(res, image) {
   res.send(image.data);
 }
 
-module.exports = { readImageUpload, sendImage, imageType, MAX_IMAGE_BYTES };
+// Adds the two dashboard routes that set and remove a document's picture:
+//   PUT  <path>/:id/<route>  { data: "<base64>" } → the updated document
+//   DELETE <path>/:id/<route>                     → the updated document, picture cleared
+// `field` is where the picture lives on the model ("image", "cover"…). One definition for
+// projects, certificates, courses, blog covers and products, so the rules can't drift apart.
+function pictureRoutes(router, { path, route = "image", Model, field = "image", name }) {
+  const notFound = (res) => res.status(404).json({ error: `${name} not found` });
+  router.put(`${path}/:id/${route}`, async (req, res) => {
+    const { image, error } = readImageUpload(req.body);
+    if (error) return res.status(400).json({ error });
+    const doc = await Model.findByIdAndUpdate(req.params.id, { [field]: image }, { new: true });
+    return doc ? res.json(doc) : notFound(res);
+  });
+  router.delete(`${path}/:id/${route}`, async (req, res) => {
+    const doc = await Model.findByIdAndUpdate(req.params.id, { [field]: { contentType: "", size: 0 } }, { new: true });
+    return doc ? res.json(doc) : notFound(res);
+  });
+}
+
+module.exports = { readImageUpload, sendImage, imageType, pictureRoutes, MAX_IMAGE_BYTES };
