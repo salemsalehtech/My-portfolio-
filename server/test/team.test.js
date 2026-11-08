@@ -1,7 +1,7 @@
 // team.test.js — the team workspace API end to end: tasks, criteria, help / more time, comments
 // with mentions and replies, attachments, review with a private rating, the open pool (concurrent
 // claims), scores and badges, rules, availability, templates, weekly summary, AI switch, gzip.
-const { useTestDb, start } = require("./helpers");
+const { useTestDb, start, eventually } = require("./helpers");
 useTestDb("team_api_test");
 
 const bcrypt = require("bcryptjs");
@@ -43,12 +43,12 @@ const { signMemberToken } = require("../src/middleware/teamAuth");
 
   const c1 = await call("POST", `/team/tasks/${tid}/comments`, { body: "@omar can you check? @lead fyi" }, tm);
   check("comment with mentions", c1.status === 201, JSON.stringify(c1.data));
-  check("omar got mention", (await TeamNotification.countDocuments({ recipient: omar._id, kind: "mention" })) === 1);
+  check("omar got mention", await eventually(() => TeamNotification.countDocuments({ recipient: omar._id, kind: "mention" }), 1));
   check("owner got mention, no duplicate comment note",
-    (await TeamNotification.countDocuments({ recipient: null, kind: "mention" })) === 1 && (await TeamNotification.countDocuments({ recipient: null, kind: "comment" })) === 0);
+    await eventually(() => TeamNotification.countDocuments({ recipient: null, kind: "mention" }), 1) && await eventually(() => TeamNotification.countDocuments({ recipient: null, kind: "comment" }), 0));
   const c2 = await call("POST", `/team/tasks/${tid}/comments`, { body: "Looks fine", replyTo: c1.data.id }, to);
   check("reply populated", c2.data.replyTo?.body?.startsWith("@omar"), JSON.stringify(c2.data));
-  check("author of the answered comment notified", (await TeamNotification.countDocuments({ recipient: mona._id, kind: "reply" })) === 1);
+  check("author of the answered comment notified", await eventually(() => TeamNotification.countDocuments({ recipient: mona._id, kind: "reply" }), 1));
 
   const pdf = Buffer.from("%PDF-1.4 test").toString("base64");
   const up = await call("POST", `/team/tasks/${tid}/attachments`, { name: "result.pdf", data: pdf }, tm);
@@ -91,7 +91,7 @@ const { signMemberToken } = require("../src/middleware/teamAuth");
   check("goal visible to member", (await call("GET", "/team/cheers", null, tm)).data.goal?.target === 10);
   const pub = await call("PUT", "/admin/team/settings", { rulesEn: "## Be kind", rulesAr: "## خليك لطيف", publish: true });
   check("rules published v1", pub.data.rulesVersion === 1);
-  check("rules notification sent", (await TeamNotification.countDocuments({ recipient: mona._id, kind: "rules" })) === 1);
+  check("rules notification sent", await eventually(() => TeamNotification.countDocuments({ recipient: mona._id, kind: "rules" }), 1));
   check("agree to a stale version refused", (await call("POST", "/team/rules/agree", { version: 0 }, tm)).status === 409);
   check("agree v1", (await call("POST", "/team/rules/agree", { version: 1 }, tm)).data.rulesAgreed === 1);
   const sett = await call("GET", "/admin/team/settings");

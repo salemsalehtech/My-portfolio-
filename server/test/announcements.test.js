@@ -1,6 +1,6 @@
 // announcements.test.js — owner announcements: draft, files, publish once, member read receipts,
 // drafts and their files stay hidden from members.
-const { useTestDb, start } = require("./helpers");
+const { useTestDb, start, eventually } = require("./helpers");
 useTestDb("team_ann_test");
 
 const mongoose = require("mongoose");
@@ -25,7 +25,7 @@ const { signMemberToken } = require("../src/middleware/teamAuth");
   check("member can't open a draft's file", (await open(up.data.id)).status === 404);
   check("publish", Boolean((await call("POST", `/admin/team/announcements/${id}/publish`)).data.publishedAt));
   await call("POST", `/admin/team/announcements/${id}/publish`);
-  check("everyone notified once (published twice)", (await TeamNotification.countDocuments({ kind: "announcement" })) === 2);
+  check("everyone notified once (published twice)", await eventually(() => TeamNotification.countDocuments({ kind: "announcement" }), 2));
   const list = await call("GET", "/team/announcements", null, tm);
   check("member sees it unread, readBy not leaked", list.data.unread === 1 && list.data.items[0].read === false && !("readBy" in list.data.items[0]), JSON.stringify(list.data));
   check("member lists its files", (await call("GET", `/team/announcements/${id}/attachments`, null, tm)).data.length === 1);

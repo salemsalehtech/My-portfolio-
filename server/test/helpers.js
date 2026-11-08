@@ -53,4 +53,16 @@ async function start() {
   return { base, adminToken, call, check, finish };
 }
 
-module.exports = { useTestDb, start };
+// Notifications and logs are written after the response is sent (they never slow a request
+// down), so a test counting them polls for up to a second instead of reading once.
+async function eventually(read, expected, ms = 1000) {
+  const until = Date.now() + ms;
+  let value = await read();
+  while (value !== expected && Date.now() < until) {
+    await new Promise((r) => setTimeout(r, 50));
+    value = await read();
+  }
+  return value === expected;
+}
+
+module.exports = { useTestDb, start, eventually };
