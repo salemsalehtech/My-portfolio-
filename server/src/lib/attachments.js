@@ -60,4 +60,22 @@ function sendAttachment(res, file) {
   res.send(file.data);
 }
 
-module.exports = { readAttachmentUpload, sendAttachment, MAX_ATTACHMENT_BYTES, MAX_ATTACHMENTS_PER_TASK };
+// Saves an uploaded file under its parent — `owner` is { task, project } or { announcement } —
+// after the 10-files limit and the type / size checks. Answers the 400 itself and returns null
+// when the upload is refused, so each route stays short. `member` = who uploaded (null = owner).
+async function saveAttachment(res, { owner, member = null, body }) {
+  const { TeamAttachment } = require("./mongo");
+  const parent = owner.announcement ? { announcement: owner.announcement } : { task: owner.task };
+  if (await TeamAttachment.countDocuments(parent) >= MAX_ATTACHMENTS_PER_TASK) {
+    res.status(400).json({ error: "Up to 10 files per task" });
+    return null;
+  }
+  const { file, error } = readAttachmentUpload(body);
+  if (error) {
+    res.status(400).json({ error });
+    return null;
+  }
+  return TeamAttachment.create({ ...file, ...owner, member });
+}
+
+module.exports = { readAttachmentUpload, sendAttachment, saveAttachment, MAX_ATTACHMENT_BYTES, MAX_ATTACHMENTS_PER_TASK };

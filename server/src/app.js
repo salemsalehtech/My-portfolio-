@@ -74,10 +74,10 @@ app.use("/api/admin/settings", express.json({ limit: "4mb" })); // the hero port
 app.use("/api/admin/products", express.json({ limit: "4mb" }));
 // Savings circles: members upload a screenshot of each transfer (max 2 MB).
 app.use("/api/circle", express.json({ limit: "4mb" }));
-// Task attachments: a PDF or picture up to 5 MB (~6.7 MB once base64-encoded). Must come before
-// the /api/admin/team parser below, which would otherwise read (and reject) the body first.
-// (Owner: /api/admin/team/…, member sending their result: /api/team/….)
-app.use(/^\/api\/(admin\/)?team\/tasks\/[^/]+\/attachments$/, express.json({ limit: "7mb" }));
+// Task / announcement attachments: a PDF, picture or voice note up to 5 MB (~6.7 MB once
+// base64-encoded). Must come before the /api/admin/team parser below, which would otherwise read
+// (and reject) the body first. (Owner: /api/admin/team/…, member sending their result: /api/team/….)
+app.use(/^\/api\/(admin\/)?team\/(tasks|announcements)\/[^/]+\/attachments$/, express.json({ limit: "7mb" }));
 // Team project docs are long Markdown pages (up to 60,000 characters, Arabic takes more bytes).
 app.use("/api/admin/team", express.json({ limit: "1mb" }));
 // Reads JSON request bodies into req.body (max 100 KB by default — plenty for every form).

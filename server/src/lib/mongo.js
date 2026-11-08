@@ -785,13 +785,30 @@ const teamCommentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// A file attached to a task (PDF or picture, max 5 MB — lib/attachments.js): the owner's brief,
-// or the assignee's result sent with the work. Kept in its own collection so loading a board
-// never drags the file bytes along; `data` is never sent as JSON, only through GET …/attachments/:id.
+// A team-wide announcement from the owner ("Office closed Thursday", "New rule for code review"):
+// Markdown text + optional files / voice notes (TeamAttachment with `announcement`), seen by every
+// active member. Made as a draft (`publishedAt` null) so files can be attached first; publishing
+// notifies everyone once. `readBy` = members who pressed "Got it" — the owner sees who read it.
+const teamAnnouncementSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: [true, "A title is required"], trim: true, maxlength: 160 },
+    body: { type: String, default: "", maxlength: 20000 },
+    pinned: { type: Boolean, default: false },
+    publishedAt: { type: Date, default: null, index: true },
+    readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "TeamMember" }],
+  },
+  { timestamps: true }
+);
+
+// A file attached to a task (PDF, picture or voice note, max 5 MB — lib/attachments.js): the owner's
+// brief or the assignee's result — or to an announcement (`announcement` set, `task` null). Kept in
+// its own collection so loading a board never drags the file bytes along; `data` is never sent as
+// JSON, only through GET …/attachments/:id.
 const teamAttachmentSchema = new mongoose.Schema(
   {
-    task: { type: mongoose.Schema.Types.ObjectId, ref: "TeamTask", required: true, index: true },
-    project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", required: true, index: true },
+    task: { type: mongoose.Schema.Types.ObjectId, ref: "TeamTask", default: null, index: true },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", default: null, index: true },
+    announcement: { type: mongoose.Schema.Types.ObjectId, ref: "TeamAnnouncement", default: null, index: true },
     member: { type: mongoose.Schema.Types.ObjectId, ref: "TeamMember", default: null }, // null = the owner
     filename: { type: String, required: true, maxlength: 120 },
     contentType: { type: String, required: true },
@@ -1049,6 +1066,7 @@ const models = {
   TeamTemplate: mongoose.models.TeamTemplate || mongoose.model("TeamTemplate", teamTemplateSchema),
   TeamSettings: mongoose.models.TeamSettings || mongoose.model("TeamSettings", teamSettingsSchema),
   TeamKudos: mongoose.models.TeamKudos || mongoose.model("TeamKudos", teamKudosSchema),
+  TeamAnnouncement: mongoose.models.TeamAnnouncement || mongoose.model("TeamAnnouncement", teamAnnouncementSchema),
 };
 
 // When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and

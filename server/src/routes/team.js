@@ -11,6 +11,7 @@
 //     their own task,
 //   - flag "I need help" or ask for more time (a new due date) on their own task,
 //   - set their availability (available / busy / away until a date),
+//   - read the owner's announcements (and their files) and press "Got it",
 //   - read their notifications 🔔 (plus live due-date reminders) and fill in the daily standup.
 // Creating tasks, assigning them and editing projects is the owner's job (routes/adminTeam.js).
 // New members either get an account from the owner, or sign up themselves with an invite link
@@ -19,9 +20,9 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const rateLimit = require("express-rate-limit");
 const mongoose = require("mongoose");
-const { TeamMember, TeamProject, TeamTask, TeamComment, TeamNotification, TeamStandup, TeamInvite, TeamAttachment, TeamSettings, TeamKudos } = require("../lib/mongo");
+const { TeamMember, TeamProject, TeamTask, TeamComment, TeamNotification, TeamStandup, TeamInvite, TeamAttachment, TeamSettings, TeamKudos, TeamAnnouncement } = require("../lib/mongo");
 const { badgesFor, teamGoal } = require("../lib/teamScores");
-const { readAttachmentUpload, sendAttachment, MAX_ATTACHMENTS_PER_TASK } = require("../lib/attachments");
+const { sendAttachment, saveAttachment } = require("../lib/attachments");
 const { vapid, saveSubscription } = require("../lib/push");
 const { requireMember, signMemberToken } = require("../middleware/teamAuth");
 const { todayCairo, logActivity, notify, bellFor, withCommentCounts, addComment, listComments, hashInviteToken, usableInvite, MEMBER_PUBLIC } = require("../lib/team");
@@ -390,14 +391,10 @@ router.post("/tasks/:id/attachments", uploadLimiter, async (req, res) => {
   const task = await ownTask(req, res);
   if (!task) return;
   if (task.status === "done") return res.status(400).json({ error: "This task is already approved" });
-  if (await TeamAttachment.countDocuments({ task: task._id }) >= MAX_ATTACHMENTS_PER_TASK) {
-    return res.status(400).json({ error: "Up to 10 files per task" });
-  }
-  const { file, error } = readAttachmentUpload(req.body);
-  if (error) return res.status(400).json({ error });
-  const attachment = await TeamAttachment.create({ ...file, task: task._id, project: task.project, member: req.member._id });
+  const attachment = await saveAttachment(res, { owner: { task: task._id, project: task.project }, member: req.member._id, body: req.body });
+  if (!attachment) return;
   notify({ kind: "file", actor: req.member.name, task: task._id, project: task.project, detail: task.title });
-  logActivity({ project: task.project, task: task._id, member: req.member._id, action: "file_added", detail: file.filename });
+  logActivity({ project: task.project, task: task._id, member: req.member._id, action: "file_added", detail: attachment.filename });
   res.status(201).json(await attachment.populate("member", "name"));
 });
 router.delete("/attachments/:id", async (req, res) => {
@@ -408,9 +405,40 @@ router.delete("/attachments/:id", async (req, res) => {
 });
 router.get("/attachments/:id", async (req, res) => {
   const file = mongoose.isValidObjectId(req.params.id) && await TeamAttachment.findById(req.params.id);
-  const allowed = file && await TeamProject.exists({ _id: file.project, members: req.member._id, status: { $ne: "archived" } });
+  // Announcement files: any member, once the announcement is published. Task files: members of the project.
+  const allowed = file && (file.announcement
+    ? await TeamAnnouncement.exists({ _id: file.announcement, publishedAt: { $ne: null } })
+    : await TeamProject.exists({ _id: file.project, members: req.member._id, status: { $ne: "archived" } }));
   if (!allowed) return res.status(404).json({ error: "File not found" });
   sendAttachment(res, file);
+});
+
+// ---- Announcements from the owner (to the whole team) ----
+// GET /announcements → { items, unread } — published ones, pinned first, newest first. `read`
+// says whether I pressed "Got it"; who else read it is the owner's business only.
+router.get("/announcements", async (req, res) => {
+  const list = await TeamAnnouncement.find({ publishedAt: { $ne: null } })
+    .sort({ pinned: -1, publishedAt: -1 }).limit(30).lean();
+  const me = String(req.member._id);
+  const items = list.map(({ _id, readBy, __v, ...a }) => ({ id: String(_id), ...a, read: readBy.some((id) => String(id) === me) }));
+  res.json({ items, unread: items.filter((a) => !a.read).length });
+});
+// Loads a published announcement, or answers 404.
+async function publishedAnnouncement(req, res) {
+  const a = mongoose.isValidObjectId(req.params.id) && await TeamAnnouncement.findOne({ _id: req.params.id, publishedAt: { $ne: null } }).select("_id");
+  if (!a) res.status(404).json({ error: "Not found" });
+  return a || null;
+}
+router.get("/announcements/:id/attachments", async (req, res) => {
+  const a = await publishedAnnouncement(req, res);
+  if (!a) return;
+  res.json(await TeamAttachment.find({ announcement: a._id }).select("-data").sort({ createdAt: 1 }));
+});
+router.post("/announcements/:id/read", async (req, res) => {
+  const a = await publishedAnnouncement(req, res);
+  if (!a) return;
+  await TeamAnnouncement.updateOne({ _id: a._id }, { $addToSet: { readBy: req.member._id } });
+  res.status(204).end();
 });
 
 // ---- Comments ----
