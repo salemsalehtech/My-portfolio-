@@ -108,7 +108,7 @@ export default function TeamProject() {
           </ul>
         )}
       </main>
-      {open && <TeamTaskModal task={open} projectName={project.name} onClose={close} onChange={replaceTask} onCommentCount={(n) => patchTask(open.id, { commentCount: n })} />}
+      {open && <TeamTaskModal task={open} projectName={project.name} people={project.members} onClose={close} onChange={replaceTask} onCommentCount={(n) => patchTask(open.id, { commentCount: n })} />}
     </>
   );
 }

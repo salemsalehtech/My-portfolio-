@@ -22,6 +22,7 @@ import { TEAM_COPY, SERVER_AR } from "./teamCopy";
 import TeamHome from "./TeamHome";
 import TeamProject from "./TeamProject";
 import TeamJoin from "./TeamJoin";
+import Toaster from "../../components/Toaster";
 import Bell from "../../components/team/Bell";
 import BrandMark from "../../components/BrandMark";
 
@@ -85,7 +86,7 @@ export default function TeamPortal() {
 
   return (
     <TeamContext.Provider value={value}>
-      <div className="tm" dir={lang === "ar" ? "rtl" : "ltr"} lang={lang}>{page}</div>
+      <div className="tm" dir={lang === "ar" ? "rtl" : "ltr"} lang={lang}>{page}<Toaster /></div>
     </TeamContext.Provider>
   );
 }

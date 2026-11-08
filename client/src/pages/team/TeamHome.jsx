@@ -2,18 +2,28 @@
 //   - a greeting with today's date,
 //   - "Needs attention": overdue tasks, tasks due within 2 days, and tasks sent back with notes,
 //   - four numbers (open / overdue / waiting for review / recently done),
-//   - today's standup (StandupCard.jsx),
+//   - the team goal, my badges and thank-you notes (CheersCard.jsx), my availability, today's
+//     standup (StandupCard.jsx), phone notifications, open tasks anyone can take (PoolCard.jsx),
+//   - the rules to agree to when they change (RulesGate.jsx) and the first-login tour (Tour.jsx),
+//   - a small celebration when one of my tasks was approved since my last visit,
 //   - "My tasks" grouped by status (in progress first), as compact rows,
 //   - "My projects" with their progress.
 // A task opens in TeamTaskModal.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
-import { isOverdue, today, formatDue, STATUS_LABEL, PRIORITY_LABEL, stepsDone } from "../../lib/team";
+import { isOverdue, today, formatDue, STATUS_LABEL, PRIORITY_LABEL, SHARED_COPY, stepsDone } from "../../lib/team";
 import { CheckSquareIcon, ReplyIcon, ListIcon, AlertIcon, EyeIcon, CheckCircleIcon, FolderIcon, ChevronIcon } from "../../components/team/icons";
 import { useTeam } from "./TeamPortal";
 import TeamTaskModal from "./TeamTaskModal";
 import StandupCard from "./StandupCard";
+import AvailabilityCard from "./AvailabilityCard";
+import CheersCard from "./CheersCard";
+import PoolCard from "./PoolCard";
+import RulesGate from "./RulesGate";
+import Tour from "./Tour";
+import PushPrompt from "../../components/PushPrompt";
+import { toast } from "../../components/Toaster";
 
 const GROUPS = ["doing", "todo", "review", "done"];
 const inDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
@@ -43,16 +53,27 @@ export function TaskRow({ task, lang, onOpen, showProject = true }) {
 
 export default function TeamHome() {
   const { t, lang, member, msg } = useTeam();
+  const sc = SHARED_COPY[lang];
   const [tasks, setTasks] = useState(null);
   const [projects, setProjects] = useState([]);
   const [open, setOpen] = useState(null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    Promise.all([api.get("/team/tasks"), api.get("/team/projects")])
-      .then(([tk, pr]) => { setTasks(tk); setProjects(pr); })
-      .catch((err) => setError(err.message));
-  }, []);
+  const load = () => Promise.all([api.get("/team/tasks"), api.get("/team/projects")])
+    .then(([tk, pr]) => { setTasks(tk); setProjects(pr); celebrate(tk); })
+    .catch((err) => setError(err.message));
+  useEffect(() => { load(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // A task approved since the last visit gets a small celebration, once (remembered per browser).
+  const celebrate = (list) => {
+    const key = `teamCheer:${member.id}`;
+    let seen = "";
+    try { seen = localStorage.getItem(key) || ""; } catch { /* private mode */ }
+    const newest = list.filter((x) => x.status === "done" && x.completedAt).map((x) => x.completedAt).sort().pop();
+    if (!newest || newest <= seen) return;
+    try { localStorage.setItem(key, newest); } catch { /* private mode */ }
+    if (seen) toast(SHARED_COPY[lang].approvedCheer, { confetti: true }); // not on the very first visit
+  };
 
   const replaceTask = (updated) => {
     setTasks((list) => list.map((x) => (x.id === updated.id ? { ...x, ...updated, project: x.project } : x)));
@@ -90,7 +111,11 @@ export default function TeamHome() {
         ))}
       </div>
 
+      <CheersCard />
+      <AvailabilityCard />
       <StandupCard />
+      <PushPrompt base="/team" text={{ on: sc.pushOn, done: sc.pushDone, blocked: sc.pushBlocked, ios: sc.pushIos, error: t.error }} />
+      <PoolCard onClaimed={load} />
 
       {tasks && (
         <section className={`tm-focus ${attention.length ? "" : "is-calm"}`}>
@@ -105,7 +130,7 @@ export default function TeamHome() {
 
       <section className="tm-section">
         <h2>{t.myTasks}</h2>
-        {tasks === null && <p className="tm-muted">{t.loading}</p>}
+        {tasks === null && <div className="tm-rows">{[0, 1, 2].map((i) => <div key={i} className="tm-skeleton" style={{ height: 56 }} />)}</div>}
         {tasks && list.length === 0 && <p className="tm-empty">{t.noTasks}</p>}
         {GROUPS.map((status) => {
           const group = list.filter((x) => x.status === status)
@@ -147,6 +172,8 @@ export default function TeamHome() {
         </div>
       </section>
       {open && <TeamTaskModal task={open} projectName={open.project?.name} onClose={() => setOpen(null)} onChange={replaceTask} />}
+      <RulesGate />
+      <Tour />
     </main>
   );
 }

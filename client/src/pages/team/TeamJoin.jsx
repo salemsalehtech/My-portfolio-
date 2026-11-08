@@ -1,13 +1,19 @@
 // TeamJoin.jsx — sign up with an invite link (/#/team/join/<token>). The owner makes the link in
 // Admin → Team → Members; the new member fills in name, specialty, username and password, and the
-// account then waits for the owner's approval (routes/team.js → POST /signup).
+// account then waits for the owner's approval (routes/team.js → POST /signup). When the owner has
+// published team rules, they are shown here and must be agreed to before joining.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
+import { SHARED_COPY } from "../../lib/team";
 import { useTeam, AuthLayout } from "./TeamPortal";
+import { RulesView } from "./RulesGate";
 
 export default function TeamJoin({ token }) {
-  const { t, msg } = useTeam();
+  const { t, lang, msg } = useTeam();
+  const sc = SHARED_COPY[lang];
+  const [rules, setRules] = useState(null);
+  const [agree, setAgree] = useState(false);
   const [valid, setValid] = useState(null); // null = checking
   const [form, setForm] = useState({ name: "", specialty: "", username: "", password: "", confirm: "" });
   const [done, setDone] = useState(null);
@@ -17,6 +23,7 @@ export default function TeamJoin({ token }) {
 
   useEffect(() => {
     api.get(`/team/invites/${encodeURIComponent(token)}`).then((r) => setValid(r.valid)).catch((err) => { setValid(false); setError(err.message); });
+    api.get("/team/rules").then(setRules).catch(() => {});
   }, [token]);
 
   const submit = async (e) => {
@@ -25,7 +32,7 @@ export default function TeamJoin({ token }) {
     if (form.password !== form.confirm) return setError(t.mismatch);
     setBusy(true);
     try {
-      const { member } = await api.post("/team/signup", { token, name: form.name, specialty: form.specialty, username: form.username, password: form.password });
+      const { member } = await api.post("/team/signup", { token, name: form.name, specialty: form.specialty, username: form.username, password: form.password, agreeRules: agree });
       setDone(member);
     } catch (err) {
       setError(err.message);
@@ -72,6 +79,15 @@ export default function TeamJoin({ token }) {
       <label className="tm-field"><span>{t.confirm}</span>
         <input className="fp-input" dir="ltr" type="password" value={form.confirm} onChange={set("confirm")} minLength={8} maxLength={100} autoComplete="new-password" required />
       </label>
+      {rules?.version > 0 && (
+        <details className="tm-join-rules">
+          <summary>{sc.rules}</summary>
+          <RulesView rules={rules} lang={lang} />
+        </details>
+      )}
+      {rules?.version > 0 && (
+        <label className="tm-check"><input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} required /> {sc.rulesAgree}</label>
+      )}
       <button className="fp-btn tm-btn-block" type="submit" disabled={busy}>{busy ? t.creating : t.create}</button>
       <p className="tm-muted tm-small">{t.haveAccount} <Link to="/team">{t.signIn}</Link></p>
     </form>
