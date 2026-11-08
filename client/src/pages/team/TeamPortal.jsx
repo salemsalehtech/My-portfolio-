@@ -23,8 +23,7 @@ import { loadRules } from "../../lib/rules";
 import { api } from "../../lib/api";
 import { COMPANY } from "../../lib/brand";
 import { initials } from "../../lib/team";
-import { useSite } from "../../context/SiteContext";
-import { SunIcon, MoonIcon, GlobeIcon, KeyIcon, LogoutIcon, ExternalIcon, CheckCircleIcon } from "../../components/team/icons";
+import { KeyIcon, LogoutIcon, ExternalIcon } from "../../components/team/icons";
 import { TEAM_COPY, SERVER_AR } from "./teamCopy";
 import TeamOverview from "./TeamOverview";
 import TeamTasks from "./TeamTasks";
@@ -39,7 +38,7 @@ import TeamProject from "./TeamProject";
 import TeamJoin from "./TeamJoin";
 import Toaster from "../../components/Toaster";
 import Bell from "../../components/team/Bell";
-import BrandMark from "../../components/BrandMark";
+import { PortalBrand, PortalSwitches, AuthLayout as SharedAuthLayout, PasswordForm as SharedPasswordForm } from "../../components/PortalShell";
 
 const TeamContext = createContext(null);
 export const useTeam = () => useContext(TeamContext);
@@ -112,34 +111,7 @@ export default function TeamPortal() {
   );
 }
 
-// The company mark + name, linking back to the website.
-function Brand({ subtitle }) {
-  return (
-    <Link to="/" className="tm-brand" title={COMPANY}>
-      <BrandMark height={24} className="tm-logo" />
-      <span className="tm-brand-text">
-        <span className="tm-brand-name">{COMPANY}</span>
-        {subtitle && <span className="tm-brand-sub">{subtitle}</span>}
-      </span>
-    </Link>
-  );
-}
 
-// Theme + language switches (used in the top bar and on the login screen).
-function Switches() {
-  const { t, lang, setLang } = useTeam();
-  const { theme, toggleTheme } = useSite();
-  return (
-    <div className="tm-switches">
-      <button type="button" className="tm-icon-pill" onClick={toggleTheme} title={theme === "dark" ? t.themeLight : t.themeDark} aria-label={theme === "dark" ? t.themeLight : t.themeDark}>
-        {theme === "dark" ? <SunIcon size={17} /> : <MoonIcon size={17} />}
-      </button>
-      <button type="button" className="tm-icon-pill tm-lang-pill" onClick={() => setLang(lang === "ar" ? "en" : "ar")} lang={lang === "ar" ? "en" : "ar"}>
-        <GlobeIcon size={16} /><span>{t.switchTo}</span>
-      </button>
-    </div>
-  );
-}
 
 function TeamTopbar() {
   const { t, lang, member, logout } = useTeam();
@@ -201,26 +173,6 @@ function TeamFooter() {
   );
 }
 
-// Login / first password: a brand panel beside the form (stacked on phones).
-export function AuthLayout({ children }) {
-  const { t } = useTeam();
-  return (
-    <div className="tm-authwrap">
-      <aside className="tm-authside">
-        <div className="tm-authside-top"><Brand /><Switches /></div>
-        <div className="tm-authside-body">
-          <span className="tm-eyebrow">{t.portal}</span>
-          <h1>{t.tagline}</h1>
-          <ul className="tm-perks">
-            {t.perks.map((p) => <li key={p}><CheckCircleIcon size={18} />{p}</li>)}
-          </ul>
-        </div>
-        <Link to="/" className="tm-authside-link">{t.visitSite} <ExternalIcon size={14} /></Link>
-      </aside>
-      <main className="tm-authmain">{children}</main>
-    </div>
-  );
-}
 
 function TeamLogin({ onSignedIn, expired }) {
   const { t, msg } = useTeam();
@@ -263,48 +215,17 @@ function TeamLogin({ onSignedIn, expired }) {
   );
 }
 
-// Changes the member's password. `forced`: the first-login screen (no way around it).
-function PasswordForm({ forced, onDone, onCancel }) {
-  const { t, setMember, msg } = useTeam();
-  const [form, setForm] = useState({ current: "", next: "", confirm: "" });
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
-
-  const submit = async (e) => {
-    e.preventDefault();
-    setError("");
-    if (form.next !== form.confirm) return setError(t.mismatch);
-    setBusy(true);
-    try {
-      const member = await api.post("/team/password", { current: form.current, next: form.next });
-      setMember(member);
-      onDone?.(member);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <form className="tm-auth-card" onSubmit={submit}>
-      <h2>{forced ? t.newPassTitle : t.changePass}</h2>
-      {forced && <p className="tm-muted">{t.newPassIntro}</p>}
-      {error && <p className="tm-error" role="alert">{msg(error)}</p>}
-      <label className="tm-field"><span>{t.current}</span>
-        <input className="fp-input" dir="ltr" type="password" value={form.current} onChange={set("current")} autoComplete="current-password" required />
-      </label>
-      <label className="tm-field"><span>{t.next}</span>
-        <input className="fp-input" dir="ltr" type="password" value={form.next} onChange={set("next")} autoComplete="new-password" minLength={8} required />
-      </label>
-      <label className="tm-field"><span>{t.confirm}</span>
-        <input className="fp-input" dir="ltr" type="password" value={form.confirm} onChange={set("confirm")} autoComplete="new-password" minLength={8} required />
-      </label>
-      <div className="tm-row">
-        <button className="fp-btn" type="submit" disabled={busy}>{t.savePass}</button>
-        {onCancel && <button className="fp-btn fp-btn-ghost" type="button" onClick={onCancel}>{t.cancel}</button>}
-      </div>
-    </form>
-  );
+// The shared portal pieces (components/PortalShell.jsx) with the team's texts and API.
+const Brand = PortalBrand;
+function Switches() {
+  const { t, lang, setLang } = useTeam();
+  return <PortalSwitches t={t} lang={lang} setLang={setLang} />;
+}
+export function AuthLayout({ children }) {
+  const { t, lang, setLang } = useTeam();
+  return <SharedAuthLayout t={t} lang={lang} setLang={setLang}>{children}</SharedAuthLayout>;
+}
+function PasswordForm(props) {
+  const { t, msg, setMember } = useTeam();
+  return <SharedPasswordForm {...props} t={t} msg={msg} post={(body) => api.post("/team/password", body)} onSaved={setMember} />;
 }

@@ -17,13 +17,12 @@ import { COMPANY } from "../../lib/brand";
 import { initials } from "../../lib/team";
 import { CIRCLE_COPY, CIRCLE_SERVER_AR, day } from "../../lib/circles";
 import { addCirclesManifest } from "../../lib/webPush";
-import { useSite } from "../../context/SiteContext";
-import { SunIcon, MoonIcon, GlobeIcon, KeyIcon, LogoutIcon, ExternalIcon, CheckCircleIcon } from "../../components/team/icons";
+import { KeyIcon, LogoutIcon, ExternalIcon } from "../../components/team/icons";
 import NotificationBell from "../../components/NotificationBell";
 import CircleHome from "./CircleHome";
 import Toaster from "../../components/Toaster";
 import { CircleReceipt, CircleCertificate } from "./CirclePrint";
-import BrandMark from "../../components/BrandMark";
+import { PortalBrand, PortalSwitches, AuthLayout as SharedAuthLayout, PasswordForm as SharedPasswordForm } from "../../components/PortalShell";
 import BrandLoader from "../../components/BrandLoader";
 import BrandBackdrop from "../../components/BrandBackdrop";
 
@@ -86,29 +85,7 @@ export default function CirclePortal() {
   );
 }
 
-function Brand({ subtitle }) {
-  return (
-    <Link to="/" className="tm-brand" title={COMPANY}>
-      <BrandMark height={24} className="tm-logo" />
-      <span className="tm-brand-text"><span className="tm-brand-name">{COMPANY}</span>{subtitle && <span className="tm-brand-sub">{subtitle}</span>}</span>
-    </Link>
-  );
-}
 
-function Switches() {
-  const { t, lang, setLang } = useCircle();
-  const { theme, toggleTheme } = useSite();
-  return (
-    <div className="tm-switches">
-      <button type="button" className="tm-icon-pill" onClick={toggleTheme} aria-label={theme === "dark" ? t.themeLight : t.themeDark} title={theme === "dark" ? t.themeLight : t.themeDark}>
-        {theme === "dark" ? <SunIcon size={17} /> : <MoonIcon size={17} />}
-      </button>
-      <button type="button" className="tm-icon-pill tm-lang-pill" onClick={() => setLang(lang === "ar" ? "en" : "ar")} lang={lang === "ar" ? "en" : "ar"}>
-        <GlobeIcon size={16} /><span>{t.switchTo}</span>
-      </button>
-    </div>
-  );
-}
 
 function Topbar() {
   const { t, lang, member, logout } = useCircle();
@@ -160,23 +137,6 @@ function Topbar() {
   );
 }
 
-function AuthLayout({ children }) {
-  const { t } = useCircle();
-  return (
-    <div className="tm-authwrap">
-      <aside className="tm-authside">
-        <div className="tm-authside-top"><Brand /><Switches /></div>
-        <div className="tm-authside-body">
-          <span className="tm-eyebrow">{t.portal}</span>
-          <h1>{t.tagline}</h1>
-          <ul className="tm-perks">{t.perks.map((p) => <li key={p}><CheckCircleIcon size={18} />{p}</li>)}</ul>
-        </div>
-        <Link to="/" className="tm-authside-link">{t.visitSite} <ExternalIcon size={14} /></Link>
-      </aside>
-      <main className="tm-authmain">{children}</main>
-    </div>
-  );
-}
 
 const PENDING = "Your account is waiting for approval";
 
@@ -263,39 +223,17 @@ function CircleJoin({ token }) {
   return <AuthLayout><div className="tm-auth-card">{body}</div></AuthLayout>;
 }
 
-function PasswordForm({ forced, onDone, onCancel }) {
+// The shared portal pieces (components/PortalShell.jsx) with the circles' texts and API.
+const Brand = PortalBrand;
+function Switches() {
+  const { t, lang, setLang } = useCircle();
+  return <PortalSwitches t={t} lang={lang} setLang={setLang} />;
+}
+function AuthLayout({ children }) {
+  const { t, lang, setLang } = useCircle();
+  return <SharedAuthLayout t={t} lang={lang} setLang={setLang}>{children}</SharedAuthLayout>;
+}
+function PasswordForm(props) {
   const { t, msg, setMember } = useCircle();
-  const [form, setForm] = useState({ current: "", next: "", confirm: "" });
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const submit = async (e) => {
-    e.preventDefault();
-    setError("");
-    if (form.next !== form.confirm) return setError(t.mismatch);
-    setBusy(true);
-    try {
-      const m = await api.post("/circle/password", { current: form.current, next: form.next });
-      setMember(m);
-      onDone?.();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-  return (
-    <form className="tm-auth-card" onSubmit={submit}>
-      <h2>{forced ? t.newPassTitle : t.changePass}</h2>
-      {forced && <p className="tm-muted">{t.newPassIntro}</p>}
-      {error && <p className="tm-error" role="alert">{msg(error)}</p>}
-      <label className="tm-field"><span>{t.current}</span><input className="fp-input" dir="ltr" type="password" value={form.current} onChange={set("current")} autoComplete="current-password" required /></label>
-      <label className="tm-field"><span>{t.next}</span><input className="fp-input" dir="ltr" type="password" value={form.next} onChange={set("next")} minLength={8} autoComplete="new-password" required /></label>
-      <label className="tm-field"><span>{t.confirm}</span><input className="fp-input" dir="ltr" type="password" value={form.confirm} onChange={set("confirm")} minLength={8} autoComplete="new-password" required /></label>
-      <div className="tm-row">
-        <button className="fp-btn" type="submit" disabled={busy}>{t.savePass}</button>
-        {onCancel && <button className="fp-btn fp-btn-ghost" type="button" onClick={onCancel}>{t.cancel}</button>}
-      </div>
-    </form>
-  );
+  return <SharedPasswordForm {...props} t={t} msg={msg} post={(body) => api.post("/circle/password", body)} onSaved={setMember} />;
 }
