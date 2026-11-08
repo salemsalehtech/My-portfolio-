@@ -1,0 +1,1 @@
+import{k as n,j as t}from"./index-DQpFUJ8_.js";import{P as i}from"./PushPrompt-DQBltLoI.js";function r(){const{t:o}=n();return t.jsx(i,{base:"/admin/circles",variant:"admin",text:{on:o("Notify me on this device"),done:o("Phone notifications on"),blocked:"",ios:"",error:""}})}export{r as O};
