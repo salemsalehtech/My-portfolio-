@@ -10,7 +10,7 @@
 // (no HTML drag & drop) the status is changed from inside the task instead.
 // Above the board: search + filters (assignee, priority, overdue only).
 import { useState } from "react";
-import { ChatIcon, CheckSquareIcon, ReplyIcon } from "./icons";
+import { ChatIcon, CheckSquareIcon, ReplyIcon, AlertIcon, ClockIcon } from "./icons";
 import { STATUSES, PRIORITIES, STATUS_LABEL, PRIORITY_LABEL, SHARED_COPY, initials, isOverdue, formatDue, stepsDone } from "../../lib/team";
 
 export function TaskCard({ task, lang, onOpen, mine, draggable, onDragStart, onDragEnd, dragging }) {
@@ -26,7 +26,11 @@ export function TaskCard({ task, lang, onOpen, mine, draggable, onDragStart, onD
     >
       <span className="tm-card-top">
         <span className={`tm-prio is-${task.priority}`}>{PRIORITY_LABEL[lang][task.priority]}</span>
-        {task.reviewNote && task.status === "doing" && <span className="tm-flag"><ReplyIcon size={14} /></span>}
+        <span className="tm-card-flags">
+          {task.helpNote && <span className="tm-flag is-help" title={SHARED_COPY[lang].helpFlag}><AlertIcon size={14} /></span>}
+          {task.extensionRequest && <span className="tm-flag is-time" title={SHARED_COPY[lang].timeFlag}><ClockIcon size={14} /></span>}
+          {task.reviewNote && task.status === "doing" && <span className="tm-flag"><ReplyIcon size={14} /></span>}
+        </span>
       </span>
       <span className="tm-card-title">{task.title}</span>
       <span className="tm-card-meta">
