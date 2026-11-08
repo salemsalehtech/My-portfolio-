@@ -19,7 +19,7 @@ import { CIRCLE_COPY, CIRCLE_SERVER_AR, day } from "../../lib/circles";
 import { addCirclesManifest } from "../../lib/webPush";
 import { useSite } from "../../context/SiteContext";
 import { SunIcon, MoonIcon, GlobeIcon, KeyIcon, LogoutIcon, ExternalIcon, CheckCircleIcon } from "../../components/team/icons";
-import CircleBell from "../../components/circles/CircleBell";
+import NotificationBell from "../../components/NotificationBell";
 import CircleHome from "./CircleHome";
 import Toaster from "../../components/Toaster";
 import { CircleReceipt, CircleCertificate } from "./CirclePrint";
@@ -132,7 +132,7 @@ function Topbar() {
       <header className="tm-topbar gm-noprint">
         <Brand subtitle={t.portal} />
         <div className="tm-topbar-actions">
-          <CircleBell path="/circle/notifications" readPath="/circle/notifications/read" lang={lang} reminder={reminder} note={note}
+          <NotificationBell path="/circle/notifications" readPath="/circle/notifications/read" lang={lang} reminder={reminder} note={note}
             title={t.notifications} empty={t.noNotes} remindersTitle={t.remindersTitle} />
           <Switches />
           <div className="tm-account" ref={menuRef}>

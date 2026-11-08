@@ -17,7 +17,7 @@ import { COMPANY } from "../../lib/brand";
 import { loadRules } from "../../lib/rules";
 import { NAV_ICONS } from "../../components/admin/navIcons";
 import Bell from "../../components/team/Bell";
-import CircleBell from "../../components/circles/CircleBell";
+import NotificationBell from "../../components/NotificationBell";
 import BrandMark from "../../components/BrandMark";
 
 // Where a click on a notification 🔔 leads: the task in its project, today's standups, or the
@@ -120,7 +120,7 @@ export default function AdminLayout() {
           <Link to="/" className="admin-brand admin-only-mobile"><BrandMark height={24} className="tm-logo" /></Link>
           <div className="admin-topbar-actions">
             <Bell base="/admin/team" lang={lang} link={bellLink} className="is-admin" />
-            <CircleBell path="/admin/circles/notifications/all" readPath="/admin/circles/notifications/read" lang={lang} className="is-admin"
+            <NotificationBell path="/admin/circles/notifications/all" readPath="/admin/circles/notifications/read" lang={lang} className="is-admin"
               icon={NAV_ICONS.circles} title={t("Savings circles")} empty={t("Nothing new.")} remindersTitle={t("To review")}
               reminder={(r) => ({ text: t("{n} payment(s) waiting for your confirmation", { n: r.count }), tone: "today", to: "/admin/circles?tab=inbox" })}
               note={(n) => ({ text: t(CIRCLE_NOTES[n.kind] || n.kind, { a: n.actor, d: n.detail }), to: CIRCLE_NOTE_LINK[n.kind] || (n.circle ? `/admin/circles/${n.circle}` : "/admin/circles") })} />
