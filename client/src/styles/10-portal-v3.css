@@ -26,7 +26,7 @@
 /* ---- the SS mark behind the portals; it draws itself and drifts as the page scrolls ---- */
 .tm { isolation: isolate; position: relative; }
 .bd { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.bd-mark { position: absolute; inset-inline-end: -10vw; bottom: -12vh; width: min(1200px, 130vw); height: auto; opacity: .055; transform-origin: 70% 80%; }
+.bd-mark { position: absolute; inset-inline-end: -10vw; bottom: -12vh; width: min(1200px, 130vw); height: auto; transform-origin: 70% 80%; }
 .bd-mark path { stroke: var(--text-primary); stroke-dasharray: 100; stroke-dashoffset: 0; }
 .bd-pad { fill: var(--text-primary); }
 .bd-pad.is-start { fill: #E3A21A; opacity: 1; }

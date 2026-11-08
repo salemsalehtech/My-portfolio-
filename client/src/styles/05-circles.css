@@ -9,11 +9,10 @@
 .gm-box .fp-btn { margin-top: 6px; }
 .gm-box.is-late { border-color: rgba(229,62,62,.5); background: rgba(229,62,62,.06); }
 .gm-box.is-ok { border-color: rgba(56,161,105,.45); }
-.gm-turn { background: linear-gradient(135deg, var(--gold-dim), var(--card)); border-color: color-mix(in srgb, var(--gold) 40%, var(--card-border)); }
 .gm-box-label { font-size: 12.5px; font-weight: 700; color: var(--text-muted); }
 .gm-amount { font-family: var(--font-heading); font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
 .tm[lang="ar"] .gm-amount { font-family: var(--font-ar); letter-spacing: 0; }
-.gm-count { align-self: flex-start; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 700; background: var(--gold-dim); color: var(--gold); }
+.gm-count { align-self: flex-start; padding: 3px 10px; font-size: 12.5px; background: var(--gold-dim); color: var(--gold); }
 .gm-count.is-late { background: rgba(229,62,62,.12); color: #E53E3E; }
 .gm-count.is-ok { background: rgba(56,161,105,.14); color: #2F855A; }
 .gm-progress { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
@@ -28,7 +27,7 @@
 .gm-table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
 .gm-table th, .gm-table td { padding: 9px 8px; text-align: start; border-bottom: 1px solid var(--card-border); }
 .gm-table th { font-size: 12.5px; color: var(--text-muted); }
-.gm-state { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--card-border); color: var(--text-secondary); }
+.gm-state { display: inline-block; padding: 2px 9px; font-size: 12px; background: var(--card-border); color: var(--text-secondary); }
 .gm-state.is-paid { background: rgba(56,161,105,.14); color: #2F855A; }
 .gm-state.is-review { background: rgba(66,153,225,.15); color: #3182CE; }
 .gm-state.is-late { background: rgba(229,62,62,.12); color: #E53E3E; }
@@ -101,13 +100,13 @@
 .gm-board tbody th { text-align: start; position: sticky; inset-inline-start: 0; background: var(--surface); z-index: 1; }
 .gm-board tbody th span { display: block; }
 .gm-board .is-current { background: var(--gold-dim); }
-.gm-cell { position: relative; width: 38px; height: 34px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--card); color: var(--text-muted); font: inherit; font-weight: 800; cursor: pointer; }
+.gm-cell { position: relative; width: 38px; height: 34px; border: 1px solid var(--card-border); background: var(--card); color: var(--text-muted); font: inherit; font-weight: 800; cursor: pointer; }
 .gm-cell:hover { border-color: var(--gold); }
 .gm-cell.is-paid { background: rgba(56,161,105,.16); border-color: rgba(56,161,105,.4); color: #2F855A; }
 .gm-cell.is-review { background: rgba(66,153,225,.16); border-color: rgba(66,153,225,.4); color: #3182CE; }
 .gm-cell.is-late { background: rgba(229,62,62,.14); border-color: rgba(229,62,62,.45); color: #E53E3E; }
 .gm-cell.is-due { border-color: var(--gold); }
-.gm-cell-turn { position: absolute; top: -7px; inset-inline-end: -6px; font-size: 12px; color: var(--gold); }
+.gm-cell-turn { font-size: 12px; color: var(--gold); }
 .gm-legend { margin-top: 8px; }
 .gm-record { white-space: normal; }
 .gm-score { display: inline-block; padding: 2px 9px; border-radius: 999px; font-weight: 800; font-size: 13px; margin-inline-end: 6px; }
