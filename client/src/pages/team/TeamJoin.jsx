@@ -8,6 +8,7 @@ import { api } from "../../lib/api";
 import { SHARED_COPY } from "../../lib/team";
 import { useTeam, AuthLayout } from "./TeamPortal";
 import { RulesView } from "./RulesGate";
+import BrandLoader from "../../components/BrandLoader";
 
 export default function TeamJoin({ token }) {
   const { t, lang, msg } = useTeam();
@@ -42,7 +43,7 @@ export default function TeamJoin({ token }) {
   };
 
   let body;
-  if (valid === null) body = <p className="tm-muted">{t.loading}</p>;
+  if (valid === null) body = <BrandLoader label={t.loading} />;
   else if (done) body = (
     <>
       <h2>{t.joinedTitle}</h2>

@@ -14,6 +14,7 @@ import Board from "../../components/team/Board";
 import MarkdownView from "../../components/team/MarkdownView";
 import { useTeam } from "./TeamPortal";
 import TeamTaskModal from "./TeamTaskModal";
+import BrandLoader from "../../components/BrandLoader";
 
 export default function TeamProject() {
   const { id } = useParams();
@@ -55,7 +56,7 @@ export default function TeamProject() {
   };
 
   if (!data) {
-    return (<main className="tm-page"><Link className="tm-back" to="/team">{t.back}</Link><p className={error ? "tm-error" : "tm-muted"}>{error || t.loading}</p></main>);
+    return (<main className="tm-page"><Link className="tm-back" to="/team">{t.back}</Link>{error ? <p className="tm-error">{error}</p> : <BrandLoader label={t.loading} />}</main>);
   }
   const { project, tasks } = data;
   const done = tasks.filter((x) => x.status === "done").length;

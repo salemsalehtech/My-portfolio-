@@ -29,7 +29,7 @@ export default function PoolCard({ onClaimed }) {
     }
   };
   return (
-    <section className="tm-section">
+    <section className="tm-section tm-panel">
       <h2>{c.pool}</h2>
       <p className="tm-muted tm-small">{c.claimHint}</p>
       <div className="tm-pool">

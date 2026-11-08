@@ -5,8 +5,14 @@
 // token is kept in localStorage under "teamToken" (lib/api.js sends it on /team/* calls); it is
 // a different login from the admin's. A new account must first replace its temporary password.
 // Then:
-//   /team               → TeamHome: what needs attention, my tasks, my projects
+//   /team               → TeamOverview: numbers, what needs attention, standup, cheers (Home tab)
+//   /team/tasks         → TeamTasks: all my tasks by status
+//   /team/projects      → TeamProjects: my projects
 //   /team/projects/:id  → TeamProject: the project's board, docs and team (?task=<id> opens a task)
+//   /team/news          → TeamNews: announcements from the owner (files, voice notes, "Got it")
+//   /team/me            → TeamMe: my profile, badges, thank-you notes, availability, notifications
+// The tabs (TeamNav.jsx) share one load of my work (WorkContext.jsx). While anything loads, the
+// brand loader shows (components/BrandLoader.jsx); the SS mark sits behind the page (BrandBackdrop.jsx).
 //   /team/join/:token   → TeamJoin: sign up with an invite link (works without logging in)
 // The top bar has the notification bell 🔔 (components/team/Bell.jsx).
 // The portal speaks English and Arabic (remembered in localStorage) and follows the site's
@@ -19,7 +25,15 @@ import { initials } from "../../lib/team";
 import { useSite } from "../../context/SiteContext";
 import { SunIcon, MoonIcon, GlobeIcon, KeyIcon, LogoutIcon, ExternalIcon, CheckCircleIcon } from "../../components/team/icons";
 import { TEAM_COPY, SERVER_AR } from "./teamCopy";
-import TeamHome from "./TeamHome";
+import TeamOverview from "./TeamOverview";
+import TeamTasks from "./TeamTasks";
+import TeamProjects from "./TeamProjects";
+import TeamNews from "./TeamNews";
+import TeamMe from "./TeamMe";
+import TeamNav from "./TeamNav";
+import { WorkProvider } from "./WorkContext";
+import BrandLoader from "../../components/BrandLoader";
+import BrandBackdrop from "../../components/BrandBackdrop";
 import TeamProject from "./TeamProject";
 import TeamJoin from "./TeamJoin";
 import Toaster from "../../components/Toaster";
@@ -69,24 +83,29 @@ export default function TeamPortal() {
   const value = { lang, setLang, t, msg, member, setMember, logout };
   let page;
   if (join) page = <TeamJoin token={join.params.token} />;
-  else if (status === "checking") page = <p className="tm-loading">{t.loading}</p>;
+  else if (status === "checking") page = <BrandLoader variant="screen" label={t.loading} />;
   else if (status === "out") page = <TeamLogin onSignedIn={signedIn} expired={expired} />;
   else if (member.mustChangePassword) page = <AuthLayout><PasswordForm forced /></AuthLayout>;
   else page = (
-    <>
+    <WorkProvider>
       <TeamTopbar />
+      <TeamNav />
       <Routes>
-        <Route index element={<TeamHome />} />
+        <Route index element={<TeamOverview />} />
+        <Route path="tasks" element={<TeamTasks />} />
+        <Route path="projects" element={<TeamProjects />} />
         <Route path="projects/:id" element={<TeamProject />} />
-        <Route path="*" element={<TeamHome />} />
+        <Route path="news" element={<TeamNews />} />
+        <Route path="me" element={<TeamMe />} />
+        <Route path="*" element={<TeamOverview />} />
       </Routes>
       <TeamFooter />
-    </>
+    </WorkProvider>
   );
 
   return (
     <TeamContext.Provider value={value}>
-      <div className="tm" dir={lang === "ar" ? "rtl" : "ltr"} lang={lang}>{page}<Toaster /></div>
+      <div className="tm" dir={lang === "ar" ? "rtl" : "ltr"} lang={lang}><BrandBackdrop />{page}<Toaster /></div>
     </TeamContext.Provider>
   );
 }
@@ -141,7 +160,7 @@ function TeamTopbar() {
       <header className="tm-topbar">
         <Brand subtitle={t.portal} />
         <div className="tm-topbar-actions">
-          <Bell base="/team" lang={lang} link={({ project, task }) => (project && task ? `/team/projects/${project}?task=${task}` : null)} />
+          <Bell base="/team" lang={lang} link={({ project, task, kind }) => (kind === "announcement" ? "/team/news" : project && task ? `/team/projects/${project}?task=${task}` : null)} />
           <Switches />
           <div className="tm-account" ref={menuRef}>
             <button type="button" className="tm-account-btn" onClick={() => setMenu(!menu)} aria-expanded={menu} aria-label={t.account}>
@@ -236,6 +255,7 @@ function TeamLogin({ onSignedIn, expired }) {
           <input className="fp-input" dir="ltr" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
         </label>
         <button className="fp-btn tm-btn-block" type="submit" disabled={busy}>{busy ? t.signingIn : t.signIn}</button>
+        {busy && <BrandLoader variant="screen" label={t.signingIn} />}
       </form>
     </AuthLayout>
   );
