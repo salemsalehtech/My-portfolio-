@@ -596,6 +596,15 @@ const teamMemberSchema = new mongoose.Schema(
     pending: { type: Boolean, default: false }, // signed up with an invite, waiting for the owner's approval
     invite: { type: mongoose.Schema.Types.ObjectId, ref: "TeamInvite", default: null }, // which invite they used
     lastLoginAt: { type: Date, default: null },
+    rulesAgreed: { type: Number, default: 0 }, // the TeamSettings.rulesVersion this member agreed to
+    tourDone: { type: Boolean, default: false }, // saw the first-login tour
+    // Set by the member: free, busy (don't give me more now) or away (on leave) until a date, so
+    // the owner sees who has room before assigning. `until` "" = no end date.
+    availability: {
+      status: { type: String, enum: ["available", "busy", "away"], default: "available" },
+      until: { type: String, default: "", match: [/^(\d{4}-\d{2}-\d{2})?$/, "The date must be YYYY-MM-DD"] },
+      note: { type: String, default: "", trim: true, maxlength: 120 },
+    },
   },
   { timestamps: true }
 );
@@ -653,11 +662,100 @@ const teamTaskSchema = new mongoose.Schema(
       validate: { validator: (s) => s.length <= 50, message: "Up to 50 steps per task" },
     },
     reviewNote: { type: String, default: "", maxlength: 2000 }, // the owner's comment when sending it back
+    // "I need help": the assignee says what blocks them; non-empty = the task shows a flag and the
+    // owner is notified. Cleared by the member or the owner when it is solved.
+    helpNote: { type: String, default: "", trim: true, maxlength: 500 },
+    // "I need more time": the assignee asks for a new due date with a reason; the owner approves
+    // (the due date changes) or declines. null = no open request.
+    extensionRequest: {
+      type: new mongoose.Schema({
+        date: { type: String, required: true, match: [/^\d{4}-\d{2}-\d{2}$/, "The date must be YYYY-MM-DD"] },
+        reason: { type: String, required: [true, "Write why you need more time"], trim: true, maxlength: 500 },
+        at: { type: Date, default: Date.now },
+      }, { _id: false }),
+      default: null,
+    },
     submittedAt: { type: Date, default: null },
     completedAt: { type: Date, default: null },
     order: { type: Number, default: 0 },
+    // Unassigned + claimable = in the open pool: any member of the project may take it (first one wins).
+    claimable: { type: Boolean, default: false },
+    // Acceptance criteria — "done means…" — written by the owner, checked off at review.
+    criteria: {
+      type: [{ text: { type: String, required: true, trim: true, maxlength: 300 }, done: { type: Boolean, default: false } }],
+      default: [],
+      validate: { validator: (c) => c.length <= 30, message: "Up to 30 criteria per task" },
+    },
+    understoodAt: { type: Date, default: null }, // the assignee pressed "I understood what's needed"
+    estimate: { type: String, enum: ["", "S", "M", "L"], default: "" }, // the assignee's size guess
+    returnedCount: { type: Number, default: 0 }, // times sent back — "approved first time" counts for points
+    // The owner's private rating, given when approving (never sent to members — routes/team.js strips it).
+    rating: {
+      type: new mongoose.Schema({
+        quality: { type: Number, min: 1, max: 5, required: true },
+        creativity: { type: Number, min: 1, max: 5, required: true },
+        conduct: { type: Number, min: 1, max: 5, required: true }, // manners / communication
+        bonus: { type: Number, min: 0, max: 3, default: 0 }, // went beyond the task
+        note: { type: String, default: "", trim: true, maxlength: 500 },
+      }, { _id: false }),
+      default: null,
+    },
   },
   { timestamps: true }
+);
+teamTaskSchema.index({ project: 1, order: 1, createdAt: 1 }); // a project's board
+teamTaskSchema.index({ assignee: 1, status: 1 }); // "my tasks", workload
+teamTaskSchema.index({ completedAt: -1 }); // scores per month
+
+// A reusable task (Admin → Team → Templates): "New page", "Bug fix"… with its brief, steps and
+// criteria ready. With `repeat` set it also makes a task by itself every week / month in
+// `project` for `assignee` (lib/teamJobs.js). `lastRun` stops a second copy on the same day.
+const teamTemplateSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: [true, "A template name is required"], trim: true, maxlength: 80 },
+    title: { type: String, required: [true, "A task title is required"], trim: true, maxlength: 200 },
+    description: { type: String, default: "", maxlength: 20000 },
+    priority: { type: String, enum: ["low", "normal", "high", "urgent"], default: "normal" },
+    steps: { type: [{ _id: false, text: { type: String, trim: true, maxlength: 300 } }], default: [] },
+    criteria: { type: [{ _id: false, text: { type: String, trim: true, maxlength: 300 } }], default: [] },
+    repeat: {
+      every: { type: String, enum: ["none", "weekly", "monthly"], default: "none" },
+      weekday: { type: Number, min: 0, max: 6, default: 0 }, // weekly: 0 = Sunday
+      monthDay: { type: Number, min: 1, max: 28, default: 1 }, // monthly (28 max so every month has it)
+      dueInDays: { type: Number, min: 0, max: 60, default: 3 },
+      project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", default: null },
+      assignee: { type: mongoose.Schema.Types.ObjectId, ref: "TeamMember", default: null },
+      lastRun: { type: String, default: "" },
+    },
+  },
+  { timestamps: true }
+);
+
+// One settings document for the team: the rules page (bilingual Markdown + a version that goes up
+// when the owner publishes a change, so everyone agrees again), the shared monthly goal, and the
+// last weekly summary sent.
+const teamSettingsSchema = new mongoose.Schema(
+  {
+    rulesEn: { type: String, default: "", maxlength: 30000 },
+    rulesAr: { type: String, default: "", maxlength: 30000 },
+    rulesVersion: { type: Number, default: 0 }, // 0 = no rules published yet
+    goalTarget: { type: Number, min: 0, max: 1000, default: 0 }, // tasks to finish together this month, 0 = off
+    goalLabel: { type: String, default: "", trim: true, maxlength: 120 },
+    weeklySentOn: { type: String, default: "" },
+  },
+  { timestamps: true }
+);
+
+// A thank-you from the owner to a member ("Great work on the login page") — shown on the
+// member's home page; members don't rate each other (owner decision 2026-11-08).
+const teamKudosSchema = new mongoose.Schema(
+  {
+    member: { type: mongoose.Schema.Types.ObjectId, ref: "TeamMember", required: true, index: true },
+    task: { type: mongoose.Schema.Types.ObjectId, ref: "TeamTask", default: null },
+    message: { type: String, required: [true, "Write a message"], trim: true, maxlength: 500 },
+    star: { type: Boolean, default: false }, // "star of the week"
+  },
+  { timestamps: { createdAt: true, updatedAt: false } }
 );
 
 // What happened in the workspace, newest first ("Mona submitted 'Login page' for review").
@@ -681,9 +779,26 @@ const teamCommentSchema = new mongoose.Schema(
     project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", required: true },
     member: { type: mongoose.Schema.Types.ObjectId, ref: "TeamMember", default: null },
     byOwner: { type: Boolean, default: false }, // written by the owner (member stays null)
+    replyTo: { type: mongoose.Schema.Types.ObjectId, ref: "TeamComment", default: null }, // answering this comment
     body: { type: String, required: [true, "Write a comment first"], trim: true, maxlength: 2000 },
   },
   { timestamps: true }
+);
+
+// A file attached to a task (PDF or picture, max 5 MB — lib/attachments.js): the owner's brief,
+// or the assignee's result sent with the work. Kept in its own collection so loading a board
+// never drags the file bytes along; `data` is never sent as JSON, only through GET …/attachments/:id.
+const teamAttachmentSchema = new mongoose.Schema(
+  {
+    task: { type: mongoose.Schema.Types.ObjectId, ref: "TeamTask", required: true, index: true },
+    project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", required: true, index: true },
+    member: { type: mongoose.Schema.Types.ObjectId, ref: "TeamMember", default: null }, // null = the owner
+    filename: { type: String, required: true, maxlength: 120 },
+    contentType: { type: String, required: true },
+    size: { type: Number, required: true },
+    data: { type: Buffer, required: true },
+  },
+  { timestamps: { createdAt: true, updatedAt: false } }
 );
 
 // A notification for the bell 🔔. `recipient` is a member, or null for the owner. `kind` says
@@ -698,10 +813,15 @@ const teamNotificationSchema = new mongoose.Schema(
     project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", default: null },
     detail: { type: String, default: "", maxlength: 300 },
     read: { type: Boolean, default: false },
+    pushed: { type: Boolean, default: true }, // false = made in quiet hours, waits for the summary push (lib/teamPush.js)
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );
 teamNotificationSchema.index({ createdAt: 1 }, { expireAfterSeconds: 60 * 24 * 60 * 60 });
+// The bell reads "latest 30 for me" and "how many unread for me" on every poll (each member, every minute).
+teamNotificationSchema.index({ recipient: 1, createdAt: -1 });
+teamNotificationSchema.index({ recipient: 1, read: 1 });
+teamNotificationSchema.index({ pushed: 1 }, { partialFilterExpression: { pushed: false } });
 
 // A member's daily standup: what I did yesterday, what I'll do today, what blocks me.
 // One per member per day (`date` is the Cairo date, "YYYY-MM-DD").
@@ -923,8 +1043,12 @@ const models = {
   CircleSettings: mongoose.models.CircleSettings || mongoose.model("CircleSettings", circleSettingsSchema),
   TeamInvite: mongoose.models.TeamInvite || mongoose.model("TeamInvite", teamInviteSchema),
   TeamComment: mongoose.models.TeamComment || mongoose.model("TeamComment", teamCommentSchema),
+  TeamAttachment: mongoose.models.TeamAttachment || mongoose.model("TeamAttachment", teamAttachmentSchema),
   TeamNotification: mongoose.models.TeamNotification || mongoose.model("TeamNotification", teamNotificationSchema),
   TeamStandup: mongoose.models.TeamStandup || mongoose.model("TeamStandup", teamStandupSchema),
+  TeamTemplate: mongoose.models.TeamTemplate || mongoose.model("TeamTemplate", teamTemplateSchema),
+  TeamSettings: mongoose.models.TeamSettings || mongoose.model("TeamSettings", teamSettingsSchema),
+  TeamKudos: mongoose.models.TeamKudos || mongoose.model("TeamKudos", teamKudosSchema),
 };
 
 // When a document is sent as JSON (res.json), rename MongoDB's `_id` to a plain `id` string and
@@ -953,5 +1077,9 @@ jsonOf(models.Post, { picture: { cover: "hasCover" } });
 jsonOf(models.CirclePayment, { picture: { proof: "hasProof" } });
 jsonOf(models.TeamMember, { secret: ["passwordHash"] });
 jsonOf(models.CircleMember, { secret: ["passwordHash"] });
+jsonOf(models.TeamAttachment, { secret: ["data"] });
+// The rating is the owner's private note; members never see it. The owner's routes add it back
+// explicitly (task.toObject()) — see ownerTaskJSON() in routes/adminTeam.js.
+jsonOf(models.TeamTask, { secret: ["rating"] });
 
 module.exports = { connectMongo, ...models };

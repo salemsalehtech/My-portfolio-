@@ -9,6 +9,10 @@ const cairoDate = (d = new Date()) => new Intl.DateTimeFormat("en-CA", { timeZon
 // The hour in Cairo right now, 0–23.
 const cairoHour = () => Number(new Intl.DateTimeFormat("en-GB", { timeZone: TIME_ZONE, hour: "2-digit", hourCycle: "h23" }).format(new Date()));
 
+// The weekday in Cairo right now: 0 = Sunday … 5 = Friday, 6 = Saturday.
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const cairoWeekday = (d = new Date()) => WEEKDAYS.indexOf(new Intl.DateTimeFormat("en-US", { timeZone: TIME_ZONE, weekday: "short" }).format(d));
+
 // "2026-11-30" + 2 → "2026-12-02".
 const addDays = (date, days) => {
   const d = new Date(`${date}T12:00:00Z`);
@@ -16,4 +20,4 @@ const addDays = (date, days) => {
   return d.toISOString().slice(0, 10);
 };
 
-module.exports = { cairoDate, cairoHour, addDays };
+module.exports = { cairoDate, cairoHour, cairoWeekday, addDays };
