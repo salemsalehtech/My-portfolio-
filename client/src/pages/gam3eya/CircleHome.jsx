@@ -17,6 +17,7 @@ import { toast } from "../../components/Toaster";
 import { useCircle } from "./CirclePortal";
 import PayModal from "./PayModal";
 import { HourglassIcon, CalendarIcon, AwardIcon, WalletIcon, TargetIcon, ForwardIcon } from "../../components/team/icons";
+import BrandLoader from "../../components/BrandLoader";
 
 export default function CircleHome() {
   const { t, msg, member, setMember } = useCircle();
@@ -34,7 +35,7 @@ export default function CircleHome() {
         <h1>{t.hello(member.name.split(" ")[0])}</h1>
       </header>
       {error && <p className="tm-error">{msg(error)}</p>}
-      {circles === null && !error && <p className="tm-muted">{t.loading}</p>}
+      {circles === null && !error && <BrandLoader label={t.loading} />}
       {circles && circles.length === 0 && <p className="tm-empty">{t.noCircles}</p>}
       {circles && circles.map((c) => (
         <CircleCard key={c.id} circle={c} onPay={(month) => setPaying({ circle: c, month })} onChange={setCircles} reload={load} />

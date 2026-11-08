@@ -18,6 +18,7 @@ import { SHARED_COPY } from "../../lib/team";
 import { PaperclipIcon, FileIcon, XIcon, MicIcon } from "./icons";
 import VoiceRecorder, { canRecord } from "./VoiceRecorder";
 import ImageMarkup from "./ImageMarkup";
+import BrandLoader from "../BrandLoader";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const TYPES = ["application/pdf", "image/png", "image/jpeg", "image/webp"]; // what the file picker offers
@@ -129,7 +130,7 @@ export default function Attachments({
         <div className="tm-file-add">
           <input ref={input} type="file" accept={TYPES.join(",")} multiple hidden onChange={pick} />
           <button type="button" className={buttonClass} onClick={() => input.current.click()} disabled={busy}>
-            <PaperclipIcon size={15} /> {busy ? c.uploading : c.attach}
+            {busy ? <BrandLoader variant="inline" size={14} label={c.uploading} /> : <PaperclipIcon size={15} />} {busy ? c.uploading : c.attach}
           </button>
           {canRecord() && <VoiceRecorder lang={lang} className={buttonClass} onDone={(f) => add([f])} onError={setError} />}
           <span className="tm-muted tm-small">{c.attachHint}</span>

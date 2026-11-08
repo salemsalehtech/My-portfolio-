@@ -46,6 +46,7 @@ import BlogList from "./pages/BlogList";
 import NotFound from "./pages/NotFound";
 import { Navigate } from "react-router-dom";
 import { lazy, Suspense } from "react";
+import BrandLoader from "./components/BrandLoader";
 
 // The article page and the post editor use the Markdown libraries (marked + DOMPurify). Loading
 // them lazily puts that code in a separate file that is only downloaded when one of these two
@@ -65,7 +66,8 @@ const AdminProductEditor = lazy(() => import("./pages/admin/AdminProductEditor")
 const CirclePortal = lazy(() => import("./pages/gam3eya/CirclePortal"));
 const AdminCircles = lazy(() => import("./pages/admin/AdminCircles"));
 const AdminCircle = lazy(() => import("./pages/admin/AdminCircle"));
-const loading = <p style={{ padding: 40, textAlign: "center" }}>…</p>;
+// Shown while a lazy page (portal, dashboard page, article…) downloads: the animated brand mark.
+const loading = <BrandLoader variant="screen" />;
 
 export default function App() {
   return (

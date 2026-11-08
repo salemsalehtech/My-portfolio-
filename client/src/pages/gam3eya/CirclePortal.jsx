@@ -23,6 +23,8 @@ import CircleHome from "./CircleHome";
 import Toaster from "../../components/Toaster";
 import { CircleReceipt, CircleCertificate } from "./CirclePrint";
 import BrandMark from "../../components/BrandMark";
+import BrandLoader from "../../components/BrandLoader";
+import BrandBackdrop from "../../components/BrandBackdrop";
 
 const CircleContext = createContext(null);
 export const useCircle = () => useContext(CircleContext);
@@ -56,7 +58,7 @@ export default function CirclePortal() {
 
   let page;
   if (join) page = <CircleJoin token={join.params.token} />;
-  else if (status === "checking") page = <p className="tm-loading">{t.loading}</p>;
+  else if (status === "checking") page = <BrandLoader variant="screen" label={t.loading} />;
   else if (status === "out") page = <CircleLogin onSignedIn={signedIn} expired={expired} />;
   else if (member.mustChangePassword) page = <AuthLayout><PasswordForm forced /></AuthLayout>;
   else page = (
@@ -77,7 +79,7 @@ export default function CirclePortal() {
 
   return (
     <CircleContext.Provider value={{ lang, setLang, t, msg, member, setMember, logout }}>
-      <div className="tm gm" dir={lang === "ar" ? "rtl" : "ltr"} lang={lang}>{page}<Toaster /></div>
+      <div className="tm gm" dir={lang === "ar" ? "rtl" : "ltr"} lang={lang}><BrandBackdrop />{page}<Toaster /></div>
     </CircleContext.Provider>
   );
 }
@@ -240,7 +242,7 @@ function CircleJoin({ token }) {
     }
   };
   let body;
-  if (valid === null) body = <p className="tm-muted">{t.loading}</p>;
+  if (valid === null) body = <BrandLoader label={t.loading} />;
   else if (done) body = (<><h2>{t.joinedTitle}</h2><p className="tm-muted">{t.joinedText(done.name.split(" ")[0])}</p><Link className="fp-btn tm-btn-block" to="/gam3eya">{t.toLogin}</Link></>);
   else if (!valid) body = (<><h2>{t.join}</h2><p className="tm-error">{error ? msg(error) : t.badInvite}</p><Link className="fp-btn fp-btn-ghost tm-btn-block" to="/gam3eya">{t.toLogin}</Link></>);
   else body = (
