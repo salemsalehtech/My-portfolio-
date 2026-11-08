@@ -22,13 +22,13 @@ body.ar h1, body.ar h2, body.ar h3, body.ar h4, [lang="ar"] h1, [lang="ar"] h2, 
 }
 
 /* ---- buttons: one family everywhere ---- */
-.btn-primary, .btn-send, .btn-download, .fp-btn, .admin-btn-primary {
+.btn-primary, .btn-download, .fp-btn, .admin-btn-primary {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   min-height: 44px; padding: 0 22px; border: 1px solid var(--ink); border-radius: var(--radius-sm);
   background: var(--ink); color: var(--on-ink); font-family: var(--font-body); font-size: 15px; font-weight: 600;
   letter-spacing: 0; box-shadow: none; transform: none; transition: background .15s, border-color .15s, color .15s, opacity .15s;
 }
-.btn-primary:hover, .btn-send:hover:not(:disabled), .btn-download:hover, .fp-btn:hover, .admin-btn-primary:hover {
+.btn-primary:hover, .btn-download:hover, .fp-btn:hover, .admin-btn-primary:hover {
   background: color-mix(in srgb, var(--ink) 86%, var(--bg)); border-color: color-mix(in srgb, var(--ink) 86%, var(--bg)); color: var(--on-ink);
   transform: none; box-shadow: none; opacity: 1;
 }
@@ -74,7 +74,6 @@ body.ar h1, body.ar h2, body.ar h3, body.ar h4, [lang="ar"] h1, [lang="ar"] h2, 
 .nav-link.active { background: transparent; color: var(--text-primary); font-weight: 600; }
 .nav-link.active::after { content: ""; position: absolute; inset-inline: 12px; bottom: 2px; height: 2px; background: var(--gold); border-radius: 2px; }
 .mobile-link:hover, .mobile-link.active { background: var(--card); color: var(--text-primary); }
-.mobile-panel { box-shadow: var(--shadow); }
 
 /* ---- hero: the bilingual name is the signature ---- */
 .hero { min-height: auto; padding-top: var(--nav-h); border-bottom: 1px solid var(--card-border); }
@@ -91,14 +90,9 @@ body.ar .hero-name { line-height: 1.25; }
 .hero-ctas { margin-top: 22px; gap: 10px; }
 .hero-socials { margin-top: 26px; gap: 8px; }
 .social-btn { width: 40px; height: 40px; border-radius: var(--radius-sm); background: transparent; }
-.social-btn:hover, .social-linkedin:hover, .social-youtube:hover { border-color: var(--line-strong) !important; color: var(--text-primary) !important; background: transparent !important; }
-.hero-portrait { margin: 0; justify-self: end; width: min(100%, 380px); }
-.hero-portrait img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 15%; border-radius: var(--radius); background: var(--card); filter: saturate(.92); }
-.hero-portrait figcaption { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; font-family: var(--font-mono); font-size: 12.5px; color: var(--text-muted); }
-.hero-portrait abbr { text-decoration: none; }
+.social-btn:hover { border-color: var(--line-strong) !important; color: var(--text-primary) !important; background: transparent !important; }
 @media (max-width: 860px) {
   .hero-container { grid-template-columns: 1fr; align-items: start; }
-  .hero-portrait { justify-self: start; width: min(100%, 300px); order: -1; }
   .hero-text { text-align: start; align-items: stretch; }
 }
 
@@ -113,7 +107,7 @@ body.ar .hero-name { line-height: 1.25; }
 body.ar .section-header h2 { line-height: 1.35; }
 
 /* ---- cards: hairlines, quiet hover ---- */
-.stat-card, .about-card, .project-card, .yt-channel-card, .yt-video, .contact-form-card, .connect-card, .testimonial-card, .service-card, .cert-card, .post-card, .gm-circle, .tm-stat, .admin-linkbox {
+.stat-card, .about-card, .project-card, .yt-channel-card, .yt-video, .connect-card, .testimonial-card, .service-card, .cert-card, .post-card, .gm-circle, .tm-stat, .admin-linkbox {
   border-radius: var(--radius); box-shadow: none;
 }
 .stat-card:hover, .project-card:hover, .testimonial-card:hover, .service-card:hover, .cert-card:hover, .post-card:hover, .yt-video:hover {
@@ -148,12 +142,9 @@ body.ar .section-header h2 { line-height: 1.35; }
 /* ---- YouTube ---- */
 .yt-logo { background: #E62117; box-shadow: none; width: 64px; height: 64px; }
 .yt-handle { color: var(--text-secondary); font-family: var(--font-mono); letter-spacing: 0; }
-.btn-youtube { border-radius: var(--radius-sm); background: #E62117; }
-.btn-youtube:hover { background: #C81B12; transform: none; box-shadow: none; }
 .yt-video:hover { transform: none; }
 
 /* ---- contact / footer ---- */
-.success-icon { border-radius: var(--radius-sm); border-width: 1px; }
 footer { padding: 36px clamp(20px, 4vw, 60px); }
 .footer-copy, .footer-role { font-family: var(--font-mono); }
 .footer-social { background: transparent; border-radius: var(--radius-sm); }
@@ -205,7 +196,6 @@ footer { padding: 36px clamp(20px, 4vw, 60px); }
   #navbar.is-open { border-color: var(--card-border); }
   .btn-menu { width: 40px; height: 40px; border: 1px solid var(--card-border); color: var(--text-primary); }
 }
-.mobile-panel { display: none !important; }
 .mobile-overlay { top: var(--nav-h); background: rgba(10,12,14,.38); backdrop-filter: none; z-index: 996; }
 .mobile-sheet {
   position: fixed; top: var(--nav-h); inset-inline: 0; z-index: 999; max-height: calc(100dvh - var(--nav-h)); overflow-y: auto;
@@ -231,7 +221,6 @@ body.menu-open { overflow: hidden; }
 .hero-status { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-size: 14px; font-weight: 500; color: var(--text-primary); }
 .hero-status span { width: 8px; height: 8px; border-radius: 50%; background: #2F9E62; box-shadow: 0 0 0 3px rgba(47,158,98,.18); flex-shrink: 0; }
 .hero-status.is-busy span { background: #C98A06; box-shadow: 0 0 0 3px rgba(201,138,6,.18); }
-.hero-portrait figcaption { margin-top: 6px; }
 .booking-card { display: flex; flex-direction: column; gap: 14px; }
 .booking-card .hero-status { margin: 0; }
 
@@ -253,7 +242,6 @@ body.menu-open { overflow: hidden; }
   .process-step, body.ar .process-step, .process-step + .process-step { padding: 18px 0; padding-inline-start: 0; border-inline-end: none; border-top: 1px solid var(--card-border); display: grid; grid-template-columns: 44px 1fr; column-gap: 8px; }
   .process-num { grid-row: span 2; margin: 3px 0 0; }
 }
-.hero-portrait img { height: auto; }
 
 /* ---- Brand mark (components/BrandMark.jsx) replaces the old "SS" boxes ---- */
 .nav-badge, .footer-badge, .tm-logo { background: none !important; width: auto !important; height: auto !important; border-radius: 0 !important; color: var(--text-primary); display: inline-block; flex-shrink: 0; }
