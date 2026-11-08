@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Design system
 
-Tokens live at the top of `client/src/index.css`; a "DESIGN SYSTEM v2" layer at the end restyles shared classes. One accent (saffron, `--gold`) for the brand mark, active states and focus only; primary buttons are ink (`--ink` / `--on-ink`). Fonts: Alexandria (display), IBM Plex Sans Arabic (text), IBM Plex Mono (labels, numbers; falls back to Plex Sans Arabic for Arabic). Corners `--radius-sm` 6px / `--radius` 10px. No emoji in the UI — use the line icons in `components/team/icons.jsx`. The logo is `components/BrandMark.jsx` (SS as two circuit traces, first pad saffron); the favicon in `index.html`, the app icons and `og-image.jpg` use the same paths. The hero pairs the bilingual name with `components/HeroPortrait.jsx`: the cut-out portrait (`public/uploads/portrait-cut.webp`) standing inside a huge brand mark on a diagonal panel (ink panel + saffron mark in light mode, swapped in dark).
+Styles live in `client/src/styles/01-base.css … 10-portal-v3.css`, imported **in cascade order** by `client/src/index.css` (later files restyle earlier ones on purpose — keep the order; put new styles in the file of their area). Tokens are at the top of `01-base.css`; `06-design-system-v2.css` and `07-trace-system.css` restyle shared classes. One accent (saffron, `--gold`) for the brand mark, active states and focus only; primary buttons are ink (`--ink` / `--on-ink`). Fonts: Alexandria (display), IBM Plex Sans Arabic (text), IBM Plex Mono (labels, numbers; falls back to Plex Sans Arabic for Arabic). Corners `--radius-sm` 6px / `--radius` 10px. No emoji in the UI — use the line icons in `components/team/icons.jsx`. The logo is `components/BrandMark.jsx` (SS as two circuit traces, first pad saffron); the favicon in `index.html`, the app icons and `og-image.jpg` use the same paths. The hero pairs the bilingual name with `components/HeroPortrait.jsx`: the cut-out portrait (`public/uploads/portrait-cut.webp`) standing inside a huge brand mark on a diagonal panel (ink panel + saffron mark in light mode, swapped in dark).
 
 The same identity outside the site lives in `brand/`: `README.md` (the brand guide: logo rules, colour weights, type, social/video formats, client documents, voice), `tokens.json`, `logo/` (outlined SVGs), `exports/` (PNGs) and `templates/` (`templates.html` renders every social and video format; `render.ps1` exports PNGs with Edge). The site's tokens are the reference — when one changes, change `brand/` too.
 
@@ -31,7 +31,9 @@ Server (run from `server/`):
 - `npm start` — start API without watching
 - `npm run seed` — run `prisma/seed.js` to wipe and reseed `Project`/`Skill`/`YoutubeVideo`, and upsert the `AdminUser` from `ADMIN_EMAIL`/`ADMIN_PASSWORD` (the script lives under `server/prisma/` for historical reasons — the project no longer uses Prisma)
 
-There is no test suite or lint config in either app currently.
+Server: `npm test` (in `server/`) runs the API tests in `server/test/` — each file on its own throwaway **local** MongoDB database (`*_test`, refuses anything else); it needs mongod on 127.0.0.1:27017. `messages.test.js` fails when a server message translated in the portals (`SERVER_AR`, `CIRCLE_SERVER_AR`) no longer exists. No client tests or lint config.
+
+Rules both sides must agree on (upload limits/types, member status moves, the @lead handle, the Cairo time zone) live only in `server/src/lib/rules.js`; the browser reads them from `GET /api/meta` (`client/src/lib/rules.js`) — never copy those values into client code.
 
 Server requires a `.env` file (see `server/.env.example` for required vars: `MONGODB_URI`, `PORT`, `CLIENT_ORIGIN`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `NOTIFY_EMAIL`, `SMTP_*`). `server.js` fails fast at boot if `MONGODB_URI` or `JWT_SECRET` is missing.
 
