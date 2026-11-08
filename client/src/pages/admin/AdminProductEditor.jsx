@@ -9,12 +9,13 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../lib/api";
+import { imageError } from "../../lib/rules";
 import { readAsBase64 } from "../../lib/readAsBase64";
 import { slugify } from "../../lib/slug";
 import { BLOCK_TYPES, blankBlock, blankItem, productCoverUrl, productImageUrl } from "../../lib/products";
 import { useAdminT } from "../../lib/adminI18n";
 
-const MAX_MB = 2;
+
 const BLOCK_LABEL = {
   text: "Text (problem, solution, tech…)", features: "Features", gallery: "Screenshots",
   video: "Demo video (YouTube)", pricing: "Pricing plans", faq: "FAQ", reviews: "Client reviews",
@@ -268,7 +269,8 @@ function GalleryPicture({ item, productId, onChange }) {
     const file = e.target.files[0];
     e.target.value = "";
     if (!file) return;
-    if (file.size > MAX_MB * 1024 * 1024) return setError(t("The image is too large (max {mb} MB).", { mb: MAX_MB }));
+    const problem = imageError(file, t);
+    if (problem) return setError(problem);
     setBusy(true);
     setError("");
     try {
@@ -300,7 +302,8 @@ function CoverPicture({ product, onChange }) {
     const file = e.target.files[0];
     e.target.value = "";
     if (!file) return;
-    if (file.size > MAX_MB * 1024 * 1024) return setError(t("The image is too large (max {mb} MB).", { mb: MAX_MB }));
+    const problem = imageError(file, t);
+    if (problem) return setError(problem);
     setBusy(true);
     setError("");
     try { onChange(await api.put(`/admin/products/${product.id}/cover`, { data: await readAsBase64(file) })); } catch (err) { setError(err.message); } finally { setBusy(false); }

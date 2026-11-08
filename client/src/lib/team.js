@@ -1,6 +1,7 @@
 // team.js — shared helpers for the team workspace: the owner's pages (pages/admin/AdminTeam*.jsx)
 // and the member portal (pages/team/). Statuses and priorities match the TeamTask model in
-// server/src/lib/mongo.js.
+// server/src/lib/mongo.js. Rules (member moves, limits, time zone) come from the server: lib/rules.js.
+import { timeZone } from "./rules";
 
 export const STATUSES = ["todo", "doing", "review", "done"];
 export const PRIORITIES = ["low", "normal", "high", "urgent"];
@@ -15,10 +16,14 @@ export const PRIORITY_LABEL = {
   ar: { low: "منخفضة", normal: "عادية", high: "عالية", urgent: "عاجلة" },
 };
 
-// Today as "YYYY-MM-DD" in the browser's time zone — due dates are stored the same way.
-export const today = () => {
-  const d = new Date();
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+// Today as "YYYY-MM-DD" in the owner's time zone (Cairo, from lib/rules.js) — the same day the
+// server counts due dates, standups and "overdue" in, wherever the member's computer is.
+export const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: timeZone() }).format(new Date());
+// "YYYY-MM-DD" n days from today (n may be negative).
+export const inDays = (n) => {
+  const d = new Date(`${today()}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
 };
 export const isOverdue = (task) => Boolean(task.dueDate) && task.status !== "done" && task.dueDate < today();
 
@@ -44,8 +49,6 @@ export const BRIEF_TEMPLATE = {
   ar: "## الهدف\nالنتيجة المطلوبة في جملة واحدة.\n\n## ليه مهم\n\n## المطلوب بالظبط\n1. \n\n## مش مطلوب\n- \n\n## مراجع\n- زي ده: \n- مش زي ده: \n",
 };
 
-// Which status changes a member may make on their own task (same rule as routes/team.js).
-export const MEMBER_MOVES = { todo: ["doing", "review"], doing: ["todo", "review"], review: ["doing"], done: [] };
 
 // "3 min ago" / "منذ 3 دقائق" — for comments and notifications.
 export const timeAgo = (iso, lang = "en") => {

@@ -646,7 +646,7 @@ const teamProjectSchema = new mongoose.Schema(
 // One task. Members move their own tasks todo → doing → review; only the owner moves a task
 // from review to done (approve) or back to doing with a `reviewNote` (send back).
 // `steps` is the task's to-do list — the owner and the assigned member can both edit it.
-const TASK_STATUSES = ["todo", "doing", "review", "done"];
+const { TASK_STATUSES } = require("./rules");
 const teamTaskSchema = new mongoose.Schema(
   {
     project: { type: mongoose.Schema.Types.ObjectId, ref: "TeamProject", required: true, index: true },

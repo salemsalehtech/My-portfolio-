@@ -6,7 +6,7 @@
 // On phones the side column drops under the main one. Rules to agree to and the first-login
 // tour show here as overlays when needed.
 import { Link } from "react-router-dom";
-import { isOverdue, SHARED_COPY } from "../../lib/team";
+import { isOverdue, inDays, SHARED_COPY } from "../../lib/team";
 import { ListIcon, AlertIcon, EyeIcon, CheckCircleIcon, MegaphoneIcon, ChevronIcon } from "../../components/team/icons";
 import BrandLoader from "../../components/BrandLoader";
 import PushPrompt from "../../components/PushPrompt";
@@ -19,8 +19,6 @@ import CheersCard from "./CheersCard";
 import PoolCard from "./PoolCard";
 import RulesGate from "./RulesGate";
 import Tour from "./Tour";
-
-const inDays = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
 
 export default function TeamOverview() {
   const { t, lang, member } = useTeam();

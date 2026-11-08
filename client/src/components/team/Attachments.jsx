@@ -19,11 +19,11 @@ import { PaperclipIcon, FileIcon, XIcon, MicIcon } from "./icons";
 import VoiceRecorder, { canRecord } from "./VoiceRecorder";
 import ImageMarkup from "./ImageMarkup";
 import BrandLoader from "../BrandLoader";
+import { useRules, fileProblem } from "../../lib/rules";
 
-const MAX_BYTES = 5 * 1024 * 1024;
-const TYPES = ["application/pdf", "image/png", "image/jpeg", "image/webp"]; // what the file picker offers
-const AUDIO = ["audio/webm", "audio/ogg", "audio/mp4"]; // voice notes (recorded here, not picked)
-const allowed = (type) => TYPES.includes(type) || AUDIO.includes(type.split(";")[0]);
+// Size, type and count limits come from the server's rules (lib/rules.js). The file picker offers
+// the non-audio types; voice notes are recorded here (VoiceRecorder), not picked.
+const pickable = (rules) => (rules?.uploads.attachment.types || []).filter((type) => !type.startsWith("audio/"));
 
 export const uploadAttachment = async (path, file) => api.post(path, { name: file.name, data: await readAsBase64(file) });
 
@@ -35,6 +35,7 @@ export default function Attachments({
   buttonClass = "admin-btn", lang = "en", msg = (text) => text,
 }) {
   const c = SHARED_COPY[lang];
+  const rules = useRules();
   const pending = !path; // a new task: files wait until it is saved
   const [list, setList] = useState(pending ? [] : null);
   const [busy, setBusy] = useState(false);
@@ -54,16 +55,17 @@ export default function Attachments({
   const pick = (e) => {
     const files = [...e.target.files];
     e.target.value = "";
-    if (files.length === 1 && files[0].type.startsWith("image/") && files[0].size <= MAX_BYTES) setMarking(files[0]);
+    if (files.length === 1 && files[0].type.startsWith("image/") && !fileProblem(files[0], "attachment")) setMarking(files[0]);
     else add(files);
   };
 
   // Checks the files in the browser first, so a wrong file fails before any upload.
   const add = async (files) => {
     setError("");
-    const bad = files.find((f) => !allowed(f.type) || f.size > MAX_BYTES);
-    if (bad) return setError(allowed(bad.type) ? c.tooBig(bad.name) : c.badType(bad.name));
-    if ((items?.length || 0) + files.length > 10) return setError(msg("Up to 10 files per task"));
+    const bad = files.find((f) => fileProblem(f, "attachment"));
+    if (bad) return setError(fileProblem(bad, "attachment") === "size" ? c.tooBig(bad.name) : c.badType(bad.name));
+    const maxFiles = rules?.uploads.attachment.maxFiles;
+    if (maxFiles && (items?.length || 0) + files.length > maxFiles) return setError(msg("Up to 10 files per task"));
     if (pending) return onQueue([...(queue || []), ...files]);
     setBusy(true);
     try {
@@ -128,7 +130,7 @@ export default function Attachments({
       )}
       {canUpload && (
         <div className="tm-file-add">
-          <input ref={input} type="file" accept={TYPES.join(",")} multiple hidden onChange={pick} />
+          <input ref={input} type="file" accept={pickable(rules).join(",")} multiple hidden onChange={pick} />
           <button type="button" className={buttonClass} onClick={() => input.current.click()} disabled={busy}>
             {busy ? <BrandLoader variant="inline" size={14} label={c.uploading} /> : <PaperclipIcon size={15} />} {busy ? c.uploading : c.attach}
           </button>

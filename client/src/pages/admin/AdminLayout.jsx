@@ -14,6 +14,7 @@ import { useAdmin } from "../../context/AdminContext";
 import { useSite } from "../../context/SiteContext";
 import { useAdminT } from "../../lib/adminI18n";
 import { COMPANY } from "../../lib/brand";
+import { loadRules } from "../../lib/rules";
 import { NAV_ICONS } from "../../components/admin/navIcons";
 import Bell from "../../components/team/Bell";
 import CircleBell from "../../components/circles/CircleBell";
@@ -82,6 +83,7 @@ export default function AdminLayout() {
 
   useEffect(() => { setMenuOpen(false); }, [location.pathname]); // close the phone drawer after navigating
   useEffect(() => { document.title = `${t("Dashboard")} · ${COMPANY}`; }, [lang]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadRules(); }, []); // upload limits shown and checked on the pages (lib/rules.js)
 
   // Remember the page, so after signing in the admin goes straight back to it.
   if (!isAuthed) return <Navigate to="/admin/login" replace state={{ from: location.pathname }} />;

@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 import { readAsBase64 } from "../../lib/readAsBase64";
+import { fileProblem } from "../../lib/rules";
 import { money, monthName, METHODS, METHOD_LABEL } from "../../lib/circles";
 import { useCircle } from "./CirclePortal";
 
@@ -60,7 +61,7 @@ export default function PayModal({ circle, month, payInfo, onClose, onSent }) {
   const pickFile = (e) => {
     const f = e.target.files[0];
     if (!f) return;
-    if (f.size > 2 * 1024 * 1024) return setError(msg("Image is too large (max 2 MB)"));
+    if (fileProblem(f, "image") === "size") return setError(msg("Image is too large (max 2 MB)"));
     setError("");
     setFile(f);
     setPreview(URL.createObjectURL(f));

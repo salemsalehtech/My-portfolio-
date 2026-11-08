@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api, API_BASE } from "../../lib/api";
 import { readAsBase64 } from "../../lib/readAsBase64";
+import { imageError } from "../../lib/rules";
 import { T } from "../../i18n/translations";
 import { siteDefaults } from "../../lib/siteDefaults";
 import { Field, ListEditor } from "./FormParts";
@@ -168,7 +169,8 @@ function PhotoUpload({ settings, onChange }) {
     const file = e.target.files[0];
     e.target.value = "";
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) return setError(t("The image is too large (max {mb} MB).", { mb: 2 }));
+    const problem = imageError(file, t);
+    if (problem) return setError(problem);
     setBusy(true);
     setError("");
     try { onChange(await api.put("/admin/settings/photo", { data: await readAsBase64(file) })); } catch (err) { setError(err.message); } finally { setBusy(false); }

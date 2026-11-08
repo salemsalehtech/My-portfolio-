@@ -8,6 +8,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const compression = require("compression");
+const { publicRules } = require("./lib/rules");
 // Lets `async` route handlers simply throw (or reject) — the error goes to the error handler at
 // the bottom of this file instead of crashing the request. No try/catch needed in the routes.
 require("express-async-errors");
@@ -87,6 +88,12 @@ app.use(stripOperators);
 
 // Health check: Render (and the keep-alive in lib/keepAlive.js) call this to see the app is up.
 app.get("/api/health", (req, res) => res.json({ ok: true }));
+// The shared product rules (upload limits, member moves, time zone…) for the browser — the same
+// values the server enforces (lib/rules.js). Public and identical for everyone, so cacheable.
+app.get("/api/meta", (req, res) => {
+  res.set("Cache-Control", "public, max-age=600");
+  res.json(publicRules());
+});
 
 // One router per resource. The public routers are read-only (plus the public forms: contact,
 // the client feedback form and the Form Builder forms); everything that changes data lives under

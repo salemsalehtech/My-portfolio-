@@ -3,7 +3,8 @@
 // routes/adminProducts.js (product covers and gallery pictures). sendImage serves the saved
 // pictures to the public site (routes/projects.js, certificates.js, courses.js, posts.js,
 // settings.js, products.js).
-const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
+const { UPLOADS } = require("./rules");
+const MAX_IMAGE_BYTES = UPLOADS.image.maxBytes;
 
 // The real file type, read from the first bytes (never trust the file name or the browser).
 function imageType(buffer) {

@@ -5,18 +5,20 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api } from "../../lib/api";
+import { imageError, maxMb, useRules } from "../../lib/rules";
 import { readAsBase64 } from "../../lib/readAsBase64";
 import { postCoverUrl } from "../../lib/posts";
 import { useAdminT } from "../../lib/adminI18n";
 
-const MAX_MB = 2;
-const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
+
 
 // The public address of a post (HashRouter: everything after #).
 const publicUrl = (slug) => `${window.location.origin}${window.location.pathname}#/blog/${slug}`;
 
 export default function AdminPosts() {
   const { t } = useAdminT();
+  useRules(); // re-render once the upload limits (shown below) arrive
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState("");
@@ -49,8 +51,8 @@ export default function AdminPosts() {
     const id = uploadFor.current;
     e.target.value = "";
     if (!file || !id) return;
-    if (!IMAGE_TYPES.includes(file.type)) return setError(t("Please choose a PNG, JPEG or WebP image."));
-    if (file.size > MAX_MB * 1024 * 1024) return setError(t("The image is too large (max {mb} MB).", { mb: MAX_MB }));
+    const problem = imageError(file, t);
+    if (problem) return setError(problem);
     setUploadingId(id);
     try {
       await api.put(`/admin/posts/${id}/cover`, { data: await readAsBase64(file) });
@@ -111,7 +113,7 @@ export default function AdminPosts() {
           ))}
         </tbody>
       </table>
-      <p style={{ opacity: 0.7, fontSize: 13 }}>Covers: PNG, JPEG or WebP, up to {MAX_MB} MB — a landscape image (about 1200×630) looks best.</p>
+      <p style={{ opacity: 0.7, fontSize: 13 }}>Covers: PNG, JPEG or WebP, up to {maxMb("image")} MB — a landscape image (about 1200×630) looks best.</p>
     </div>
   );
 }

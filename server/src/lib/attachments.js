@@ -2,8 +2,9 @@
 // Sent from the dashboard as base64 JSON ({ name: "brief.pdf", data: "<base64>" }), like the CV,
 // and stored in MongoDB (TeamAttachment) because Render's free disk is wiped on every deploy.
 // Used by routes/adminTeam.js (upload, list, open, delete) and routes/team.js (list, open).
-const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
-const MAX_ATTACHMENTS_PER_TASK = 10;
+const { UPLOADS } = require("./rules");
+const MAX_ATTACHMENT_BYTES = UPLOADS.attachment.maxBytes;
+const MAX_ATTACHMENTS_PER_TASK = UPLOADS.attachment.maxFiles;
 
 const { imageType } = require("./images");
 

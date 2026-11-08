@@ -1,7 +1,7 @@
 // TeamProject.jsx — one project in the member portal (/#/team/projects/:id), in three tabs:
 //   Board — every task of the project by status (the member's own cards are highlighted;
 //           clicking any card opens it, a teammate's read-only). The member drags their own
-//           cards between the columns they may use (todo ↔ doing → review, see MEMBER_MOVES);
+//           cards between the columns they may use (todo ↔ doing → review — the server's rules, lib/rules.js);
 //           search and filters sit above the board,
 //   Docs  — the project's Markdown documentation + its links,
 //   Team  — who is on the project and their specialty.
@@ -9,7 +9,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { api } from "../../lib/api";
-import { initials, formatDue, MEMBER_MOVES, SHARED_COPY } from "../../lib/team";
+import { initials, formatDue, SHARED_COPY } from "../../lib/team";
+import { useRules } from "../../lib/rules";
 import Board from "../../components/team/Board";
 import MarkdownView from "../../components/team/MarkdownView";
 import { useTeam } from "./TeamPortal";
@@ -43,7 +44,8 @@ export default function TeamProject() {
 
   // Drag & drop: only my own cards, only the moves a member may make. The card moves at once
   // and goes back if the server says no.
-  const canMove = (task, status) => task.assignee?.id === member.id && MEMBER_MOVES[task.status].includes(status);
+  const moves = useRules()?.team.memberMoves; // none until the rules load — the server checks anyway
+  const canMove = (task, status) => task.assignee?.id === member.id && Boolean(moves?.[task.status]?.includes(status));
   const onMove = async (task, status) => {
     setError("");
     patchTask(task.id, { status });

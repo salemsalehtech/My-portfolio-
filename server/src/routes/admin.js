@@ -92,7 +92,7 @@ router.delete("/youtube/:id", async (req, res) => {
 // ---- CV (PDF) ----
 // The client sends { filename, data } where data is the file encoded as base64. We re-check
 // everything here (never trust the browser): it must decode, be small, and really be a PDF.
-const MAX_CV_BYTES = 4 * 1024 * 1024;
+const MAX_CV_BYTES = require("../lib/rules").UPLOADS.cv.maxBytes;
 
 router.put("/cv", async (req, res) => {
   const { filename, data } = req.body || {};

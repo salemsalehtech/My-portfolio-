@@ -8,16 +8,18 @@
 // without deleting it; `order` sorts the cards (lowest first).
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../lib/api";
+import { imageError, maxMb, useRules } from "../../lib/rules";
 import { readAsBase64 } from "../../lib/readAsBase64";
 import { courseImageUrl } from "../../components/Courses";
 import { useAdminT } from "../../lib/adminI18n";
 
 const EMPTY = { titleEn: "", titleAr: "", descEn: "", descAr: "", platform: "", detailsEn: "", detailsAr: "", url: "", visible: true, order: 0 };
-const MAX_MB = 2; // keep in sync with MAX_IMAGE_BYTES on the server
-const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
+
 
 export default function AdminCourses() {
   const { t } = useAdminT();
+  useRules(); // re-render once the upload limits (shown below) arrive
   // ---- STATE ----
   const [items, setItems] = useState([]);
   const [editing, setEditing] = useState(null); // null | "new" | <course id>
@@ -69,8 +71,8 @@ export default function AdminCourses() {
     const id = uploadFor.current;
     e.target.value = ""; // allow choosing the same file again later
     if (!file || !id) return;
-    if (!IMAGE_TYPES.includes(file.type)) return setError(t("Please choose a PNG, JPEG or WebP image."));
-    if (file.size > MAX_MB * 1024 * 1024) return setError(t("The image is too large (max {mb} MB).", { mb: MAX_MB }));
+    const problem = imageError(file, t);
+    if (problem) return setError(problem);
     setUploadingId(id);
     try {
       await api.put(`/admin/courses/${id}/image`, { data: await readAsBase64(file) });
@@ -129,7 +131,7 @@ export default function AdminCourses() {
           ))}
         </tbody>
       </table>
-      <p style={{ opacity: 0.7, fontSize: 13 }}>Pictures: PNG, JPEG or WebP, up to {MAX_MB} MB. A landscape image (e.g. a 1280×720 YouTube thumbnail) looks best.</p>
+      <p style={{ opacity: 0.7, fontSize: 13 }}>Pictures: PNG, JPEG or WebP, up to {maxMb("image")} MB. A landscape image (e.g. a 1280×720 YouTube thumbnail) looks best.</p>
 
       {/* ---- RENDER: create/edit modal form ---- */}
       {editing !== null && (

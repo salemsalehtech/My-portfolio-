@@ -19,6 +19,7 @@
 // light / dark theme; both switches are in the top bar.
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Link, Route, Routes, useMatch } from "react-router-dom";
+import { loadRules } from "../../lib/rules";
 import { api } from "../../lib/api";
 import { COMPANY } from "../../lib/brand";
 import { initials } from "../../lib/team";
@@ -71,6 +72,7 @@ export default function TeamPortal() {
   }, []);
 
   useEffect(() => { document.title = `${t.portal} · ${COMPANY}`; }, [t.portal]);
+  useEffect(() => { loadRules(); }, []); // upload limits, moves, time zone (lib/rules.js)
 
   const signedIn = (token, m) => {
     localStorage.setItem("teamToken", token);

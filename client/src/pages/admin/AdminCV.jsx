@@ -5,12 +5,14 @@
 import { useEffect, useRef, useState } from "react";
 import { api, API_BASE } from "../../lib/api";
 import { readAsBase64 } from "../../lib/readAsBase64";
+import { fileProblem, maxMb, useRules } from "../../lib/rules";
 import { useAdminT } from "../../lib/adminI18n";
 
-const MAX_MB = 4; // keep in sync with MAX_CV_BYTES on the server
+
 
 export default function AdminCV() {
   const { t } = useAdminT();
+  useRules(); // re-render once the upload limit (shown below) arrives
   const [info, setInfo] = useState(null); // null while loading, then { available, filename, size, updatedAt }
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -24,7 +26,7 @@ export default function AdminCV() {
     if (!file) return;
     setError("");
     if (file.type !== "application/pdf") return setError(t("Please choose a PDF file."));
-    if (file.size > MAX_MB * 1024 * 1024) return setError(t("The file is too large (max {mb} MB).", { mb: MAX_MB }));
+    if (fileProblem(file, "cv") === "size") return setError(t("The file is too large (max {mb} MB).", { mb: maxMb("cv") }));
 
     setUploading(true);
     try {
@@ -71,7 +73,7 @@ export default function AdminCV() {
           <button className="admin-btn admin-btn-danger" onClick={remove} disabled={uploading}>{t("Delete")}</button>
         )}
       </div>
-      <p style={{ opacity: 0.7 }}>{t("PDF only, up to {mb} MB.", { mb: MAX_MB })}</p>
+      <p style={{ opacity: 0.7 }}>{t("PDF only, up to {mb} MB.", { mb: maxMb("cv") })}</p>
     </div>
   );
 }

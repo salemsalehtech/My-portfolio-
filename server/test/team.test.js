@@ -115,5 +115,11 @@ const { signMemberToken } = require("../src/middleware/teamAuth");
   const gz = await fetch(`${base}/admin/team/projects/${pid}`, { headers: { Authorization: `Bearer ${adminToken}`, "Accept-Encoding": "gzip" } });
   check("gzip on", gz.headers.get("content-encoding") === "gzip" || Number(gz.headers.get("content-length") || 0) < 1024);
 
+  const meta = await call("GET", "/meta", null, null);
+  check("rules served to the browser", meta.data.timeZone === "Africa/Cairo" && meta.data.team.memberMoves.todo.includes("doing")
+    && meta.data.uploads.attachment.maxFiles === 10 && meta.data.team.ownerHandle === "lead", JSON.stringify(meta.data));
+  const t2 = await call("POST", `/admin/team/projects/${pid}/tasks`, { title: "Self approve?", assignee: mona.id });
+  check("member can't move own task to done", (await call("PATCH", `/team/tasks/${t2.data.id}/status`, { status: "done" }, tm)).status === 400);
+
   await finish();
 })().catch((err) => { console.error(err); process.exit(1); });

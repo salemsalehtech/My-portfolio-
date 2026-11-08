@@ -68,7 +68,7 @@ async function withCommentCounts(tasks, { owner = false } = {}) {
 
 // ---- Comments (both routers) ----
 // "@lead" in a comment means the owner; "@username" a member of the task's project.
-const OWNER_HANDLE = "lead";
+const { OWNER_HANDLE } = require("./rules");
 const COMMENT_POPULATE = [
   { path: "member", select: "name username specialty" },
   { path: "replyTo", select: "body member byOwner", populate: { path: "member", select: "name" } },
@@ -116,4 +116,4 @@ const usableInvite = () => ({ revoked: false, expiresAt: { $gt: new Date() }, $e
 // The fields of a member that other people may see (never the password hash).
 const MEMBER_PUBLIC = "name username specialty active availability";
 
-module.exports = { todayCairo, isOverdue, logActivity, notify, bellFor, withCommentCounts, addComment, listComments, OWNER_HANDLE, newInviteToken, hashInviteToken, usableInvite, MEMBER_PUBLIC };
+module.exports = { todayCairo, isOverdue, logActivity, notify, bellFor, withCommentCounts, addComment, listComments, newInviteToken, hashInviteToken, usableInvite, MEMBER_PUBLIC };

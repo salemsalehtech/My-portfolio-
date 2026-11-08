@@ -16,6 +16,7 @@
 // (PNG / JPEG / WebP, max 2 MB — same as certificates). A new project must be saved first.
 import { useEffect, useRef, useState } from "react";
 import { api } from "../../lib/api";
+import { imageError, maxMb, useRules } from "../../lib/rules";
 import { readAsBase64 } from "../../lib/readAsBase64";
 import { projectImageUrl, projectPath } from "../../lib/projects";
 import { slugify } from "../../lib/slug";
@@ -39,11 +40,12 @@ const CASE_STUDY = [
   { key: "result", label: "The result" },
 ];
 
-const MAX_MB = 2; // keep in sync with MAX_IMAGE_BYTES on the server
-const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"];
+
+
 
 export default function AdminProjects() {
   const { t } = useAdminT();
+  useRules(); // re-render once the upload limits (shown below) arrive
   // ---- STATE ----
   const [projects, setProjects] = useState([]); // the table's data
   const [editing, setEditing] = useState(null); // null | "new" | <project id>
@@ -90,8 +92,8 @@ export default function AdminProjects() {
     const id = uploadFor.current;
     e.target.value = ""; // allow choosing the same file again later
     if (!file || !id) return;
-    if (!IMAGE_TYPES.includes(file.type)) return setError(t("Please choose a PNG, JPEG or WebP image."));
-    if (file.size > MAX_MB * 1024 * 1024) return setError(t("The image is too large (max {mb} MB).", { mb: MAX_MB }));
+    const problem = imageError(file, t);
+    if (problem) return setError(problem);
     setUploadingId(id);
     try {
       await api.put(`/admin/projects/${id}/image`, { data: await readAsBase64(file) });
@@ -147,7 +149,7 @@ export default function AdminProjects() {
           ))}
         </tbody>
       </table>
-      <p style={{ opacity: 0.7, fontSize: 13 }}>Pictures: PNG, JPEG or WebP, up to {MAX_MB} MB. A landscape screenshot (16:9, e.g. 1280×720) looks best. Projects without a picture show their gradient.</p>
+      <p style={{ opacity: 0.7, fontSize: 13 }}>Pictures: PNG, JPEG or WebP, up to {maxMb("image")} MB. A landscape screenshot (16:9, e.g. 1280×720) looks best. Projects without a picture show their gradient.</p>
 
       {/* ---- RENDER: create/edit modal form (only mounted while editing !== null) ---- */}
       {editing !== null && (

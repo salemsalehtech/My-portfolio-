@@ -1,7 +1,8 @@
 // Comments.jsx — the conversation inside a task, for the owner (task editor) and members (task
 // window). Comments load when the task opens; a new one is added to the end right away.
 // Reply to a comment (its author is notified), and type "@" to mention someone: the people of
-// the project, or "@lead" for the owner (routes → addComment() in server/src/lib/team.js).
+// the project, or the owner's handle ("@lead", from the server's rules — lib/rules.js)
+// (routes → addComment() in server/src/lib/team.js).
 //
 // Props: `path` — the comments address (/team/tasks/:id/comments or /admin/team/tasks/:id/comments),
 // `deletePath(comment)`, `canDelete(comment)`, `lang`, `me` (the member id, to mark own comments),
@@ -12,8 +13,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../lib/api";
 import { SHARED_COPY, initials, timeAgo } from "../../lib/team";
 import { ReplyIcon, XIcon } from "./icons";
+import { useRules } from "../../lib/rules";
 
-const OWNER_HANDLE = "lead"; // same as server/src/lib/team.js
 const MENTION = /@([a-z0-9._-]{3,30})/gi;
 
 // The body with @mentions highlighted.
@@ -43,7 +44,11 @@ export default function Comments({ path, deletePath, canDelete, lang = "en", msg
     box.current?.scrollIntoView({ block: "center", behavior: "smooth" });
   }, [seed?.n]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handles = useMemo(() => [{ username: OWNER_HANDLE, name: c.owner }, ...people.filter((p) => p.id !== me)], [people, me, c.owner]);
+  const ownerHandle = useRules()?.team.ownerHandle; // "@lead" — from the server's rules
+  const handles = useMemo(
+    () => [...(ownerHandle ? [{ username: ownerHandle, name: c.owner }] : []), ...people.filter((p) => p.id !== me)],
+    [ownerHandle, people, me, c.owner]
+  );
   const matches = query === null ? [] : handles.filter((p) => p.username.startsWith(query) || p.name.toLowerCase().includes(query)).slice(0, 6);
 
   const update = (next) => { setList(next); onCount?.(next.length); };
@@ -136,7 +141,7 @@ export default function Comments({ path, deletePath, canDelete, lang = "en", msg
               {matches.map((p) => (
                 <li key={p.username}>
                   <button type="button" role="option" aria-selected="false" onMouseDown={(e) => { e.preventDefault(); pickMention(p); }}>
-                    <span className="tm-avatar">{p.username === OWNER_HANDLE ? "SS" : initials(p.name)}</span>
+                    <span className="tm-avatar">{p.username === ownerHandle ? "SS" : initials(p.name)}</span>
                     <span>{p.name}</span><span className="tm-muted">@{p.username}</span>
                   </button>
                 </li>

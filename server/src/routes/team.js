@@ -240,7 +240,7 @@ async function visibleTask(req, res) {
 }
 
 // Which status changes a member may make: from → allowed targets. "done" is the owner's call.
-const MEMBER_MOVES = { todo: ["doing", "review"], doing: ["todo", "review"], review: ["doing"], done: [] };
+const { MEMBER_MOVES } = require("../lib/rules");
 
 // PATCH /api/team/tasks/:id/status { status }
 router.patch("/tasks/:id/status", async (req, res) => {

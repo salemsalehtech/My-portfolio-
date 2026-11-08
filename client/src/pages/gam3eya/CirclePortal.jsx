@@ -11,6 +11,7 @@
 // (public/gam3eya.webmanifest) with phone notifications (lib/webPush.js).
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { Link, Route, Routes, useMatch } from "react-router-dom";
+import { loadRules } from "../../lib/rules";
 import { api } from "../../lib/api";
 import { COMPANY } from "../../lib/brand";
 import { initials } from "../../lib/team";
@@ -43,6 +44,7 @@ export default function CirclePortal() {
 
   useEffect(() => addCirclesManifest(), []);
   useEffect(() => { document.title = `${t.portal} · ${COMPANY}`; }, [t.portal]);
+  useEffect(() => { loadRules(); }, []); // upload limits (lib/rules.js)
   useEffect(() => {
     if (status !== "checking") return;
     api.get("/circle/me").then((m) => { setMember(m); setStatus("in"); }).catch(() => setStatus("out"));
