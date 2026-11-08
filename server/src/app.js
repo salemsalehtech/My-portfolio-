@@ -7,6 +7,7 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
+const compression = require("compression");
 // Lets `async` route handlers simply throw (or reject) — the error goes to the error handler at
 // the bottom of this file instead of crashing the request. No try/catch needed in the routes.
 require("express-async-errors");
@@ -49,6 +50,10 @@ app.set("trust proxy", 1);
 // (Strict-Transport-Security), and hide "X-Powered-By: Express" so attackers learn less.
 // It costs nothing and protects every route, so it stays ON.
 app.use(helmet());
+// gzip every response worth it (JSON lists shrink ~70–80%): less data per request = more
+// people served at once on the free instance. Files that are already compressed (pictures,
+// PDFs, audio) are skipped by the library's content-type check.
+app.use(compression());
 // CORS: browsers only let a web page call an API on another domain if that API says the page's
 // origin is allowed. Our site (GitHub Pages) and our API (Render) live on different domains, so
 // we allow exactly one origin: CLIENT_ORIGIN (https://salemsalehtech.github.io in production,
@@ -69,6 +74,10 @@ app.use("/api/admin/settings", express.json({ limit: "4mb" })); // the hero port
 app.use("/api/admin/products", express.json({ limit: "4mb" }));
 // Savings circles: members upload a screenshot of each transfer (max 2 MB).
 app.use("/api/circle", express.json({ limit: "4mb" }));
+// Task attachments: a PDF or picture up to 5 MB (~6.7 MB once base64-encoded). Must come before
+// the /api/admin/team parser below, which would otherwise read (and reject) the body first.
+// (Owner: /api/admin/team/…, member sending their result: /api/team/….)
+app.use(/^\/api\/(admin\/)?team\/tasks\/[^/]+\/attachments$/, express.json({ limit: "7mb" }));
 // Team project docs are long Markdown pages (up to 60,000 characters, Arabic takes more bytes).
 app.use("/api/admin/team", express.json({ limit: "1mb" }));
 // Reads JSON request bodies into req.body (max 100 KB by default — plenty for every form).
