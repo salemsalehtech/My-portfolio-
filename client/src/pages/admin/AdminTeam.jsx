@@ -11,13 +11,19 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "../../lib/api";
-import { initials, portalLink, joinLink, formatDue } from "../../lib/team";
+import { initials, portalLink, joinLink, formatDue, SHARED_COPY } from "../../lib/team";
 import { useAdminT } from "../../lib/adminI18n";
+import OwnerPush from "./OwnerPush";
+import AdminTeamScores from "./AdminTeamScores";
+import AdminTeamTemplates from "./AdminTeamTemplates";
+import AdminTeamRules from "./AdminTeamRules";
+import WeeklyCard from "./WeeklyCard";
 
 const ACTIONS = {
   project_created: "created the project", task_created: "added a task", assigned: "assigned a task",
   started: "started", moved: "moved back to To do", submitted: "sent for review",
   approved: "approved", returned: "sent back", commented: "commented on",
+  file_added: "attached a file", asked_help: "asked for help on", claimed: "took",
 };
 const timeAgo = (iso, t) => {
   const min = Math.round((Date.now() - new Date(iso)) / 60000);
@@ -27,6 +33,11 @@ const timeAgo = (iso, t) => {
   return t("{n} d ago", { n: Math.round(min / 1440) });
 };
 
+const TABS = [
+  ["overview", "Overview"], ["projects", "Projects"], ["members", "Members"], ["standups", "Standups"],
+  ["scores", "Scores"], ["templates", "Templates"], ["rules", "Rules & goal"],
+];
+
 export default function AdminTeam() {
   const { t } = useAdminT();
   const [params, setParams] = useSearchParams();
@@ -34,9 +45,9 @@ export default function AdminTeam() {
   const setTab = (next) => setParams(next === "overview" ? {} : { tab: next }, { replace: true });
   return (
     <div>
-      <h1>{t("Team")}</h1>
+      <h1>{t("Team")} <OwnerPush /></h1>
       <div className="admin-toolbar">
-        {[["overview", "Overview"], ["projects", "Projects"], ["members", "Members"], ["standups", "Standups"]].map(([key, label]) => (
+        {TABS.map(([key, label]) => (
           <button key={key} className={`admin-btn ${tab === key ? "admin-btn-primary" : ""}`} onClick={() => setTab(key)}>{t(label)}</button>
         ))}
       </div>
@@ -44,6 +55,9 @@ export default function AdminTeam() {
       {tab === "projects" && <Projects />}
       {tab === "members" && <Members />}
       {tab === "standups" && <Standups />}
+      {tab === "scores" && <AdminTeamScores />}
+      {tab === "templates" && <AdminTeamTemplates />}
+      {tab === "rules" && <AdminTeamRules />}
     </div>
   );
 }
@@ -68,6 +82,7 @@ function Overview() {
   const su = data.standups;
   return (
     <div className="tm-admin">
+      <WeeklyCard />
       {data.pending > 0 && (
         <Link className="tm-standup-strip is-blocked" to="/admin/team?tab=members">
           <strong>{t("{n} new account(s) waiting for your approval", { n: data.pending })}</strong>
@@ -127,8 +142,17 @@ function Overview() {
             <tbody>
               {data.members.map((m) => (
                 <tr key={m.id} className={m.active ? "" : "tm-inactive"}>
-                  <td><span className="tm-avatar">{initials(m.name)}</span> {m.name}<div className="tm-small tm-muted">{m.specialty}</div></td>
-                  <td className="tm-num" title={t("Open tasks")}>{t("{n} open", { n: m.open })}</td>
+                  <td>
+                    <span className="tm-avatar">{initials(m.name)}</span> {m.name}
+                    {m.availability && m.availability.status !== "available" && (
+                      <span className={`tm-avail is-${m.availability.status}`} title={m.availability.note}>
+                        {SHARED_COPY[lang].avail[m.availability.status]}{m.availability.until ? ` · ${formatDue(m.availability.until, lang)}` : ""}
+                      </span>
+                    )}
+                    <div className="tm-small tm-muted">{m.specialty}</div>
+                  </td>
+                  {/* 6+ open tasks = a heavy load: shown in the warning colour before giving more. */}
+                  <td className={`tm-num ${m.open >= 6 ? "tm-heavy" : ""}`} title={t("Open tasks")}>{t("{n} open", { n: m.open })}</td>
                   <td className={`tm-num ${m.overdue ? "tm-late" : ""}`}>{t("{n} late", { n: m.overdue })}</td>
                   <td className="tm-num">{t("{n} done / 7d", { n: m.doneThisWeek })}</td>
                 </tr>

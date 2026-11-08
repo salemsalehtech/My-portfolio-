@@ -3,11 +3,13 @@
 // redirects to /admin/login, remembering the page.
 //
 // Layout: a sidebar menu grouped by purpose (with icons) + a top bar (team notifications 🔔,
-// View site, light / dark theme, English / Arabic) + <Outlet /> — react-router-dom's placeholder for the active page.
+// View site, light / dark theme, English / Arabic) + <Outlet /> — react-router-dom's placeholder
+// for the active page — and the <Toaster /> for short messages (components/Toaster.jsx).
 // On phones the sidebar becomes a drawer opened from the ☰ button and closed after choosing a page.
 // The dashboard language (lib/adminI18n.jsx) also flips the whole layout to right-to-left.
 import { useEffect, useState } from "react";
 import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
+import Toaster from "../../components/Toaster";
 import { useAdmin } from "../../context/AdminContext";
 import { useSite } from "../../context/SiteContext";
 import { useAdminT } from "../../lib/adminI18n";
@@ -131,6 +133,7 @@ export default function AdminLayout() {
         </header>
         <main className="admin-main">
           <Outlet />
+          <Toaster />
         </main>
       </div>
     </div>

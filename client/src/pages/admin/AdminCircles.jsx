@@ -12,8 +12,8 @@ import { api, fetchImageUrl } from "../../lib/api";
 import { money, day, METHOD_LABEL, whatsappLink } from "../../lib/circles";
 import { initials, timeAgo } from "../../lib/team";
 import { useAdminT } from "../../lib/adminI18n";
-import { pushState, enablePush } from "../../lib/webPush";
-import { BellIcon, TargetIcon, ShieldIcon } from "../../components/team/icons";
+import OwnerPush from "./OwnerPush";
+import { TargetIcon, ShieldIcon } from "../../components/team/icons";
 
 const portal = () => `${window.location.origin}${window.location.pathname}#/gam3eya`;
 const joinLink = (token) => `${portal()}/join/${token}`;
@@ -107,15 +107,6 @@ function Circles() {
   );
 }
 
-// The owner's phone notifications (new payments, requests, sign-ups).
-function OwnerPush() {
-  const { t } = useAdminT();
-  const [state, setState] = useState("checking");
-  useEffect(() => { pushState().then(setState).catch(() => setState("unsupported")); }, []);
-  if (state === "on") return <span className="admin-sub"><BellIcon size={14} className="ui-icon" /> {t("Phone notifications on")}</span>;
-  if (state !== "off") return null;
-  return <button className="admin-btn" onClick={() => enablePush("/admin/circles").then(() => setState("on")).catch(() => setState("blocked"))}><BellIcon size={15} /> {t("Notify me on this device")}</button>;
-}
 
 // ---- Inbox: payments to confirm + early-turn requests ----
 export function ProofImage({ paymentId }) {
