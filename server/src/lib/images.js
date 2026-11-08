@@ -40,4 +40,4 @@ function sendImage(res, image) {
   res.send(image.data);
 }
 
-module.exports = { readImageUpload, sendImage, MAX_IMAGE_BYTES };
+module.exports = { readImageUpload, sendImage, imageType, MAX_IMAGE_BYTES };

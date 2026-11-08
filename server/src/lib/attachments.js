@@ -5,12 +5,14 @@
 const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
 const MAX_ATTACHMENTS_PER_TASK = 10;
 
+const { imageType } = require("./images");
+
 // The real file type, read from the first bytes (never trust the file name or the browser).
+// Pictures are recognised by images.js — the one place that knows PNG / JPEG / WebP.
 function attachmentType(buffer) {
   if (buffer.length > 5 && buffer.subarray(0, 5).toString("latin1") === "%PDF-") return "application/pdf";
-  if (buffer.length > 8 && buffer[0] === 0x89 && buffer.subarray(1, 4).toString("latin1") === "PNG") return "image/png";
-  if (buffer.length > 3 && buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff) return "image/jpeg";
-  if (buffer.length > 12 && buffer.subarray(0, 4).toString("latin1") === "RIFF" && buffer.subarray(8, 12).toString("latin1") === "WEBP") return "image/webp";
+  const picture = imageType(buffer);
+  if (picture) return picture;
   // Voice notes recorded in the browser: Chrome/Firefox make WebM or Ogg (Opus), Safari makes MP4 (AAC).
   if (buffer.length > 4 && buffer.readUInt32BE(0) === 0x1a45dfa3) return "audio/webm";
   if (buffer.length > 4 && buffer.subarray(0, 4).toString("latin1") === "OggS") return "audio/ogg";
