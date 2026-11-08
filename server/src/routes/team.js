@@ -222,6 +222,10 @@ router.get("/projects/:id", async (req, res) => {
   res.json({ project, tasks: await withCommentCounts(tasks) });
 });
 
+// A task as a member receives it: with its assignee's public fields (the owner's private
+// rating is already hidden by the model's toJSON). One place to change what members see.
+const memberTask = (task) => task.populate("assignee", MEMBER_PUBLIC);
+
 // Loads a task that belongs to the logged-in member (404 for anyone else's task).
 async function ownTask(req, res) {
   if (!mongoose.isValidObjectId(req.params.id)) { res.status(404).json({ error: "Task not found" }); return null; }
@@ -256,7 +260,7 @@ router.patch("/tasks/:id/status", async (req, res) => {
   const action = status === "review" ? "submitted" : status === "doing" ? "started" : "moved";
   logActivity({ project: task.project, task: task._id, member: req.member._id, action, detail: task.title });
   if (status === "review") notify({ kind: "submitted", actor: req.member.name, task: task._id, project: task.project, detail: task.title });
-  res.json(await task.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(task));
 });
 
 // To-do steps inside my own task.
@@ -275,7 +279,7 @@ router.patch("/tasks/:id/steps/:stepId", async (req, res) => {
   if ("done" in (req.body || {})) step.done = Boolean(req.body.done);
   if ("text" in (req.body || {})) step.text = String(req.body.text);
   await task.save();
-  res.json(await task.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(task));
 });
 router.delete("/tasks/:id/steps/:stepId", async (req, res) => {
   const task = await ownTask(req, res);
@@ -284,7 +288,7 @@ router.delete("/tasks/:id/steps/:stepId", async (req, res) => {
   if (!step) return res.status(404).json({ error: "Step not found" });
   step.deleteOne();
   await task.save();
-  res.json(await task.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(task));
 });
 
 // ---- Open pool: unassigned tasks the owner marked "anyone can take it" ----
@@ -309,7 +313,7 @@ router.post("/tasks/:id/claim", async (req, res) => {
   if (!claimed) return res.status(409).json({ error: "Someone already took this task" });
   logActivity({ project: claimed.project, task: claimed._id, member: req.member._id, action: "claimed", detail: claimed.title });
   notify({ kind: "claimed", actor: req.member.name, task: claimed._id, project: claimed.project, detail: claimed.title });
-  res.json(await claimed.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(claimed));
 });
 
 // ---- Before starting: "I understood", my size estimate, ticking the acceptance criteria ----
@@ -318,14 +322,14 @@ router.post("/tasks/:id/understood", async (req, res) => {
   if (!task) return;
   task.understoodAt = task.understoodAt || new Date();
   await task.save();
-  res.json(await task.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(task));
 });
 router.put("/tasks/:id/estimate", async (req, res) => {
   const task = await ownTask(req, res);
   if (!task) return;
   task.estimate = String(req.body?.estimate ?? "");
   await task.save();
-  res.json(await task.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(task));
 });
 router.patch("/tasks/:id/criteria/:cid", async (req, res) => {
   const task = await ownTask(req, res);
@@ -335,7 +339,7 @@ router.patch("/tasks/:id/criteria/:cid", async (req, res) => {
   if (!item) return res.status(404).json({ error: "Not found" });
   item.done = Boolean(req.body?.done);
   await task.save();
-  res.json(await task.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(task));
 });
 
 // ---- "I need help" / "I need more time" on my own task ----
@@ -348,14 +352,14 @@ router.put("/tasks/:id/help", async (req, res) => {
   await task.save();
   notify({ kind: "help", actor: req.member.name, task: task._id, project: task.project, detail: task.title });
   logActivity({ project: task.project, task: task._id, member: req.member._id, action: "asked_help", detail: task.title });
-  res.json(await task.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(task));
 });
 router.delete("/tasks/:id/help", async (req, res) => {
   const task = await ownTask(req, res);
   if (!task) return;
   task.helpNote = "";
   await task.save();
-  res.json(await task.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(task));
 });
 router.put("/tasks/:id/extension", async (req, res) => {
   const task = await ownTask(req, res);
@@ -368,14 +372,14 @@ router.put("/tasks/:id/extension", async (req, res) => {
   task.extensionRequest = { date, reason: req.body?.reason, at: new Date() };
   await task.save();
   notify({ kind: "extension", actor: req.member.name, task: task._id, project: task.project, detail: task.title });
-  res.json(await task.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(task));
 });
 router.delete("/tasks/:id/extension", async (req, res) => {
   const task = await ownTask(req, res);
   if (!task) return;
   task.extensionRequest = null;
   await task.save();
-  res.json(await task.populate("assignee", MEMBER_PUBLIC));
+  res.json(await memberTask(task));
 });
 
 // ---- Attachments: everyone on the project opens them; the assignee adds their own result to

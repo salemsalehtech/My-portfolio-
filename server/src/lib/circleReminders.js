@@ -18,8 +18,11 @@ async function runOnce() {
   if (subscribed.size === 0) return 0;
 
   let sent = 0;
-  for (const circle of await Circle.find({ status: "active" })) {
-    const payments = await CirclePayment.find({ circle: circle._id }).select("member month amount status createdAt");
+  const circles = await Circle.find({ status: "active" });
+  // One query for every circle's payments instead of one per circle.
+  const allPayments = await CirclePayment.find({ circle: { $in: circles.map((c) => c._id) } }).select("circle member month amount status createdAt");
+  for (const circle of circles) {
+    const payments = allPayments.filter((p) => String(p.circle) === String(circle._id));
     const st = buildStatement(circle, payments, today);
     const once = async (key, memberId, body) => {
       if (circle.remindedAt.get(key) === today) return;
