@@ -64,7 +64,7 @@ export default function AdminTeamProject() {
     <div className="tm-admin">
       <p><Link to="/admin/team">{t("← Team")}</Link></p>
       <h1 dir="auto">{project.name} <span className="admin-sub">· {t("{done}/{total} done", { done, total: tasks.length })} · {t(project.status)}</span></h1>
-      <div className="admin-toolbar">
+      <div className="admin-toolbar ui-tabbar" role="tablist">
         {[["board", "Board"], ["docs", "Docs"], ["settings", "Settings"]].map(([key, label]) => (
           <button key={key} className={`admin-btn ${tab === key ? "admin-btn-primary" : ""}`} onClick={() => setTab(key)}>{t(label)}</button>
         ))}

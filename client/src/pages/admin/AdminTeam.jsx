@@ -17,6 +17,7 @@ import OwnerPush from "./OwnerPush";
 import AdminTeamScores from "./AdminTeamScores";
 import AdminTeamTemplates from "./AdminTeamTemplates";
 import AdminTeamRules from "./AdminTeamRules";
+import AdminTeamNews from "./AdminTeamNews";
 import WeeklyCard from "./WeeklyCard";
 
 const ACTIONS = {
@@ -35,7 +36,7 @@ const timeAgo = (iso, t) => {
 
 const TABS = [
   ["overview", "Overview"], ["projects", "Projects"], ["members", "Members"], ["standups", "Standups"],
-  ["scores", "Scores"], ["templates", "Templates"], ["rules", "Rules & goal"],
+  ["news", "Announcements"], ["scores", "Scores"], ["templates", "Templates"], ["rules", "Rules & goal"],
 ];
 
 export default function AdminTeam() {
@@ -46,7 +47,7 @@ export default function AdminTeam() {
   return (
     <div>
       <h1>{t("Team")} <OwnerPush /></h1>
-      <div className="admin-toolbar">
+      <div className="admin-toolbar ui-tabbar" role="tablist">
         {TABS.map(([key, label]) => (
           <button key={key} className={`admin-btn ${tab === key ? "admin-btn-primary" : ""}`} onClick={() => setTab(key)}>{t(label)}</button>
         ))}
@@ -58,6 +59,7 @@ export default function AdminTeam() {
       {tab === "scores" && <AdminTeamScores />}
       {tab === "templates" && <AdminTeamTemplates />}
       {tab === "rules" && <AdminTeamRules />}
+      {tab === "news" && <AdminTeamNews />}
     </div>
   );
 }
