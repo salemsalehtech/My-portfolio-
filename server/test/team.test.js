@@ -115,6 +115,13 @@ const { signMemberToken } = require("../src/middleware/teamAuth");
   const gz = await fetch(`${base}/admin/team/projects/${pid}`, { headers: { Authorization: `Bearer ${adminToken}`, "Accept-Encoding": "gzip" } });
   check("gzip on", gz.headers.get("content-encoding") === "gzip" || Number(gz.headers.get("content-length") || 0) < 1024);
 
+  const ov = await call("GET", "/admin/team/overview");
+  const ovProject = ov.data.projects.find((p) => p.id === pid);
+  const ovMona = ov.data.members.find((m) => m.id === mona.id);
+  check("overview: project totals from the aggregate", ovProject?.total === 2 && ovProject?.done === 1, JSON.stringify(ovProject));
+  const monaOpen = (await call("GET", "/team/tasks", null, tm)).data.filter((x) => x.status !== "done").length; // depends on who won the pool claim
+  check("overview: member numbers", ovMona?.doneThisWeek === 1 && ovMona?.open === monaOpen, `${ovMona?.open} vs ${monaOpen}`);
+
   const meta = await call("GET", "/meta", null, null);
   check("rules served to the browser", meta.data.timeZone === "Africa/Cairo" && meta.data.team.memberMoves.todo.includes("doing")
     && meta.data.uploads.attachment.maxFiles === 10 && meta.data.team.ownerHandle === "lead", JSON.stringify(meta.data));

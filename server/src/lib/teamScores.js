@@ -80,22 +80,31 @@ const BADGES = [
   { key: "standup", test: (s) => s.standups >= 20 },
   { key: "star", test: (s) => s.stars >= 1 },
 ];
-async function badgesFor(memberId) {
+// Badges for several members at once: three queries in total, however many members there are.
+// Returns a Map of member id → badge keys.
+async function badgesForMany(memberIds) {
+  const ids = memberIds.map(String);
   const [tasks, standups, stars] = await Promise.all([
-    TeamTask.find({ assignee: memberId, status: "done" }).select("dueDate completedAt returnedCount rating").lean(),
-    TeamStandup.countDocuments({ member: memberId }),
-    TeamKudos.countDocuments({ member: memberId, star: true }),
+    TeamTask.find({ assignee: { $in: ids }, status: "done" }).select("assignee dueDate completedAt returnedCount rating").lean(),
+    TeamStandup.aggregate([{ $match: { member: { $in: ids.map((id) => new TeamStandup.base.Types.ObjectId(id)) } } }, { $group: { _id: "$member", n: { $sum: 1 } } }]),
+    TeamKudos.aggregate([{ $match: { member: { $in: ids.map((id) => new TeamKudos.base.Types.ObjectId(id)) }, star: true } }, { $group: { _id: "$member", n: { $sum: 1 } } }]),
   ]);
-  const s = { done: tasks.length, onTime: 0, firstTime: 0, creative: 0, bonus: 0, standups, stars };
+  const count = (rows) => new Map(rows.map((r) => [String(r._id), r.n]));
+  const standupsBy = count(standups);
+  const starsBy = count(stars);
+  const stats = new Map(ids.map((id) => [id, { done: 0, onTime: 0, firstTime: 0, creative: 0, bonus: 0, standups: standupsBy.get(id) || 0, stars: starsBy.get(id) || 0 }]));
   for (const t of tasks) {
+    const s = stats.get(String(t.assignee));
     const p = taskPoints(t);
+    s.done += 1;
     s.onTime += p.onTime ? 1 : 0;
     s.firstTime += p.firstTime ? 1 : 0;
     if (t.rating?.creativity === 5) s.creative += 1;
     if (t.rating?.bonus) s.bonus += 1;
   }
-  return BADGES.filter((b) => b.test(s)).map((b) => b.key);
+  return new Map(ids.map((id) => [id, BADGES.filter((b) => b.test(stats.get(id))).map((b) => b.key)]));
 }
+const badgesFor = async (memberId) => (await badgesForMany([memberId])).get(String(memberId));
 
 // The shared monthly goal: how many tasks the whole team finished this month vs the target.
 async function teamGoal() {
@@ -108,4 +117,4 @@ async function teamGoal() {
 
 const lastDays = (days) => [new Date(Date.now() - days * 24 * 60 * 60 * 1000), new Date()];
 
-module.exports = { scoresBetween, badgesFor, teamGoal, monthBounds, currentMonth, lastDays };
+module.exports = { scoresBetween, badgesFor, badgesForMany, teamGoal, monthBounds, currentMonth, lastDays };

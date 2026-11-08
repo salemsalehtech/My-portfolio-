@@ -14,7 +14,7 @@ const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const { TeamMember, TeamProject, TeamTask, TeamActivity, TeamComment, TeamNotification, TeamStandup, TeamInvite, TeamAttachment, TeamKudos, TeamTemplate, TeamSettings, TeamAnnouncement } = require("../lib/mongo");
 const rateLimit = require("express-rate-limit");
-const { scoresBetween, badgesFor, teamGoal, monthBounds, currentMonth, lastDays } = require("../lib/teamScores");
+const { scoresBetween, badgesForMany, teamGoal, monthBounds, currentMonth, lastDays } = require("../lib/teamScores");
 const { weeklySummary } = require("../lib/teamJobs");
 const { improveBrief, aiEnabled } = require("../lib/ai");
 const { sendAttachment, saveAttachment } = require("../lib/attachments");
@@ -25,40 +25,51 @@ const { passwordProblem } = require("../lib/passwords");
 const router = express.Router();
 
 // ---- Overview ----
+// Only what the page shows is loaded: the open tasks of non-archived projects (review queue,
+// overdue, open per member), done counts per project from one aggregate, and the tasks finished
+// in the last 7 days — never every task the team has ever done.
 router.get("/overview", async (req, res) => {
   const today = todayCairo();
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const [projects, members, tasks, activity, standups] = await Promise.all([
-    TeamProject.find({ status: { $ne: "archived" } }).sort({ createdAt: -1 }),
+  const projects = await TeamProject.find({ status: { $ne: "archived" } }).sort({ createdAt: -1 });
+  const live = { project: { $in: projects.map((p) => p._id) } };
+  const [members, open, doneWeek, counts, activity, standups] = await Promise.all([
     TeamMember.find().sort({ name: 1 }),
-    TeamTask.find().select("project assignee status dueDate title completedAt submittedAt").populate("assignee", MEMBER_PUBLIC),
+    TeamTask.find({ ...live, status: { $ne: "done" } }).select("project assignee status dueDate title submittedAt").populate("assignee", MEMBER_PUBLIC),
+    TeamTask.find({ ...live, status: "done", completedAt: { $gte: weekAgo } }).select("assignee").lean(),
+    TeamTask.aggregate([
+      { $match: live },
+      { $group: { _id: "$project", total: { $sum: 1 }, done: { $sum: { $cond: [{ $eq: ["$status", "done"] }, 1, 0] } } } },
+    ]),
     TeamActivity.find().sort({ createdAt: -1 }).limit(30).populate("member", "name").populate("project", "name"),
     TeamStandup.find({ date: today }).select("member blockers"),
   ]);
-  const activeIds = new Set(projects.map((p) => p.id));
-  const live = tasks.filter((t) => activeIds.has(String(t.project)));
+  const projectName = new Map(projects.map((p) => [p.id, p.name]));
+  const countOf = new Map(counts.map((c) => [String(c._id), c]));
+  const byProject = (id) => open.filter((t) => String(t.project) === id);
+  const byMember = (id) => open.filter((t) => t.assignee && t.assignee.id === id);
 
   res.json({
-    review: live.filter((t) => t.status === "review")
+    review: open.filter((t) => t.status === "review")
       .sort((a, b) => (a.submittedAt || 0) - (b.submittedAt || 0))
-      .map((t) => ({ ...t.toJSON(), projectName: projects.find((p) => p.id === String(t.project))?.name })),
+      .map((t) => ({ ...t.toJSON(), projectName: projectName.get(String(t.project)) })),
     projects: projects.map((p) => {
-      const own = live.filter((t) => String(t.project) === p.id);
+      const own = byProject(p.id);
       return {
         id: p.id, name: p.name, status: p.status, dueDate: p.dueDate,
-        total: own.length,
-        done: own.filter((t) => t.status === "done").length,
+        total: countOf.get(p.id)?.total || 0,
+        done: countOf.get(p.id)?.done || 0,
         review: own.filter((t) => t.status === "review").length,
         overdue: own.filter((t) => isOverdue(t, today)).length,
       };
     }),
     members: members.map((m) => {
-      const own = live.filter((t) => t.assignee && t.assignee.id === m.id);
+      const own = byMember(m.id);
       return {
         ...m.toJSON(),
-        open: own.filter((t) => t.status !== "done").length,
+        open: own.length,
         overdue: own.filter((t) => isOverdue(t, today)).length,
-        doneThisWeek: own.filter((t) => t.status === "done" && t.completedAt && t.completedAt >= weekAgo).length,
+        doneThisWeek: doneWeek.filter((t) => String(t.assignee) === m.id).length,
       };
     }),
     activity,
@@ -572,9 +583,9 @@ router.get("/scores", async (req, res) => {
     scoresBetween(...lastDays(7)),
     teamGoal(),
   ]);
-  const badges = await Promise.all(ranking.map((r) => badgesFor(r.member.id)));
+  const badges = await badgesForMany(ranking.map((r) => r.member.id));
   const top = week.find((r) => r.points > 0) || null;
-  res.json({ month, ranking: ranking.map((r, i) => ({ ...r, badges: badges[i] })), starSuggestion: top && { member: top.member, points: top.points, done: top.done }, goal });
+  res.json({ month, ranking: ranking.map((r) => ({ ...r, badges: badges.get(r.member.id) })), starSuggestion: top && { member: top.member, points: top.points, done: top.done }, goal });
 });
 
 // ---- This week at a glance (also announced to the owner every Thursday by lib/teamJobs.js) ----
