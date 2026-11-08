@@ -138,6 +138,9 @@ const contactMessageSchema = new mongoose.Schema(
 const adminUserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true },
   passwordHash: { type: String, required: true },
+  // Goes up on "Sign out on all devices" and when the password is re-seeded: tokens signed with
+  // an older number stop working (middleware/auth.js).
+  tokenVersion: { type: Number, default: 0 },
 });
 
 // The CV PDF is stored right inside MongoDB (a single document, replaced on every upload)

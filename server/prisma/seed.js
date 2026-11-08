@@ -59,7 +59,8 @@ async function main() {
     const passwordHash = await bcrypt.hash(adminPassword, 10);
     await AdminUser.findOneAndUpdate(
       { email: adminEmail.toLowerCase() },
-      { email: adminEmail.toLowerCase(), passwordHash },
+      // a new password signs out every device that used the old one
+      { email: adminEmail.toLowerCase(), passwordHash, $inc: { tokenVersion: 1 } },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
   }

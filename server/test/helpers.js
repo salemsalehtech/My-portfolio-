@@ -3,7 +3,6 @@
 // Safety: the tests refuse to run against anything that is not localhost / 127.0.0.1 or whose
 // database name doesn't end in "_test", so a production MONGODB_URI can never be wiped.
 const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
 
 const MONGO_HOST = process.env.TEST_MONGODB_HOST || "mongodb://127.0.0.1:27017";
 
@@ -25,7 +24,10 @@ async function start() {
   await mongoose.connection.db.dropDatabase();
   const server = app.listen(0);
   const base = `http://127.0.0.1:${server.address().port}/api`;
-  const adminToken = jwt.sign({ sub: "owner" }, process.env.JWT_SECRET, { expiresIn: "1h" });
+  const { AdminUser } = require("../src/lib/mongo");
+  const { signAdminToken } = require("../src/middleware/auth");
+  const admin = await AdminUser.create({ email: "owner@test.local", passwordHash: "x" });
+  const adminToken = signAdminToken(admin);
   const call = async (method, path, body, token = adminToken) => {
     const r = await fetch(base + path, {
       method,
@@ -50,7 +52,7 @@ async function start() {
     await mongoose.disconnect();
     process.exitCode = fail ? 1 : 0;
   };
-  return { base, adminToken, call, check, finish };
+  return { base, admin, adminToken, call, check, finish };
 }
 
 // Notifications and logs are written after the response is sent (they never slow a request

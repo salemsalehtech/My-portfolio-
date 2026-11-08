@@ -892,5 +892,7 @@ export const ADMIN_AR = {
   "Delete this announcement?": "حذف الإعلان ده؟",
   "Read by {a} of {b}": "قراه {a} من {b}",
   "Not yet:": "لسه:",
+  "Sign out everywhere": "خروج من كل الأجهزة",
+  "Sign out on every device, including this one?": "تسجيل الخروج من كل الأجهزة، ومنها الجهاز ده؟",
   "took": "أخد",
 };

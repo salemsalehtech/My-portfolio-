@@ -15,6 +15,7 @@ import { useSite } from "../../context/SiteContext";
 import { useAdminT } from "../../lib/adminI18n";
 import { COMPANY } from "../../lib/brand";
 import { loadRules } from "../../lib/rules";
+import { api } from "../../lib/api";
 import { NAV_ICONS } from "../../components/admin/navIcons";
 import Bell from "../../components/team/Bell";
 import NotificationBell from "../../components/NotificationBell";
@@ -111,6 +112,12 @@ export default function AdminLayout() {
           ))}
         </nav>
         <button className="admin-nav-link admin-logout" onClick={logout}>{NAV_ICONS.logout}<span>{t("Logout")}</span></button>
+        {/* Ends every session (lost phone, shared computer): all tokens issued so far stop working. */}
+        <button className="admin-nav-link admin-logout is-all" onClick={async () => {
+          if (!confirm(t("Sign out on every device, including this one?"))) return;
+          await api.post("/auth/logout-all").catch(() => {});
+          logout();
+        }}>{NAV_ICONS.logout}<span>{t("Sign out everywhere")}</span></button>
       </aside>
       <div className="admin-backdrop" onClick={() => setMenuOpen(false)} aria-hidden="true" />
 

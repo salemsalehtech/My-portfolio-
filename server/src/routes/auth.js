@@ -3,9 +3,9 @@
 // token is checked on every admin request).
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 const { AdminUser } = require("../lib/mongo");
+const { requireAuth, signAdminToken } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -37,9 +37,14 @@ router.post("/login", loginLimiter, async (req, res) => {
   const valid = await bcrypt.compare(password, admin.passwordHash);
   if (!valid) return res.status(401).json({ error: "Invalid credentials" });
 
-  // Sign a token that says who the admin is, valid for 7 days.
-  const token = jwt.sign({ sub: admin.id, email: admin.email }, process.env.JWT_SECRET, { expiresIn: "7d" });
-  res.json({ token });
+  // A token that says who the admin is, valid for 7 days (and until "Sign out on all devices").
+  res.json({ token: signAdminToken(admin) });
+});
+
+// POST /api/auth/logout-all — every admin token issued so far stops working (this one too).
+router.post("/logout-all", requireAuth, async (req, res) => {
+  await AdminUser.updateOne({ _id: req.admin.sub }, { $inc: { tokenVersion: 1 } });
+  res.status(204).end();
 });
 
 module.exports = router;
